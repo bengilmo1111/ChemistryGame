@@ -7,7 +7,7 @@ export default class PreloadScene extends Phaser.Scene {
 
   preload() {
     artAssets.forEach((asset) => {
-      this.load.svg(asset.key, asset.path);
+      this.load.svg(asset.key, asset.path, { width: asset.width, height: asset.height });
     });
   }
 

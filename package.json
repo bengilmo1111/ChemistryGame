@@ -11,9 +11,10 @@
     "test": "node tests/reaction-engine.test.mjs && node tests/content-integrity.test.mjs"
   },
   "dependencies": {
-    "vite": "latest",
-    "typescript": "latest",
-    "phaser": "latest"
+    "phaser": "^3.80.0",
+    "vite": "^5.0.0"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "playwright": "^1.60.0"
+  }
 }

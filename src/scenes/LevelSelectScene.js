@@ -30,47 +30,48 @@ export default class LevelSelectScene extends Phaser.Scene {
   }
 
   createCard(experiment, x, y) {
-    this.add.rectangle(x, y, 260, 198, 0xfff7d6).setStrokeStyle(5, 0x8a5a24);
-    this.add.text(x, y - 76, experiment.title, {
+    this.add.rectangle(x, y, 280, 216, 0xfff7d6).setStrokeStyle(5, 0x8a5a24);
+    this.add.text(x, y - 86, experiment.title, {
       fontFamily: 'Trebuchet MS, sans-serif',
-      fontSize: '23px',
+      fontSize: '20px',
       color: '#4b2f10',
       align: 'center',
-      wordWrap: { width: 220 },
+      wordWrap: { width: 254 },
     }).setOrigin(0.5);
-    this.add.text(x, y - 28, experiment.goal, {
+    this.add.text(x, y - 52, experiment.goal, {
       fontFamily: 'Trebuchet MS, sans-serif',
-      fontSize: '15px',
+      fontSize: '13px',
       color: '#4b2f10',
       align: 'center',
-      wordWrap: { width: 218 },
+      lineSpacing: 2,
+      wordWrap: { width: 252 },
     }).setOrigin(0.5);
     const wordPreview = defineVocabulary(experiment.vocabulary)
       .map(({ word, definition }) => `${word}: ${definition}`)
       .join('\n');
-    this.add.text(x, y + 14, wordPreview, {
+    this.add.text(x, y + 4, wordPreview, {
       fontFamily: 'Trebuchet MS, sans-serif',
-      fontSize: '12px',
+      fontSize: '11px',
       color: '#273469',
       align: 'center',
       lineSpacing: 2,
-      wordWrap: { width: 226 },
+      wordWrap: { width: 252 },
     }).setOrigin(0.5);
     const totalDiscoveries = reactionOutcomes.filter((outcome) => outcome.experimentId === experiment.id).length + funnyFailures.length;
     const foundDiscoveries = this.discoveries.countForExperiment(experiment.id);
-    this.add.text(x, y + 54, `Discovered: ${foundDiscoveries}/${totalDiscoveries} outcomes`, {
+    this.add.text(x, y + 56, `Discovered: ${foundDiscoveries}/${totalDiscoveries} outcomes`, {
       fontFamily: 'Trebuchet MS, sans-serif',
-      fontSize: '13px',
+      fontSize: '12px',
       color: foundDiscoveries ? '#2f7d38' : '#7e2453',
       align: 'center',
-      wordWrap: { width: 218 },
+      wordWrap: { width: 254 },
     }).setOrigin(0.5);
-    new Button(this, x, y + 78, 'Experiment!', () => this.scene.start('LabScene', { experimentId: experiment.id }), {
-      width: 178,
-      height: 42,
+    new Button(this, x, y + 82, 'Experiment!', () => this.scene.start('LabScene', { experimentId: experiment.id }), {
+      width: 170,
+      height: 38,
       fill: 0xa8ffb0,
       stroke: 0x2f7d38,
-      fontSize: '18px',
+      fontSize: '17px',
     });
   }
 }

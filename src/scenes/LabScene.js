@@ -44,10 +44,10 @@ export default class LabScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor('#232a62');
     this.physics.world.setBounds(0, 0, 1024, 640);
     this.addLabBench();
-    this.dialogue = new DialogueSystem(this, 380, 76, 650);
+    this.dialogue = new DialogueSystem(this, 380, 80, 650, 56);
     this.dialogue.say(this.experiment.prompt);
-    this.notebook = new LabNotebook(this, 858, 286);
-    this.meter = new Meter(this, 858, 478, 'Chaos Meter');
+    this.notebook = new LabNotebook(this, 858, 250);
+    this.meter = new Meter(this, 858, 422, 'Chaos Meter');
     this.tooltip = new Tooltip(this);
     this.createPredictionButtons();
     this.createLabCard();
@@ -64,20 +64,18 @@ export default class LabScene extends Phaser.Scene {
 
   addLabBench() {
     this.add.image(512, 320, 'art-lab-bench').setDisplaySize(1024, 640);
-    this.add.rectangle(512, 566, 1024, 148, 0x6d421c);
-    this.add.rectangle(512, 506, 1024, 34, 0xc28b48);
-    this.add.text(512, 30, this.experiment.title, {
+    this.add.text(512, 28, this.experiment.title, {
       fontFamily: 'Trebuchet MS, sans-serif',
-      fontSize: '30px',
+      fontSize: '26px',
       color: '#fff5a8',
     }).setOrigin(0.5);
   }
 
   createPredictionButtons() {
-    this.add.text(42, 112, '1. Predict', { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '24px', color: '#ffffff' });
+    this.add.text(42, 124, '1. Predict', { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '22px', color: '#ffffff' });
     predictions.forEach((prediction, index) => {
       const x = 88 + (index % 4) * 104;
-      const y = 156 + Math.floor(index / 4) * 48;
+      const y = 162 + Math.floor(index / 4) * 44;
       const button = new Button(this, x, y, `${prediction.icon} ${prediction.label}`, () => {
         this.predictions.choose(prediction.id);
         this.highlightPrediction(prediction.id);
@@ -100,63 +98,65 @@ export default class LabScene extends Phaser.Scene {
   }
 
   createLabCard() {
-    this.add.rectangle(858, 84, 280, 70, 0xfff7d6, 0.96).setStrokeStyle(4, 0x8a5a24);
-    this.add.text(858, 62, `Goal: ${this.experiment.goal}`, {
+    this.add.rectangle(858, 88, 280, 96, 0xfff7d6, 0.96).setStrokeStyle(4, 0x8a5a24);
+    this.add.text(858, 64, `Goal: ${this.experiment.goal}`, {
       fontFamily: 'Trebuchet MS, sans-serif',
-      fontSize: '14px',
+      fontSize: '12px',
       color: '#4b2f10',
       align: 'center',
-      wordWrap: { width: 244 },
+      lineSpacing: 2,
+      wordWrap: { width: 254 },
     }).setOrigin(0.5);
-    this.add.text(858, 101, `Tool clue: ${this.experiment.actionHint}`, {
+    this.add.text(858, 110, `Tool clue: ${this.experiment.actionHint}`, {
       fontFamily: 'Trebuchet MS, sans-serif',
-      fontSize: '13px',
+      fontSize: '11px',
       color: '#273469',
       align: 'center',
-      wordWrap: { width: 250 },
+      lineSpacing: 2,
+      wordWrap: { width: 254 },
     }).setOrigin(0.5);
   }
 
   createFlask() {
     this.flask = this.add.container(392, 386);
     const glass = this.add.graphics();
-    glass.fillStyle(0xffffff, 0.18).fillRoundedRect(-70, -115, 140, 205, 32);
-    glass.lineStyle(6, 0xd8fbff, 0.95).strokeRoundedRect(-70, -115, 140, 205, 32);
-    glass.fillStyle(0x83d8ff, 0.45).fillRoundedRect(-52, 4, 104, 76, 28);
-    this.liquid = this.add.rectangle(0, 42, 104, 76, 0x83d8ff, 0.65);
+    glass.fillStyle(0xffffff, 0.18).fillRoundedRect(-66, -100, 132, 180, 30);
+    glass.lineStyle(6, 0xd8fbff, 0.95).strokeRoundedRect(-66, -100, 132, 180, 30);
+    glass.fillStyle(0x83d8ff, 0.45).fillRoundedRect(-50, 8, 100, 64, 24);
+    this.liquid = this.add.rectangle(0, 40, 100, 64, 0x83d8ff, 0.65);
     this.flask.add([glass, this.liquid]);
-    this.dropZone = this.add.zone(392, 386, 170, 230).setRectangleDropZone(170, 230);
-    this.add.text(392, 520, 'Drop or tap ingredients here', { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '18px', color: '#ffffff' }).setOrigin(0.5);
+    this.dropZone = this.add.zone(392, 386, 160, 200).setRectangleDropZone(160, 200);
+    this.add.text(392, 478, 'Drop or tap ingredients here', { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '13px', color: '#ffffff' }).setOrigin(0.5);
     this.input.on('drop', (_pointer, gameObject) => this.addIngredient(gameObject));
   }
 
   createObservationClues() {
-    this.add.rectangle(392, 586, 320, 78, 0x15183a, 0.5).setStrokeStyle(3, 0x9de8ff);
+    this.add.rectangle(392, 584, 320, 76, 0x15183a, 0.78).setStrokeStyle(3, 0x9de8ff);
     this.add.text(392, 556, 'Observation Clues', {
       fontFamily: 'Trebuchet MS, sans-serif',
-      fontSize: '18px',
+      fontSize: '16px',
       color: '#fff5a8',
     }).setOrigin(0.5);
-    this.add.text(392, 594, this.experiment.hints.map((hint) => `• ${hint}`).join('\n'), {
+    this.add.text(392, 590, this.experiment.hints.map((hint) => `• ${hint}`).join('\n'), {
       fontFamily: 'Trebuchet MS, sans-serif',
-      fontSize: '15px',
+      fontSize: '13px',
       color: '#ffffff',
       align: 'center',
-      lineSpacing: 3,
-      wordWrap: { width: 286 },
+      lineSpacing: 2,
+      wordWrap: { width: 296 },
     }).setOrigin(0.5);
   }
 
   createReagents() {
-    this.add.text(42, 252, '2. Pick Fictional Ingredients', { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '24px', color: '#ffffff' });
+    this.add.text(42, 248, '2. Pick Fictional Ingredients', { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '20px', color: '#ffffff' });
     reagents.forEach((reagent, index) => {
-      const x = 80 + (index % 3) * 142;
-      const y = 334 + Math.floor(index / 3) * 110;
+      const x = 60 + (index % 3) * 100;
+      const y = 304 + Math.floor(index / 3) * 92;
       const bottle = this.add.container(x, y);
-      const bottleArt = this.add.image(0, -6, reagent.artKey).setDisplaySize(82, 98);
-      const label = this.add.text(0, 52, reagent.name, { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '15px', color: '#ffffff', align: 'center' }).setOrigin(0.5);
+      const bottleArt = this.add.image(0, -8, reagent.artKey).setDisplaySize(62, 74);
+      const label = this.add.text(0, 34, reagent.name, { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '12px', color: '#ffffff', align: 'center' }).setOrigin(0.5);
       bottle.add([bottleArt, label]);
-      bottle.setSize(94, 90).setInteractive({ draggable: true, useHandCursor: true });
+      bottle.setSize(80, 82).setInteractive({ draggable: true, useHandCursor: true });
       bottle.setData('reagentId', reagent.id);
       bottle.setData('home', { x, y });
       bottle.on('pointerover', () => this.tooltip.show(x + 95, y - 36, `${reagent.concept}: ${reagent.clue}`));
@@ -179,12 +179,12 @@ export default class LabScene extends Phaser.Scene {
   }
 
   createToolButtons() {
-    this.add.text(586, 244, '3. Lab Tools', { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '24px', color: '#ffffff' });
+    this.add.text(564, 248, '3. Lab Tools', { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '22px', color: '#ffffff' });
     const tools = Object.entries(ACTION_DETAILS).map(([key, detail]) => [key, `${detail.icon} ${detail.label}`]);
-    this.add.text(646, 268, 'Tools change cause and effect.', { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '14px', color: '#fff5a8' }).setOrigin(0.5);
+    this.add.text(622, 274, 'Tools change cause and effect.', { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '13px', color: '#fff5a8' }).setOrigin(0.5);
     this.toolButtons = new Map();
     tools.forEach(([key, label], index) => {
-      const button = new Button(this, 622, 306 + index * 46, label, () => this.useTool(key), { width: 134, height: 36, fill: 0xb388ff, stroke: 0x4b2bbf, fontSize: '16px', color: '#ffffff' });
+      const button = new Button(this, 622, 304 + index * 38, label, () => this.useTool(key), { width: 130, height: 32, fill: 0xb388ff, stroke: 0x4b2bbf, fontSize: '15px', color: '#ffffff' });
       this.toolButtons.set(key, button);
     });
   }
@@ -288,14 +288,17 @@ export default class LabScene extends Phaser.Scene {
     const predictionMatched = this.predictions.matchesOutcome(outcome);
     this.playOutcome(outcome);
     new BadgeSystem().award(outcome.badge);
-    this.time.delayedCall(2300, () => this.scene.start('ResultsScene', {
-      experimentId: this.experiment.id,
-      outcome,
-      prediction: this.predictions.currentPrediction,
-      predictionMatched,
-      selectedIngredientIds: this.inventory.selected,
-      actions: this.actions,
-    }));
+    this.time.delayedCall(2300, () => {
+      this.tweens.killAll();
+      this.scene.start('ResultsScene', {
+        experimentId: this.experiment.id,
+        outcome,
+        prediction: this.predictions.currentPrediction,
+        predictionMatched,
+        selectedIngredientIds: this.inventory.selected,
+        actions: this.actions,
+      });
+    });
   }
 
   spawnBubbles(count, tint = 0x9de8ff) {
@@ -333,6 +336,7 @@ export default class LabScene extends Phaser.Scene {
   rememberEffect(sprite, lifetime = 1200) {
     this.toolEffectSprites.push(sprite);
     this.time.delayedCall(lifetime, () => {
+      this.tweens.killTweensOf(sprite);
       sprite.destroy();
       this.toolEffectSprites = this.toolEffectSprites.filter((item) => item !== sprite);
     });
