@@ -64,6 +64,13 @@ assert.match(
   variableCoach.nextStep(pressureExperiment, pressureSuccess, pressureExperiment.required, { sealed: true }),
   /change one ingredient or one tool/i,
 );
+const wrongIngredientFailure = engine.resolve(missingToolExperiment, ['glimmer-salt', 'goo-gel'], { cooled: true });
+assert.equal(wrongIngredientFailure.kind, 'failure');
+assert.match(
+  variableCoach.nextStep(missingToolExperiment, wrongIngredientFailure, ['glimmer-salt', 'goo-gel'], { cooled: true }),
+  /match the lab card ingredients first/i,
+);
+assert.ok(wrongIngredientFailure.vocabulary.includes('gas'), 'failure should still include experiment vocabulary');
 
 const storedValues = new Map();
 const storage = {

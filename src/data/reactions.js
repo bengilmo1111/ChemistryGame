@@ -74,23 +74,27 @@ export const funnyFailures = [
     title: 'Cork Rocket!',
     effect: 'cork',
     explanation: 'The sealed flask built too much pretend pressure, so the cork zoomed away. Scientists watch pressure carefully!',
+    vocabulary: ['pressure', 'gas', 'force'],
   },
   {
     id: 'soot-face',
     title: 'Sooty Surprise!',
     effect: 'soot',
     explanation: 'The mixture changed too fast and puffed a cartoon soot cloud. Slow observations help scientists stay neat.',
+    vocabulary: ['reaction speed', 'particles'],
   },
   {
     id: 'slime-escape',
     title: 'Slime Escape!',
     effect: 'slime',
     explanation: 'The goo got very viscous, which means thick and slow-moving. Then it wiggled off like a tiny slime monster.',
+    vocabulary: ['viscosity', 'particles'],
   },
   {
     id: 'duck-portal',
     title: 'Duck Portal!',
     effect: 'duck',
     explanation: 'That combination was pure lab silliness. The important discovery: not every prediction comes true!',
+    vocabulary: ['particles'],
   },
 ];
