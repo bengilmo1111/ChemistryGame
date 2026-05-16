@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { experiments } from '../data/experiments.js';
+import { hero } from '../data/hero.js';
 import { findReagent } from '../data/reagents.js';
 import { formatVocabularyDefinitions } from '../data/vocabulary.js';
 import BadgeSystem from '../systems/BadgeSystem.js';
@@ -26,7 +27,14 @@ export default class ResultsScene extends Phaser.Scene {
   create() {
     this.cameras.main.setBackgroundColor('#15183a');
     this.discoveryCount = new DiscoverySystem().record(this.experiment.id, this.outcome.id).length;
-    this.add.image(96, 360, 'art-junior-scientist').setDisplaySize(116, 148).setAngle(-6);
+    this.add.image(96, 348, 'art-junior-scientist').setDisplaySize(116, 148).setAngle(-6);
+    this.add.text(96, 442, hero.name, {
+      fontFamily: 'Trebuchet MS, sans-serif',
+      fontSize: '15px',
+      color: '#fff5a8',
+      align: 'center',
+      wordWrap: { width: 150 },
+    }).setOrigin(0.5);
     this.add.text(512, 44, this.outcome.title, {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '42px',
@@ -56,9 +64,11 @@ export default class ResultsScene extends Phaser.Scene {
   layoutRows() {
     const ingredientNames = this.selectedIngredientIds.map((id) => findReagent(id)?.name).filter(Boolean).join(' + ');
     const actionNames = Object.entries(this.actions).filter(([, used]) => used).map(([name]) => ({ stirred: 'Stir', heated: 'Warm', cooled: 'Cool', sealed: 'Seal', shaken: 'Shake' }[name] ?? name)).join(', ');
-    const predictionMessage = this.predictionMatched ? 'Nice observing — your prediction matched!' : 'Surprise! The observation was different from your prediction.';
+    const predictionMessage = this.predictionMatched
+      ? `Nice observing, ${hero.shortName} — your prediction matched!`
+      : `Surprise, ${hero.shortName}! The observation was different from your prediction.`;
     return [
-      { y: 110, size: '20px', color: '#4b2f10', text: `Your prediction: ${this.prediction?.icon ?? '❔'} ${this.prediction?.label ?? 'none'}` },
+      { y: 110, size: '20px', color: '#4b2f10', text: `${hero.shortName}'s prediction: ${this.prediction?.icon ?? '❔'} ${this.prediction?.label ?? 'none'}` },
       { y: 140, size: '17px', color: this.predictionMatched ? '#2f7d38' : '#7e2453', text: predictionMessage },
       { y: 188, size: '18px', color: '#273469', text: this.outcome.explanation },
       { y: 256, size: '14px', color: '#4b2f10', text: `Notes: ${ingredientNames || 'no ingredients'} + ${actionNames || 'no tools'} → ${this.outcome.title}` },

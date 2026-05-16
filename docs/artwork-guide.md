@@ -5,7 +5,7 @@ This repo now includes first-pass SVG artwork under `src/assets/images/`. These 
 ## Current assets
 
 - `logo.svg` — title logo used on the menu.
-- `junior-scientist.svg` — mascot character used on the menu and results screen.
+- `junior-scientist.svg` — Henry Gilmore, the hero player character; used on the menu and results screen. The name badge on his lab coat reads `HENRY`.
 - `lab-bench.svg` — classroom-safe fantasy lab background used in the lab scene.
 - `reagent-*.svg` — six fictional reagent bottle illustrations used by draggable ingredient cards.
 

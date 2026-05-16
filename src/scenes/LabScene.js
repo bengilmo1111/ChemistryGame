@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { experiments } from '../data/experiments.js';
+import { hero } from '../data/hero.js';
 import { reagents, findReagent } from '../data/reagents.js';
 import BadgeSystem from '../systems/BadgeSystem.js';
 import DangerMeter from '../systems/DangerMeter.js';
@@ -45,7 +46,7 @@ export default class LabScene extends Phaser.Scene {
     this.physics.world.setBounds(0, 0, 1024, 640);
     this.addLabBench();
     this.dialogue = new DialogueSystem(this, 380, 80, 650, 56);
-    this.dialogue.say(this.experiment.prompt);
+    this.dialogue.say(`${hero.shortName}, ${this.experiment.prompt}`);
     this.notebook = new LabNotebook(this, 858, 250);
     this.meter = new Meter(this, 858, 422, 'Chaos Meter');
     this.tooltip = new Tooltip(this);
@@ -79,7 +80,7 @@ export default class LabScene extends Phaser.Scene {
       const button = new Button(this, x, y, `${prediction.icon} ${prediction.label}`, () => {
         this.predictions.choose(prediction.id);
         this.highlightPrediction(prediction.id);
-        this.dialogue.say(`Prediction saved: ${prediction.label}. Now drag or tap ingredients into the flask.`);
+        this.dialogue.say(`${hero.shortName}'s prediction: ${prediction.label}. Drag or tap ingredients into the flask.`);
         this.updateNotebook();
         this.updateMixButton();
       }, { width: 98, height: 38, fill: 0x9de8ff, stroke: 0x235b72, fontSize: '11px' });
@@ -278,7 +279,7 @@ export default class LabScene extends Phaser.Scene {
       button.back.setFillStyle(0xb388ff);
       button.text.setColor('#ffffff');
     });
-    this.dialogue.say('Flask reset. Make a prediction, choose ingredients, try tools, and observe again.');
+    this.dialogue.say(`Flask reset, ${hero.shortName}. Make a prediction, choose ingredients, try tools, and observe again.`);
     this.updateNotebook();
     this.updateMixButton();
   }
