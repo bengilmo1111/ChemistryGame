@@ -1,0 +1,59 @@
+export const reactionOutcomes = [
+  {
+    id: 'foam-eruption',
+    experimentId: 'foamy-fountain',
+    ingredients: ['fizz-powder', 'sour-drops'],
+    kind: 'success',
+    title: 'Foam Eruption!',
+    effect: 'foam',
+    badge: 'bubble-boss',
+    explanation: 'Fizz Powder and Sour Drops made pretend gas. The gas pushed through the liquid and lifted foam upward.',
+  },
+  {
+    id: 'rainbow-sludge',
+    experimentId: 'rainbow-ph',
+    ingredients: ['purple-potion', 'bubble-base', 'sour-drops'],
+    kind: 'success',
+    title: 'Rainbow Sludge!',
+    effect: 'rainbow',
+    badge: 'indicator-ace',
+    explanation: 'Purple Potion acted like an indicator. It changed color as sour and basic drops tugged the mixture in different directions.',
+  },
+  {
+    id: 'glitter-crystal',
+    experimentId: 'crystal-jam',
+    ingredients: ['glimmer-salt', 'goo-gel'],
+    kind: 'success',
+    title: 'Glitter Crystal!',
+    effect: 'crystal',
+    badge: 'crystal-wrangler',
+    explanation: 'Glimmer Salt pieces lined up into a crystal pattern. Goo Gel slowed them down, making a jammy sparkle tower.',
+  },
+];
+
+export const funnyFailures = [
+  {
+    id: 'cork-rocket',
+    title: 'Cork Rocket!',
+    effect: 'cork',
+    explanation: 'The sealed flask built too much pretend pressure, so the cork zoomed away. Scientists watch pressure carefully!',
+  },
+  {
+    id: 'soot-face',
+    title: 'Sooty Surprise!',
+    effect: 'soot',
+    explanation: 'The mixture changed too fast and puffed a cartoon soot cloud. Slow observations help scientists stay neat.',
+  },
+  {
+    id: 'slime-escape',
+    title: 'Slime Escape!',
+    effect: 'slime',
+    explanation: 'The goo got very viscous, which means thick and slow-moving. Then it wiggled off like a tiny slime monster.',
+  },
+  {
+    id: 'duck-portal',
+    title: 'Duck Portal!',
+    effect: 'duck',
+    explanation: 'That combination was pure lab silliness. The important discovery: not every prediction comes true!',
+  },
+];
