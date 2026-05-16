@@ -6,8 +6,15 @@ import LabInventory from '../src/systems/LabInventory.js';
 import PredictionSystem from '../src/systems/PredictionSystem.js';
 import ReactionEngine from '../src/systems/ReactionEngine.js';
 import VariableCoach from '../src/systems/VariableCoach.js';
+import { defineVocabulary, formatVocabularyDefinitions } from '../src/data/vocabulary.js';
 
 const engine = new ReactionEngine();
+
+assert.deepEqual(defineVocabulary(['gas'])[0], {
+  word: 'gas',
+  definition: 'a material that spreads out and takes up space',
+});
+assert.match(formatVocabularyDefinitions(['pressure']), /pressure: a push made/i);
 
 for (const outcome of reactionOutcomes) {
   const experiment = experiments.find((item) => item.id === outcome.experimentId);

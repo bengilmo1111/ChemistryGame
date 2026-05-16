@@ -37,3 +37,9 @@ The lab now gives each tool an observable effect instead of only recording a but
 
 - Added tap-to-add support for reagent bottles while keeping drag-and-drop pouring, improving tablet accessibility without changing the fictional chemistry model.
 - Added a highlighted selected prediction and a live notebook step checklist so players can see whether they have predicted, added an ingredient, and tried a tool before mixing.
+
+## Latest learning gap pass
+
+- Added a child-friendly science-word glossary so vocabulary is defined instead of only listed.
+- Lab cards now preview the key vocabulary definitions before a child starts an experiment.
+- Results now connect each observation to short definitions for the card's science words, strengthening the Explain step of **Predict → Mix → Observe → Explain**.

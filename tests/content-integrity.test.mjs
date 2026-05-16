@@ -6,16 +6,22 @@ import { badges } from '../src/data/badges.js';
 import { experiments } from '../src/data/experiments.js';
 import { reactionOutcomes } from '../src/data/reactions.js';
 import { reagents } from '../src/data/reagents.js';
+import { vocabularyDefinitions } from '../src/data/vocabulary.js';
 
 const validActions = new Set(['stirred', 'heated', 'cooled', 'sealed', 'shaken']);
 const reagentIds = new Set(reagents.map((reagent) => reagent.id));
 const reagentArtKeys = new Set(reagentArt.map((asset) => asset.key));
 const badgeIds = new Set(badges.map((badge) => badge.id));
+const vocabularyWords = new Set(Object.keys(vocabularyDefinitions));
 
 for (const experiment of experiments) {
   assert.ok(experiment.required.length > 0, `${experiment.id} should require at least one reagent`);
   assert.ok(experiment.requiredActions.length > 0, `${experiment.id} should require at least one lab tool`);
   assert.ok(experiment.actionHint, `${experiment.id} should provide a tool hint`);
+  for (const word of experiment.vocabulary) {
+    assert.ok(vocabularyWords.has(word), `${experiment.id} is missing a child-friendly definition for ${word}`);
+    assert.ok(vocabularyDefinitions[word].length <= 90, `${word} definition should stay short for children`);
+  }
   for (const reagentId of experiment.required) {
     assert.ok(reagentIds.has(reagentId), `${experiment.id} references missing reagent ${reagentId}`);
   }
