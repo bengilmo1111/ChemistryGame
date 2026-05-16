@@ -75,14 +75,14 @@ export default class LabScene extends Phaser.Scene {
   createPredictionButtons() {
     this.add.text(42, 112, '1. Predict', { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '24px', color: '#ffffff' });
     predictions.forEach((prediction, index) => {
-      const x = 104 + (index % 3) * 136;
-      const y = 156 + Math.floor(index / 3) * 48;
+      const x = 88 + (index % 4) * 104;
+      const y = 156 + Math.floor(index / 4) * 48;
       const button = new Button(this, x, y, `${prediction.icon} ${prediction.label}`, () => {
         this.predictions.choose(prediction.id);
         this.dialogue.say(`Prediction saved: ${prediction.label}. Now drag ingredients into the flask.`);
         this.updateNotebook();
         this.updateMixButton();
-      }, { width: 126, height: 38, fill: 0x9de8ff, stroke: 0x235b72, fontSize: '13px' });
+      }, { width: 98, height: 38, fill: 0x9de8ff, stroke: 0x235b72, fontSize: '11px' });
       button.container.setDepth(4);
     });
   }
@@ -281,6 +281,7 @@ export default class LabScene extends Phaser.Scene {
     if (outcome.effect === 'duck') this.duckPortal();
     if (outcome.effect === 'layers') this.layerLagoon();
     if (outcome.effect === 'swirl') this.speedySwirls();
+    if (outcome.effect === 'pop') this.pressurePop();
   }
 
   playToolEffect(key) {
@@ -387,6 +388,17 @@ export default class LabScene extends Phaser.Scene {
       this.time.delayedCall(i * 45, () => this.spawnFlying('bubble', 392, 420, swirlColors[i % swirlColors.length], -260));
     }
     this.tweens.add({ targets: this.liquid, angle: 6, duration: 100, yoyo: true, repeat: 8 });
+  }
+
+
+  pressurePop() {
+    const cork = this.physics.add.image(392, 270, 'cork').setAngle(-4);
+    cork.setVelocity(Phaser.Math.Between(-80, 80), -360).setAngularVelocity(360).setBounce(0.85).setCollideWorldBounds(true);
+    this.spawnBubbles(20, 0xfff176);
+    [0xffd166, 0xff8bd1, 0x9de8ff, 0xa8ffb0].forEach((color, index) => {
+      this.time.delayedCall(index * 90, () => this.spawnFlying('bubble', 392, 330, color, -300));
+    });
+    this.time.delayedCall(1800, () => cork.destroy());
   }
 
   spawnFlying(texture, x, y, tint, yVelocity = -360) {

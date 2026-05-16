@@ -5,6 +5,7 @@ import DiscoverySystem from '../src/systems/DiscoverySystem.js';
 import LabInventory from '../src/systems/LabInventory.js';
 import PredictionSystem from '../src/systems/PredictionSystem.js';
 import ReactionEngine from '../src/systems/ReactionEngine.js';
+import VariableCoach from '../src/systems/VariableCoach.js';
 
 const engine = new ReactionEngine();
 
@@ -39,6 +40,23 @@ assert.equal(predictionSystem.matchesOutcome({ effect: 'foam' }), true);
 assert.equal(predictionSystem.matchesOutcome({ effect: 'crystal' }), false);
 assert.equal(predictionSystem.choose('layers').label, 'Layers stack');
 assert.equal(predictionSystem.matchesOutcome({ effect: 'layers' }), true);
+assert.equal(predictionSystem.choose('pressure').label, 'Pressure pops');
+assert.equal(predictionSystem.matchesOutcome({ effect: 'pop' }), true);
+
+const pressureExperiment = experiments.find((item) => item.id === 'pressure-pop');
+const pressureSuccess = engine.resolve(pressureExperiment, pressureExperiment.required, { sealed: true });
+assert.equal(pressureSuccess.effect, 'pop');
+assert.equal(pressureSuccess.badge, 'pressure-pal');
+
+const variableCoach = new VariableCoach();
+assert.match(
+  variableCoach.nextStep(missingToolExperiment, missingToolFailure, missingToolExperiment.required, {}),
+  /try stirring as your one changed variable/i,
+);
+assert.match(
+  variableCoach.nextStep(pressureExperiment, pressureSuccess, pressureExperiment.required, { sealed: true }),
+  /change one ingredient or one tool/i,
+);
 
 const storedValues = new Map();
 const storage = {
