@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { experiments } from '../data/experiments.js';
 import { findReagent } from '../data/reagents.js';
+import { formatVocabularyDefinitions } from '../data/vocabulary.js';
 import BadgeSystem from '../systems/BadgeSystem.js';
 import DiscoverySystem from '../systems/DiscoverySystem.js';
 import VariableCoach from '../systems/VariableCoach.js';
@@ -59,35 +60,36 @@ export default class ResultsScene extends Phaser.Scene {
     const actionNames = Object.entries(this.actions).filter(([, used]) => used).map(([name]) => ({ stirred: 'Stir', heated: 'Warm', cooled: 'Cool', sealed: 'Seal', shaken: 'Shake' }[name] ?? name)).join(', ');
     this.add.text(512, 330, `Observation notes: ${ingredientNames || 'No ingredients'} + ${actionNames || 'no tools'} → ${this.outcome.title}`, {
       fontFamily: 'Trebuchet MS, sans-serif',
-      fontSize: '19px',
+      fontSize: '17px',
       color: '#4b2f10',
       align: 'center',
       wordWrap: { width: 690 },
     }).setOrigin(0.5);
-    this.add.text(512, 374, `Science words: ${this.outcome.vocabulary.join(' • ')}`, {
+    this.add.text(512, 382, `Science words:\n${formatVocabularyDefinitions(this.outcome.vocabulary)}`, {
       fontFamily: 'Trebuchet MS, sans-serif',
-      fontSize: '22px',
+      fontSize: '17px',
       color: '#7e2453',
       align: 'center',
+      lineSpacing: 2,
       wordWrap: { width: 690 },
     }).setOrigin(0.5);
-    this.add.text(512, 406, `Discovery log: ${this.discoveryCount} outcome${this.discoveryCount === 1 ? '' : 's'} found for this lab card. Replay with different tools or ingredients to compare results.`, {
+    this.add.text(512, 430, `Discovery log: ${this.discoveryCount} outcome${this.discoveryCount === 1 ? '' : 's'} found for this lab card. Replay with different tools or ingredients to compare results.`, {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '18px',
       color: '#273469',
       align: 'center',
       wordWrap: { width: 690 },
     }).setOrigin(0.5);
-    this.add.text(512, 444, `Next variable test: ${this.variableCoach.nextStep(this.experiment, this.outcome, this.selectedIngredientIds, this.actions)}`, {
+    this.add.text(512, 464, `Next variable test: ${this.variableCoach.nextStep(this.experiment, this.outcome, this.selectedIngredientIds, this.actions)}`, {
       fontFamily: 'Trebuchet MS, sans-serif',
-      fontSize: '17px',
+      fontSize: '16px',
       color: '#2f7d38',
       align: 'center',
       wordWrap: { width: 690 },
     }).setOrigin(0.5);
-    this.add.text(512, 472, this.outcome.safetyNote, {
+    this.add.text(512, 488, this.outcome.safetyNote, {
       fontFamily: 'Trebuchet MS, sans-serif',
-      fontSize: '19px',
+      fontSize: '17px',
       color: '#4b2f10',
       align: 'center',
       wordWrap: { width: 690 },
@@ -100,13 +102,13 @@ export default class ResultsScene extends Phaser.Scene {
 
   showBadges() {
     const earned = new BadgeSystem().getEarned();
-    this.add.text(512, 498, 'Badges Earned', {
+    this.add.text(512, 512, 'Badges Earned', {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '24px',
       color: '#ffffff',
     }).setOrigin(0.5);
     const badgesText = earned.length ? earned.map((badge) => `${badge.icon} ${badge.name}`).join('   ') : 'Try an experiment to earn badges!';
-    this.add.text(512, 532, badgesText, {
+    this.add.text(512, 540, badgesText, {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '21px',
       color: '#fff5a8',

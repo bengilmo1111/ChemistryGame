@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { experiments } from '../data/experiments.js';
 import { funnyFailures, reactionOutcomes } from '../data/reactions.js';
+import { defineVocabulary } from '../data/vocabulary.js';
 import DiscoverySystem from '../systems/DiscoverySystem.js';
 import Button from '../ui/Button.js';
 
@@ -44,23 +45,27 @@ export default class LevelSelectScene extends Phaser.Scene {
       align: 'center',
       wordWrap: { width: 218 },
     }).setOrigin(0.5);
-    this.add.text(x, y + 20, `Words: ${experiment.vocabulary.join(', ')}`, {
+    const wordPreview = defineVocabulary(experiment.vocabulary)
+      .map(({ word, definition }) => `${word}: ${definition}`)
+      .join('\n');
+    this.add.text(x, y + 14, wordPreview, {
       fontFamily: 'Trebuchet MS, sans-serif',
-      fontSize: '14px',
+      fontSize: '12px',
       color: '#273469',
       align: 'center',
-      wordWrap: { width: 218 },
+      lineSpacing: 2,
+      wordWrap: { width: 226 },
     }).setOrigin(0.5);
     const totalDiscoveries = reactionOutcomes.filter((outcome) => outcome.experimentId === experiment.id).length + funnyFailures.length;
     const foundDiscoveries = this.discoveries.countForExperiment(experiment.id);
-    this.add.text(x, y + 50, `Discovered: ${foundDiscoveries}/${totalDiscoveries} outcomes`, {
+    this.add.text(x, y + 54, `Discovered: ${foundDiscoveries}/${totalDiscoveries} outcomes`, {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '13px',
       color: foundDiscoveries ? '#2f7d38' : '#7e2453',
       align: 'center',
       wordWrap: { width: 218 },
     }).setOrigin(0.5);
-    new Button(this, x, y + 76, 'Experiment!', () => this.scene.start('LabScene', { experimentId: experiment.id }), {
+    new Button(this, x, y + 78, 'Experiment!', () => this.scene.start('LabScene', { experimentId: experiment.id }), {
       width: 178,
       height: 42,
       fill: 0xa8ffb0,
