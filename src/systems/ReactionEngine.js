@@ -36,13 +36,15 @@ export default class ReactionEngine {
       ? `The ingredients were close, but the flask needed a tool step: ${missingActions.join(', ')}. Scientists change one thing at a time and try again.`
       : failure.explanation;
 
+    const vocabulary = [...new Set([...(failure.vocabulary ?? []), ...experiment.vocabulary])];
+
     return {
       ...failure,
       explanation,
       kind: 'failure',
       badge: 'chaos-noticer',
       missingActions,
-      vocabulary: experiment.vocabulary,
+      vocabulary,
       safetyNote: 'This was a cartoon failure, not a real recipe. Safe scientists test ideas carefully.',
     };
   }

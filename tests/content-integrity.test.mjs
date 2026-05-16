@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { artAssets, reagentArt } from '../src/data/artAssets.js';
 import { badges } from '../src/data/badges.js';
 import { experiments } from '../src/data/experiments.js';
-import { reactionOutcomes } from '../src/data/reactions.js';
+import { funnyFailures, reactionOutcomes } from '../src/data/reactions.js';
 import { reagents } from '../src/data/reagents.js';
 import { vocabularyDefinitions } from '../src/data/vocabulary.js';
 
@@ -39,6 +39,13 @@ for (const outcome of reactionOutcomes) {
   }
   for (const action of outcome.requiredActions) {
     assert.ok(validActions.has(action), `${outcome.id} references unknown action ${action}`);
+  }
+}
+
+for (const failure of funnyFailures) {
+  assert.ok(Array.isArray(failure.vocabulary), `${failure.id} should declare vocabulary`);
+  for (const word of failure.vocabulary) {
+    assert.ok(vocabularyWords.has(word), `${failure.id} references undefined word ${word}`);
   }
 }
 
