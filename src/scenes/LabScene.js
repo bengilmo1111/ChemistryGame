@@ -182,6 +182,7 @@ export default class LabScene extends Phaser.Scene {
       this.dialogue.say(`${reagent.name} is already in the flask. Try a different ingredient or mix your prediction!`);
       return;
     }
+    this.playPour(reagent);
     this.liquid.setFillStyle(reagent.color, 0.62);
     this.danger.add(12);
     this.meter.setValue(this.danger.value, this.danger.label());
@@ -189,6 +190,15 @@ export default class LabScene extends Phaser.Scene {
     this.dialogue.say(`${reagent.name} added. Observe: ${reagent.clue}`);
     this.updateNotebook();
     this.updateMixButton();
+  }
+
+
+  playPour(reagent) {
+    const stream = this.add.rectangle(392, 270, 12, 0, reagent.color, 0.78).setOrigin(0.5, 0);
+    const drop = this.add.circle(392, 270, 10, reagent.color, 0.86);
+    this.tweens.add({ targets: stream, displayHeight: 118, duration: 180, yoyo: true, ease: 'Sine.InOut', onComplete: () => stream.destroy() });
+    this.tweens.add({ targets: drop, y: 410, scale: 0.25, alpha: 0.35, duration: 360, ease: 'Sine.In', onComplete: () => drop.destroy() });
+    this.tweens.add({ targets: this.flask, angle: 2, duration: 90, yoyo: true, repeat: 1, onComplete: () => this.flask.setAngle(0) });
   }
 
   useTool(key) {
