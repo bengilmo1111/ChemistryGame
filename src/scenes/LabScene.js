@@ -37,6 +37,7 @@ export default class LabScene extends Phaser.Scene {
     this.danger = new DangerMeter();
     this.actions = { stirred: false, heated: false, cooled: false, sealed: false, shaken: false };
     this.toolEffectSprites = [];
+    this.predictionButtons = new Map();
   }
 
   create() {
@@ -79,11 +80,22 @@ export default class LabScene extends Phaser.Scene {
       const y = 156 + Math.floor(index / 4) * 48;
       const button = new Button(this, x, y, `${prediction.icon} ${prediction.label}`, () => {
         this.predictions.choose(prediction.id);
-        this.dialogue.say(`Prediction saved: ${prediction.label}. Now drag ingredients into the flask.`);
+        this.highlightPrediction(prediction.id);
+        this.dialogue.say(`Prediction saved: ${prediction.label}. Now drag or tap ingredients into the flask.`);
         this.updateNotebook();
         this.updateMixButton();
       }, { width: 98, height: 38, fill: 0x9de8ff, stroke: 0x235b72, fontSize: '11px' });
       button.container.setDepth(4);
+      this.predictionButtons.set(prediction.id, button);
+    });
+  }
+
+  highlightPrediction(predictionId) {
+    this.predictionButtons.forEach((button, id) => {
+      const selected = id === predictionId;
+      button.back.setFillStyle(selected ? 0xa8ffb0 : 0x9de8ff);
+      button.text.setColor(selected ? '#173f20' : '#3a2600');
+      button.container.setScale(selected ? 1.04 : 1);
     });
   }
 
@@ -114,7 +126,7 @@ export default class LabScene extends Phaser.Scene {
     this.liquid = this.add.rectangle(0, 42, 104, 76, 0x83d8ff, 0.65);
     this.flask.add([glass, this.liquid]);
     this.dropZone = this.add.zone(392, 386, 170, 230).setRectangleDropZone(170, 230);
-    this.add.text(392, 520, 'Drop ingredients here', { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '18px', color: '#ffffff' }).setOrigin(0.5);
+    this.add.text(392, 520, 'Drop or tap ingredients here', { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '18px', color: '#ffffff' }).setOrigin(0.5);
     this.input.on('drop', (_pointer, gameObject) => this.addIngredient(gameObject));
   }
 
@@ -149,6 +161,11 @@ export default class LabScene extends Phaser.Scene {
       bottle.setData('home', { x, y });
       bottle.on('pointerover', () => this.tooltip.show(x + 95, y - 36, `${reagent.concept}: ${reagent.clue}`));
       bottle.on('pointerout', () => this.tooltip.hide());
+      bottle.on('pointerup', () => {
+        const home = bottle.getData('home');
+        const isTapAtHome = Phaser.Math.Distance.Between(bottle.x, bottle.y, home.x, home.y) < 8;
+        if (isTapAtHome) this.addIngredientById(reagent.id, bottle);
+      });
       this.input.setDraggable(bottle);
     });
 
@@ -176,11 +193,18 @@ export default class LabScene extends Phaser.Scene {
     const reagentId = gameObject.getData('reagentId');
     const home = gameObject.getData('home');
     this.tweens.add({ targets: gameObject, x: home.x, y: home.y, duration: 240, ease: 'Back.Out' });
+    this.addIngredientById(reagentId, gameObject);
+  }
+
+  addIngredientById(reagentId, sourceObject = null) {
     const reagent = findReagent(reagentId);
     const added = this.inventory.add(reagentId);
     if (!added) {
       this.dialogue.say(`${reagent.name} is already in the flask. Try a different ingredient or mix your prediction!`);
       return;
+    }
+    if (sourceObject) {
+      this.tweens.add({ targets: sourceObject, scale: 1.12, duration: 90, yoyo: true, ease: 'Sine.InOut' });
     }
     this.playPour(reagent);
     this.liquid.setFillStyle(reagent.color, 0.62);
@@ -221,7 +245,19 @@ export default class LabScene extends Phaser.Scene {
       actions: Object.entries(this.actions).filter(([, used]) => used).map(([key]) => actionLabel(key)),
       toolHint: this.experiment.actionHint,
       observations: this.experiment.hints,
+      stepStatus: this.stepStatus(),
     });
+  }
+
+  stepStatus() {
+    const hasPrediction = Boolean(this.predictions.currentPrediction);
+    const hasIngredients = this.inventory.selected.length > 0;
+    const hasTool = Object.values(this.actions).some(Boolean);
+    return [
+      `${hasPrediction ? '✓' : '○'} predict`,
+      `${hasIngredients ? '✓' : '○'} ingredient`,
+      `${hasTool ? '✓' : '○'} tool`,
+    ];
   }
 
   updateMixButton() {
@@ -236,6 +272,8 @@ export default class LabScene extends Phaser.Scene {
     this.meter.setValue(this.danger.value, this.danger.label());
     this.toolEffectSprites.forEach((sprite) => sprite.destroy());
     this.toolEffectSprites = [];
+    this.predictions = new PredictionSystem();
+    this.highlightPrediction(null);
     this.toolButtons.forEach((button) => {
       button.back.setFillStyle(0xb388ff);
       button.text.setColor('#ffffff');

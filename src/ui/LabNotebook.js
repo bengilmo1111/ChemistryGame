@@ -16,13 +16,15 @@ export default class LabNotebook {
     }).setDepth(6);
   }
 
-  update({ prediction, ingredients, actions, toolHint, observations = [] }) {
+  update({ prediction, ingredients, actions, toolHint, observations = [], stepStatus = [] }) {
     this.lines.setText([
       `Prediction: ${prediction?.label ?? 'choose one'}`,
       '',
       `Ingredients: ${ingredients.length ? ingredients.join(', ') : 'none yet'}`,
       '',
       `Tools: ${actions.length ? actions.join(', ') : 'try a tool'}`,
+      '',
+      `Step check: ${stepStatus.length ? stepStatus.join('  ') : 'start with a prediction'}`,
       '',
       `Clue: ${toolHint}`,
       '',
