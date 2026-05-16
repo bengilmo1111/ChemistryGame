@@ -32,3 +32,8 @@ The lab now gives each tool an observable effect instead of only recording a but
 - Added a success lab card for **sealing**, so every required PRD tool now participates in either a goal-directed experiment or an observable exploratory outcome.
 - Added a **Pressure pops** prediction path and pressure badge to make trapped gas/pressure a first-class science concept rather than only a failure joke.
 - Added a variable coach on the results screen. After each outcome, it suggests changing exactly one ingredient or tool, reinforcing prediction, controlled comparison, and replayable lab thinking.
+
+## Interface gap follow-up
+
+- Added tap-to-add support for reagent bottles while keeping drag-and-drop pouring, improving tablet accessibility without changing the fictional chemistry model.
+- Added a highlighted selected prediction and a live notebook step checklist so players can see whether they have predicted, added an ingredient, and tried a tool before mixing.
