@@ -1,5 +1,7 @@
 import Phaser from 'phaser';
 import { experiments } from '../data/experiments.js';
+import { funnyFailures, reactionOutcomes } from '../data/reactions.js';
+import DiscoverySystem from '../systems/DiscoverySystem.js';
 import Button from '../ui/Button.js';
 
 export default class LevelSelectScene extends Phaser.Scene {
@@ -9,6 +11,7 @@ export default class LevelSelectScene extends Phaser.Scene {
 
   create() {
     this.cameras.main.setBackgroundColor('#20275f');
+    this.discoveries = new DiscoverySystem();
     this.add.text(512, 54, 'Choose a Lab Card', {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '44px',
@@ -41,10 +44,19 @@ export default class LevelSelectScene extends Phaser.Scene {
       align: 'center',
       wordWrap: { width: 218 },
     }).setOrigin(0.5);
-    this.add.text(x, y + 30, `Words: ${experiment.vocabulary.join(', ')}`, {
+    this.add.text(x, y + 20, `Words: ${experiment.vocabulary.join(', ')}`, {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '14px',
       color: '#273469',
+      align: 'center',
+      wordWrap: { width: 218 },
+    }).setOrigin(0.5);
+    const totalDiscoveries = reactionOutcomes.filter((outcome) => outcome.experimentId === experiment.id).length + funnyFailures.length;
+    const foundDiscoveries = this.discoveries.countForExperiment(experiment.id);
+    this.add.text(x, y + 50, `Discovered: ${foundDiscoveries}/${totalDiscoveries} outcomes`, {
+      fontFamily: 'Trebuchet MS, sans-serif',
+      fontSize: '13px',
+      color: foundDiscoveries ? '#2f7d38' : '#7e2453',
       align: 'center',
       wordWrap: { width: 218 },
     }).setOrigin(0.5);

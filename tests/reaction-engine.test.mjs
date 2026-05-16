@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { experiments } from '../src/data/experiments.js';
 import { reactionOutcomes } from '../src/data/reactions.js';
+import DiscoverySystem from '../src/systems/DiscoverySystem.js';
 import LabInventory from '../src/systems/LabInventory.js';
 import PredictionSystem from '../src/systems/PredictionSystem.js';
 import ReactionEngine from '../src/systems/ReactionEngine.js';
@@ -38,5 +39,16 @@ assert.equal(predictionSystem.matchesOutcome({ effect: 'foam' }), true);
 assert.equal(predictionSystem.matchesOutcome({ effect: 'crystal' }), false);
 assert.equal(predictionSystem.choose('layers').label, 'Layers stack');
 assert.equal(predictionSystem.matchesOutcome({ effect: 'layers' }), true);
+
+const storedValues = new Map();
+const storage = {
+  getItem: (key) => storedValues.get(key) ?? null,
+  setItem: (key, value) => storedValues.set(key, value),
+};
+const discoveries = new DiscoverySystem(storage);
+assert.deepEqual(discoveries.record('foamy-fountain', 'foam-eruption'), ['foam-eruption']);
+assert.deepEqual(discoveries.record('foamy-fountain', 'foam-eruption'), ['foam-eruption']);
+assert.equal(discoveries.countForExperiment('foamy-fountain'), 1);
+assert.deepEqual(new DiscoverySystem(storage).getForExperiment('foamy-fountain'), ['foam-eruption']);
 
 console.log('Reaction and lab systems tests passed.');
