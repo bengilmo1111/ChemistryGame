@@ -1,6 +1,6 @@
 # Mad Flask Lab
 
-Mad Flask Lab is a 2D cartoon chemistry experiment game for late elementary / primary school children. Players predict what will happen, drag fictional ingredients into a flask, use lab tools, watch funny reactions, and read short science explanations.
+Mad Flask Lab is a 2D cartoon chemistry experiment game for late elementary / primary school children. Players step into the shoes of **Henry Gilmore, Junior Mad Scientist** — predicting what will happen, dragging fictional ingredients into a flask, using lab tools, watching funny reactions, and reading short science explanations.
 
 ## Tech stack
 

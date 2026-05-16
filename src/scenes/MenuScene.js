@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { hero } from '../data/hero.js';
 import Button from '../ui/Button.js';
 
 export default class MenuScene extends Phaser.Scene {
@@ -9,21 +10,33 @@ export default class MenuScene extends Phaser.Scene {
   create() {
     this.cameras.main.setBackgroundColor('#15183a');
     this.addDecorations();
-    this.add.image(512, 112, 'art-logo').setDisplaySize(520, 146);
+    this.add.image(512, 104, 'art-logo').setDisplaySize(520, 146);
     this.add.image(150, 426, 'art-junior-scientist').setDisplaySize(164, 210).setAngle(-4);
-    this.add.text(512, 198, 'Predict → Mix → Observe → Explain', {
+    this.add.text(150, 552, hero.tagline, {
       fontFamily: 'Trebuchet MS, sans-serif',
-      fontSize: '28px',
+      fontSize: '17px',
+      color: '#fff5a8',
+      align: 'center',
+      wordWrap: { width: 220 },
+    }).setOrigin(0.5);
+    this.add.text(512, 186, 'Predict → Mix → Observe → Explain', {
+      fontFamily: 'Trebuchet MS, sans-serif',
+      fontSize: '26px',
       color: '#9de8ff',
     }).setOrigin(0.5);
-    this.add.text(512, 276, 'Use fictional ingredients, make funny messes, and learn real science words safely.', {
+    this.add.text(512, 234, `Starring ${hero.name}`, {
       fontFamily: 'Trebuchet MS, sans-serif',
-      fontSize: '23px',
+      fontSize: '22px',
+      color: '#ffd166',
+    }).setOrigin(0.5);
+    this.add.text(512, 290, hero.intro, {
+      fontFamily: 'Trebuchet MS, sans-serif',
+      fontSize: '19px',
       color: '#ffffff',
       align: 'center',
       wordWrap: { width: 720 },
     }).setOrigin(0.5);
-    new Button(this, 512, 398, 'Start Experiments', () => this.scene.start('LevelSelectScene'), { width: 300 });
+    new Button(this, 512, 398, `Play as ${hero.shortName}`, () => this.scene.start('LevelSelectScene'), { width: 300 });
     new Button(this, 512, 474, 'Safety Promise', () => this.showSafety(), { width: 260, fill: 0x9de8ff, stroke: 0x235b72 });
   }
 

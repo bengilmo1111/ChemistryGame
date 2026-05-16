@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 280" role="img" aria-labelledby="title desc">
-  <title id="title">Junior mad scientist</title>
-  <desc id="desc">A smiling child scientist with goggles, gloves, and a friendly lab coat.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="220" height="280" viewBox="0 0 220 280" role="img" aria-labelledby="title desc">
+  <title id="title">Henry Gilmore, Junior Mad Scientist</title>
+  <desc id="desc">Henry Gilmore, a smiling child scientist with goggles, gloves, and a friendly lab coat with a name badge.</desc>
   <defs>
     <linearGradient id="hair" x1="0" x2="1"><stop offset="0" stop-color="#4b2f10"/><stop offset="1" stop-color="#7e2453"/></linearGradient>
   </defs>
@@ -21,4 +21,6 @@
   <circle cx="190" cy="214" r="15" fill="#b388ff" stroke="#273469" stroke-width="5"/>
   <path d="M73 204h26v30H73z" fill="#9de8ff" stroke="#273469" stroke-width="5"/>
   <path d="M136 192l7 14 16 2-12 10 4 16-15-8-14 8 3-16-12-10 16-2 7-14Z" fill="#ff8bd1" stroke="#273469" stroke-width="4"/>
+  <rect x="116" y="222" width="62" height="22" rx="6" fill="#fff5a8" stroke="#273469" stroke-width="3"/>
+  <text x="147" y="238" font-family="Trebuchet MS, sans-serif" font-size="14" font-weight="800" text-anchor="middle" fill="#273469">HENRY</text>
 </svg>
