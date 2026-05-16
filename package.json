@@ -1,0 +1,17 @@
+{
+  "name": "mad-flask-lab",
+  "version": "0.1.0",
+  "description": "A playful 2D cartoon chemistry experiment game for primary school children.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite",
+    "preview": "vite preview --host 0.0.0.0"
+  },
+  "dependencies": {
+    "vite": "latest",
+    "typescript": "latest",
+    "phaser": "latest"
+  },
+  "devDependencies": {}
+}
