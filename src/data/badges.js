@@ -23,6 +23,13 @@ export const badges = [
     icon: '🥞',
     description: 'Stacked pretend liquid layers and noticed density clues.',
   },
+
+  {
+    id: 'pressure-pal',
+    name: 'Pressure Pal',
+    icon: '🚀',
+    description: 'Used a cork to notice how pretend gas pressure pushes.',
+  },
   {
     id: 'speed-sleuth',
     name: 'Speed Sleuth',

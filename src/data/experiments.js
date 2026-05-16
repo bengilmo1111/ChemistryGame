@@ -43,6 +43,18 @@ export const experiments = [
     hints: ['Density compares how packed together materials are.', 'Thick liquids can make layers move slowly.'],
     vocabulary: ['density', 'layers', 'viscosity'],
   },
+
+  {
+    id: 'pressure-pop',
+    title: 'Pressure Pop',
+    goal: 'Trap pretend gas just long enough to make a safe cork pop.',
+    prompt: 'What happens when bubbles build up under a cork?',
+    required: ['fizz-powder', 'sour-drops', 'goo-gel'],
+    requiredActions: ['sealed'],
+    actionHint: 'Seal the flask after adding ingredients so pretend gas pressure can push on the cork.',
+    hints: ['Gas can push when it is trapped.', 'Pressure grows when more gas crowds a small space.'],
+    vocabulary: ['pressure', 'gas', 'force'],
+  },
   {
     id: 'speedy-swirls',
     title: 'Speedy Swirls',

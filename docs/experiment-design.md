@@ -15,7 +15,8 @@ Mad Flask Lab uses the loop **Predict → Mix → Observe → Explain**. Each la
 2. **Rainbow pH Mystery** teaches that an indicator can change color when a mixture becomes sour or basic. It now asks players to shake gently to connect motion and mixing.
 3. **Crystal Jam** teaches that crystals form patterns and that thick liquids slow movement. It now asks players to cool the mixture so crystal growth feels intentional.
 4. **Layer Lagoon** teaches density, layers, and viscosity with a stacked pretend-liquid outcome.
-5. **Speedy Swirls** teaches temperature and reaction speed with a warmed, fast-moving pretend reaction.
+5. **Pressure Pop** teaches trapped gas, pressure, and force with a sealed flask and a controlled cartoon cork pop.
+6. **Speedy Swirls** teaches temperature and reaction speed with a warmed, fast-moving pretend reaction.
 
 ## Funny failure pattern
 
@@ -24,3 +25,10 @@ Wrong combinations still produce an outcome. Failures should be visually rewardi
 ## PRD gap follow-up
 
 The lab now gives each tool an observable effect instead of only recording a button press: stirring shows a spoon and extra bubbles, warming shows flames and quicker bubbling, cooling drops snowflakes and blue liquid, sealing places a cork with a pressure pulse, and shaking wobbles the flask. The lab card also keeps visible observation clues on the bench and includes a Reset Flask button so players can quickly repeat the Predict → Mix → Observe → Explain loop without leaving the level.
+
+
+## Latest PRD gap pass
+
+- Added a success lab card for **sealing**, so every required PRD tool now participates in either a goal-directed experiment or an observable exploratory outcome.
+- Added a **Pressure pops** prediction path and pressure badge to make trapped gas/pressure a first-class science concept rather than only a failure joke.
+- Added a variable coach on the results screen. After each outcome, it suggests changing exactly one ingredient or tool, reinforcing prediction, controlled comparison, and replayable lab thinking.

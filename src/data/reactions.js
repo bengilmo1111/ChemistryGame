@@ -43,6 +43,18 @@ export const reactionOutcomes = [
     badge: 'layer-legend',
     explanation: 'Goo Gel and Bubble Base made pretend layers. The thicker part moved slowly while the lighter bubbly part floated above it.',
   },
+
+  {
+    id: 'pressure-pop',
+    experimentId: 'pressure-pop',
+    ingredients: ['fizz-powder', 'sour-drops', 'goo-gel'],
+    requiredActions: ['sealed'],
+    kind: 'success',
+    title: 'Pressure Pop!',
+    effect: 'pop',
+    badge: 'pressure-pal',
+    explanation: 'Pretend gas crowded under the cork and pushed in every direction. When pressure grew, the cork popped with a safe cartoon boing.',
+  },
   {
     id: 'speedy-swirls',
     experimentId: 'speedy-swirls',

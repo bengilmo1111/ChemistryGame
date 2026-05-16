@@ -3,8 +3,9 @@ export const predictions = [
   { id: 'color', label: 'Color changes', icon: '🌈', effects: ['rainbow'] },
   { id: 'crystal', label: 'Crystals grow', icon: '💎', effects: ['crystal'] },
   { id: 'layers', label: 'Layers stack', icon: '🥞', effects: ['layers'] },
+  { id: 'pressure', label: 'Pressure pops', icon: '🚀', effects: ['pop', 'cork'] },
   { id: 'speed', label: 'Motion speeds up', icon: '⚡', effects: ['swirl'] },
-  { id: 'chaos', label: 'Funny chaos', icon: '💥', effects: ['cork', 'soot', 'slime', 'duck'] },
+  { id: 'chaos', label: 'Funny chaos', icon: '💥', effects: ['soot', 'slime', 'duck'] },
 ];
 
 export default class PredictionSystem {
