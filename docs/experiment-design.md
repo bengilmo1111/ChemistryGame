@@ -11,10 +11,12 @@ Mad Flask Lab uses the loop **Predict → Mix → Observe → Explain**. Each la
 
 ## Current experiments
 
-1. **Foamy Fountain** teaches that gas takes up space and can push foam upward.
-2. **Rainbow pH Mystery** teaches that an indicator can change color when a mixture becomes sour or basic.
-3. **Crystal Jam** teaches that crystals form patterns and that thick liquids slow movement.
+1. **Foamy Fountain** teaches that gas takes up space and can push foam upward. It now asks players to stir so tools affect cause and effect.
+2. **Rainbow pH Mystery** teaches that an indicator can change color when a mixture becomes sour or basic. It now asks players to shake gently to connect motion and mixing.
+3. **Crystal Jam** teaches that crystals form patterns and that thick liquids slow movement. It now asks players to cool the mixture so crystal growth feels intentional.
+4. **Layer Lagoon** teaches density, layers, and viscosity with a stacked pretend-liquid outcome.
+5. **Speedy Swirls** teaches temperature and reaction speed with a warmed, fast-moving pretend reaction.
 
 ## Funny failure pattern
 
-Wrong combinations still produce an outcome. Failures should be visually rewarding and teach observation instead of punishment. Current failure outcomes include cork rockets, soot clouds, slime escapes, and duck portals.
+Wrong combinations still produce an outcome. Failures should be visually rewarding and teach observation instead of punishment. Current failure outcomes include cork rockets, soot clouds, slime escapes, and duck portals. If players pick the correct ingredients but skip the card's tool clue, the game creates a cartoon failure and encourages another observation cycle.

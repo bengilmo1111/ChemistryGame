@@ -15,6 +15,7 @@ export default class ResultsScene extends Phaser.Scene {
     this.prediction = data.prediction;
     this.predictionMatched = data.predictionMatched;
     this.selectedIngredientIds = data.selectedIngredientIds ?? [];
+    this.actions = data.actions ?? {};
   }
 
   create() {
@@ -50,7 +51,8 @@ export default class ResultsScene extends Phaser.Scene {
       wordWrap: { width: 690 },
     }).setOrigin(0.5);
     const ingredientNames = this.selectedIngredientIds.map((id) => findReagent(id)?.name).filter(Boolean).join(' + ');
-    this.add.text(512, 330, `Observation notes: ${ingredientNames || 'No ingredients'} → ${this.outcome.title}`, {
+    const actionNames = Object.entries(this.actions).filter(([, used]) => used).map(([name]) => name).join(', ');
+    this.add.text(512, 330, `Observation notes: ${ingredientNames || 'No ingredients'} + ${actionNames || 'no tools'} → ${this.outcome.title}`, {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '19px',
       color: '#4b2f10',
