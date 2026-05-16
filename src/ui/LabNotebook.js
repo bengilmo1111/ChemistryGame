@@ -9,20 +9,22 @@ export default class LabNotebook {
     }).setDepth(6);
     this.lines = scene.add.text(x - 120, y - 105, '', {
       fontFamily: 'Trebuchet MS, sans-serif',
-      fontSize: '17px',
+      fontSize: '16px',
       color: '#4b2f10',
-      lineSpacing: 8,
+      lineSpacing: 7,
       wordWrap: { width: 235 },
     }).setDepth(6);
   }
 
-  update({ prediction, ingredients, actions }) {
+  update({ prediction, ingredients, actions, toolHint }) {
     this.lines.setText([
       `Prediction: ${prediction?.label ?? 'choose one'}`,
       '',
       `Ingredients: ${ingredients.length ? ingredients.join(', ') : 'none yet'}`,
       '',
-      `Tools: ${actions.length ? actions.join(', ') : 'try stirring or heating'}`,
+      `Tools: ${actions.length ? actions.join(', ') : 'try a tool'}`,
+      '',
+      `Clue: ${toolHint}`,
     ]);
   }
 }

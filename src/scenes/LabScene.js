@@ -32,10 +32,11 @@ export default class LabScene extends Phaser.Scene {
     this.addLabBench();
     this.dialogue = new DialogueSystem(this, 380, 76, 650);
     this.dialogue.say(this.experiment.prompt);
-    this.notebook = new LabNotebook(this, 858, 238);
+    this.notebook = new LabNotebook(this, 858, 286);
     this.meter = new Meter(this, 858, 478, 'Chaos Meter');
     this.tooltip = new Tooltip(this);
     this.createPredictionButtons();
+    this.createLabCard();
     this.createFlask();
     this.createReagents();
     this.createToolButtons();
@@ -57,16 +58,36 @@ export default class LabScene extends Phaser.Scene {
   }
 
   createPredictionButtons() {
-    this.add.text(42, 122, '1. Predict', { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '24px', color: '#ffffff' });
+    this.add.text(42, 112, '1. Predict', { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '24px', color: '#ffffff' });
     predictions.forEach((prediction, index) => {
-      const button = new Button(this, 128 + index * 154, 174, `${prediction.icon} ${prediction.label}`, () => {
+      const x = 104 + (index % 3) * 136;
+      const y = 156 + Math.floor(index / 3) * 48;
+      const button = new Button(this, x, y, `${prediction.icon} ${prediction.label}`, () => {
         this.predictions.choose(prediction.id);
         this.dialogue.say(`Prediction saved: ${prediction.label}. Now drag ingredients into the flask.`);
         this.updateNotebook();
         this.updateMixButton();
-      }, { width: 144, height: 48, fill: 0x9de8ff, stroke: 0x235b72, fontSize: '15px' });
+      }, { width: 126, height: 38, fill: 0x9de8ff, stroke: 0x235b72, fontSize: '13px' });
       button.container.setDepth(4);
     });
+  }
+
+  createLabCard() {
+    this.add.rectangle(858, 84, 280, 70, 0xfff7d6, 0.96).setStrokeStyle(4, 0x8a5a24);
+    this.add.text(858, 62, `Goal: ${this.experiment.goal}`, {
+      fontFamily: 'Trebuchet MS, sans-serif',
+      fontSize: '14px',
+      color: '#4b2f10',
+      align: 'center',
+      wordWrap: { width: 244 },
+    }).setOrigin(0.5);
+    this.add.text(858, 101, `Tool clue: ${this.experiment.actionHint}`, {
+      fontFamily: 'Trebuchet MS, sans-serif',
+      fontSize: '13px',
+      color: '#273469',
+      align: 'center',
+      wordWrap: { width: 250 },
+    }).setOrigin(0.5);
   }
 
   createFlask() {
@@ -83,10 +104,10 @@ export default class LabScene extends Phaser.Scene {
   }
 
   createReagents() {
-    this.add.text(42, 244, '2. Pick Fictional Ingredients', { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '24px', color: '#ffffff' });
+    this.add.text(42, 252, '2. Pick Fictional Ingredients', { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '24px', color: '#ffffff' });
     reagents.forEach((reagent, index) => {
       const x = 80 + (index % 3) * 142;
-      const y = 326 + Math.floor(index / 3) * 110;
+      const y = 334 + Math.floor(index / 3) * 110;
       const bottle = this.add.container(x, y);
       const bottleArt = this.add.image(0, -6, reagent.artKey).setDisplaySize(82, 98);
       const label = this.add.text(0, 52, reagent.name, { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '15px', color: '#ffffff', align: 'center' }).setOrigin(0.5);
@@ -111,14 +132,16 @@ export default class LabScene extends Phaser.Scene {
   createToolButtons() {
     this.add.text(586, 244, '3. Lab Tools', { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '24px', color: '#ffffff' });
     const tools = [
-      ['stirred', 'Stir', 0],
-      ['heated', 'Warm', 1],
-      ['cooled', 'Cool', 2],
-      ['sealed', 'Seal', 3],
-      ['shaken', 'Shake', 4],
+      ['stirred', 'Stir'],
+      ['heated', 'Warm'],
+      ['cooled', 'Cool'],
+      ['sealed', 'Seal'],
+      ['shaken', 'Shake'],
     ];
+    this.toolButtons = new Map();
     tools.forEach(([key, label], index) => {
-      new Button(this, 622, 300 + index * 48, label, () => this.useTool(key, label), { width: 120, height: 38, fill: 0xb388ff, stroke: 0x4b2bbf, fontSize: '17px', color: '#ffffff' });
+      const button = new Button(this, 622, 300 + index * 48, label, () => this.useTool(key, label), { width: 120, height: 38, fill: 0xb388ff, stroke: 0x4b2bbf, fontSize: '17px', color: '#ffffff' });
+      this.toolButtons.set(key, button);
     });
   }
 
@@ -146,6 +169,8 @@ export default class LabScene extends Phaser.Scene {
     this.danger.add(key === 'sealed' || key === 'heated' ? 18 : 8);
     this.meter.setValue(this.danger.value, this.danger.label());
     this.cameras.main.shake(90, key === 'shaken' ? 0.01 : 0.004);
+    this.toolButtons.get(key)?.back.setFillStyle(0xa8ffb0);
+    this.toolButtons.get(key)?.text.setColor('#173f20');
     this.dialogue.say(`${label} used. Tools can change reaction speed, temperature, pressure, or motion.`);
     this.updateNotebook();
   }
@@ -155,6 +180,7 @@ export default class LabScene extends Phaser.Scene {
       prediction: this.predictions.currentPrediction,
       ingredients: this.inventory.selected.map((id) => findReagent(id).name),
       actions: Object.entries(this.actions).filter(([, used]) => used).map(([key]) => key),
+      toolHint: this.experiment.actionHint,
     });
   }
 
@@ -196,6 +222,8 @@ export default class LabScene extends Phaser.Scene {
     if (outcome.effect === 'soot') this.sootBlast();
     if (outcome.effect === 'slime') this.slimeEscape();
     if (outcome.effect === 'duck') this.duckPortal();
+    if (outcome.effect === 'layers') this.layerLagoon();
+    if (outcome.effect === 'swirl') this.speedySwirls();
   }
 
   foamEruption() {
@@ -233,6 +261,23 @@ export default class LabScene extends Phaser.Scene {
     const duck = this.add.text(392, 340, '🦆', { fontSize: '60px' }).setOrigin(0.5).setScale(0);
     this.tweens.add({ targets: portal, radius: 92, angle: 360, duration: 900, yoyo: true, repeat: 1 });
     this.tweens.add({ targets: duck, scale: 1.4, angle: 12, duration: 700, ease: 'Back.Out' });
+  }
+
+  layerLagoon() {
+    const colors = [0x67f2c4, 0xb4ff7a, 0xd8fbff];
+    colors.forEach((color, index) => {
+      const layer = this.add.rectangle(392, 462 - index * 24, 104, 22, color, 0.72).setOrigin(0.5);
+      this.tweens.add({ targets: layer, x: 392 + Phaser.Math.Between(-8, 8), duration: 700, yoyo: true, repeat: 2 });
+    });
+    this.spawnBubbles(12, 0xb4ff7a);
+  }
+
+  speedySwirls() {
+    const swirlColors = [0xfff176, 0xb4ff7a, 0xffffff];
+    for (let i = 0; i < 18; i += 1) {
+      this.time.delayedCall(i * 45, () => this.spawnFlying('bubble', 392, 420, swirlColors[i % swirlColors.length], -260));
+    }
+    this.tweens.add({ targets: this.liquid, angle: 6, duration: 100, yoyo: true, repeat: 8 });
   }
 
   spawnFlying(texture, x, y, tint, yVelocity = -360) {

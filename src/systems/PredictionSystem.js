@@ -2,6 +2,8 @@ export const predictions = [
   { id: 'foam', label: 'Foam climbs up', icon: '🫧', effects: ['foam'] },
   { id: 'color', label: 'Color changes', icon: '🌈', effects: ['rainbow'] },
   { id: 'crystal', label: 'Crystals grow', icon: '💎', effects: ['crystal'] },
+  { id: 'layers', label: 'Layers stack', icon: '🥞', effects: ['layers'] },
+  { id: 'speed', label: 'Motion speeds up', icon: '⚡', effects: ['swirl'] },
   { id: 'chaos', label: 'Funny chaos', icon: '💥', effects: ['cork', 'soot', 'slime', 'duck'] },
 ];
 
