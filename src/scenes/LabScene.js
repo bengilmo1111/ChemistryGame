@@ -46,6 +46,7 @@ export default class LabScene extends Phaser.Scene {
   }
 
   addLabBench() {
+    this.add.image(512, 320, 'art-lab-bench').setDisplaySize(1024, 640);
     this.add.rectangle(512, 566, 1024, 148, 0x6d421c);
     this.add.rectangle(512, 506, 1024, 34, 0xc28b48);
     this.add.text(512, 30, this.experiment.title, {
@@ -87,10 +88,9 @@ export default class LabScene extends Phaser.Scene {
       const x = 80 + (index % 3) * 142;
       const y = 326 + Math.floor(index / 3) * 110;
       const bottle = this.add.container(x, y);
-      const shape = this.add.rectangle(0, 0, 94, 70, reagent.color).setStrokeStyle(4, 0xffffff);
-      const icon = this.add.text(0, -8, reagent.icon, { fontSize: '28px', color: '#273469' }).setOrigin(0.5);
-      const label = this.add.text(0, 48, reagent.name, { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '15px', color: '#ffffff', align: 'center' }).setOrigin(0.5);
-      bottle.add([shape, icon, label]);
+      const bottleArt = this.add.image(0, -6, reagent.artKey).setDisplaySize(82, 98);
+      const label = this.add.text(0, 52, reagent.name, { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '15px', color: '#ffffff', align: 'center' }).setOrigin(0.5);
+      bottle.add([bottleArt, label]);
       bottle.setSize(94, 90).setInteractive({ draggable: true, useHandCursor: true });
       bottle.setData('reagentId', reagent.id);
       bottle.setData('home', { x, y });

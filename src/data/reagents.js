@@ -1,6 +1,7 @@
 export const reagents = [
   {
     id: 'fizz-powder',
+    artKey: 'art-reagent-fizz-powder',
     name: 'Fizz Powder',
     icon: '✦',
     color: 0xfff176,
@@ -9,6 +10,7 @@ export const reagents = [
   },
   {
     id: 'sour-drops',
+    artKey: 'art-reagent-sour-drops',
     name: 'Sour Drops',
     icon: '●',
     color: 0x72d6ff,
@@ -17,6 +19,7 @@ export const reagents = [
   },
   {
     id: 'bubble-base',
+    artKey: 'art-reagent-bubble-base',
     name: 'Bubble Base',
     icon: '○',
     color: 0xb4ff7a,
@@ -25,6 +28,7 @@ export const reagents = [
   },
   {
     id: 'purple-potion',
+    artKey: 'art-reagent-purple-potion',
     name: 'Purple Potion',
     icon: '◆',
     color: 0xb388ff,
@@ -33,6 +37,7 @@ export const reagents = [
   },
   {
     id: 'glimmer-salt',
+    artKey: 'art-reagent-glimmer-salt',
     name: 'Glimmer Salt',
     icon: '✧',
     color: 0xffffff,
@@ -41,6 +46,7 @@ export const reagents = [
   },
   {
     id: 'goo-gel',
+    artKey: 'art-reagent-goo-gel',
     name: 'Goo Gel',
     icon: '☁',
     color: 0x67f2c4,

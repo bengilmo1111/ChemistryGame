@@ -19,6 +19,7 @@ export default class ResultsScene extends Phaser.Scene {
 
   create() {
     this.cameras.main.setBackgroundColor('#15183a');
+    this.add.image(132, 514, 'art-junior-scientist').setDisplaySize(132, 168).setAngle(-6);
     this.add.text(512, 64, this.outcome.title, {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '54px',

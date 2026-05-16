@@ -1,7 +1,14 @@
 import Phaser from 'phaser';
+import { artAssets } from '../data/artAssets.js';
 export default class PreloadScene extends Phaser.Scene {
   constructor() {
     super('PreloadScene');
+  }
+
+  preload() {
+    artAssets.forEach((asset) => {
+      this.load.svg(asset.key, asset.path);
+    });
   }
 
   create() {

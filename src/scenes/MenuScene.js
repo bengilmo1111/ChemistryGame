@@ -9,13 +9,8 @@ export default class MenuScene extends Phaser.Scene {
   create() {
     this.cameras.main.setBackgroundColor('#15183a');
     this.addDecorations();
-    this.add.text(512, 112, 'Mad Flask Lab', {
-      fontFamily: 'Trebuchet MS, sans-serif',
-      fontSize: '72px',
-      color: '#fff5a8',
-      stroke: '#7d3cff',
-      strokeThickness: 10,
-    }).setOrigin(0.5);
+    this.add.image(512, 112, 'art-logo').setDisplaySize(520, 146);
+    this.add.image(150, 426, 'art-junior-scientist').setDisplaySize(164, 210).setAngle(-4);
     this.add.text(512, 198, 'Predict → Mix → Observe → Explain', {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '28px',
