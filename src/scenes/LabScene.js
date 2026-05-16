@@ -126,8 +126,12 @@ export default class LabScene extends Phaser.Scene {
     const reagentId = gameObject.getData('reagentId');
     const home = gameObject.getData('home');
     this.tweens.add({ targets: gameObject, x: home.x, y: home.y, duration: 240, ease: 'Back.Out' });
-    this.inventory.add(reagentId);
     const reagent = findReagent(reagentId);
+    const added = this.inventory.add(reagentId);
+    if (!added) {
+      this.dialogue.say(`${reagent.name} is already in the flask. Try a different ingredient or mix your prediction!`);
+      return;
+    }
     this.liquid.setFillStyle(reagent.color, 0.62);
     this.danger.add(12);
     this.meter.setValue(this.danger.value, this.danger.label());
@@ -160,12 +164,16 @@ export default class LabScene extends Phaser.Scene {
 
   mix() {
     const outcome = this.engine.resolve(this.experiment, this.inventory.selected, this.actions);
+    const predictionMatched = this.predictions.matchesOutcome(outcome);
     this.playOutcome(outcome);
     new BadgeSystem().award(outcome.badge);
     this.time.delayedCall(2300, () => this.scene.start('ResultsScene', {
       experimentId: this.experiment.id,
       outcome,
       prediction: this.predictions.currentPrediction,
+      predictionMatched,
+      selectedIngredientIds: this.inventory.selected,
+      actions: this.actions,
     }));
   }
 

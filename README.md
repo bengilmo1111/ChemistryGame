@@ -16,6 +16,13 @@ npm install
 npm run dev
 ```
 
+## Quality checks
+
+```bash
+npm run check
+npm test
+```
+
 ## Production build
 
 ```bash

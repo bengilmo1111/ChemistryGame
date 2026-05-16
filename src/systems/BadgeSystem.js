@@ -2,10 +2,24 @@ import { badges } from '../data/badges.js';
 
 const STORAGE_KEY = 'mad-flask-lab-badges';
 
+function createMemoryStorage() {
+  const values = new Map();
+  return {
+    getItem: (key) => values.get(key) ?? null,
+    setItem: (key, value) => values.set(key, String(value)),
+  };
+}
+
+function readEarned(storage) {
+  const rawValue = storage.getItem(STORAGE_KEY);
+  const parsed = rawValue ? JSON.parse(rawValue) : [];
+  return Array.isArray(parsed) ? parsed : [];
+}
+
 export default class BadgeSystem {
-  constructor(storage = window.localStorage) {
+  constructor(storage = globalThis.localStorage ?? createMemoryStorage()) {
     this.storage = storage;
-    this.earned = new Set(JSON.parse(this.storage.getItem(STORAGE_KEY) ?? '[]'));
+    this.earned = new Set(readEarned(this.storage));
   }
 
   award(badgeId) {

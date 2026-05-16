@@ -1,4 +1,6 @@
-import Phaser from 'phaser';
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
 
 export default class DangerMeter {
   constructor() {
@@ -6,7 +8,7 @@ export default class DangerMeter {
   }
 
   add(amount) {
-    this.value = Phaser.Math.Clamp(this.value + amount, 0, 100);
+    this.value = clamp(this.value + amount, 0, 100);
     return this.value;
   }
 

@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { experiments } from '../data/experiments.js';
+import { findReagent } from '../data/reagents.js';
 import BadgeSystem from '../systems/BadgeSystem.js';
 import Button from '../ui/Button.js';
 
@@ -12,6 +13,8 @@ export default class ResultsScene extends Phaser.Scene {
     this.experiment = experiments.find((experiment) => experiment.id === data.experimentId) ?? experiments[0];
     this.outcome = data.outcome;
     this.prediction = data.prediction;
+    this.predictionMatched = data.predictionMatched;
+    this.selectedIngredientIds = data.selectedIngredientIds ?? [];
   }
 
   create() {
@@ -24,28 +27,43 @@ export default class ResultsScene extends Phaser.Scene {
       strokeThickness: 8,
     }).setOrigin(0.5);
 
-    this.add.rectangle(512, 286, 760, 310, 0xfff7d6).setStrokeStyle(5, 0x8a5a24);
-    this.add.text(512, 150, `Your prediction: ${this.prediction?.icon ?? '❔'} ${this.prediction?.label ?? 'none'}`, {
+    this.add.rectangle(512, 296, 760, 340, 0xfff7d6).setStrokeStyle(5, 0x8a5a24);
+    const predictionMessage = this.predictionMatched ? 'Nice observing — your prediction matched!' : 'Surprise! The observation was different from your prediction.';
+    this.add.text(512, 138, `Your prediction: ${this.prediction?.icon ?? '❔'} ${this.prediction?.label ?? 'none'}`, {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '25px',
       color: '#4b2f10',
       align: 'center',
     }).setOrigin(0.5);
-    this.add.text(512, 234, this.outcome.explanation, {
+    this.add.text(512, 178, predictionMessage, {
+      fontFamily: 'Trebuchet MS, sans-serif',
+      fontSize: '21px',
+      color: this.predictionMatched ? '#2f7d38' : '#7e2453',
+      align: 'center',
+    }).setOrigin(0.5);
+    this.add.text(512, 250, this.outcome.explanation, {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '24px',
       color: '#273469',
       align: 'center',
       wordWrap: { width: 690 },
     }).setOrigin(0.5);
-    this.add.text(512, 342, `Science words: ${this.outcome.vocabulary.join(' • ')}`, {
+    const ingredientNames = this.selectedIngredientIds.map((id) => findReagent(id)?.name).filter(Boolean).join(' + ');
+    this.add.text(512, 330, `Observation notes: ${ingredientNames || 'No ingredients'} → ${this.outcome.title}`, {
+      fontFamily: 'Trebuchet MS, sans-serif',
+      fontSize: '19px',
+      color: '#4b2f10',
+      align: 'center',
+      wordWrap: { width: 690 },
+    }).setOrigin(0.5);
+    this.add.text(512, 374, `Science words: ${this.outcome.vocabulary.join(' • ')}`, {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '22px',
       color: '#7e2453',
       align: 'center',
       wordWrap: { width: 690 },
     }).setOrigin(0.5);
-    this.add.text(512, 412, this.outcome.safetyNote, {
+    this.add.text(512, 428, this.outcome.safetyNote, {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '19px',
       color: '#4b2f10',

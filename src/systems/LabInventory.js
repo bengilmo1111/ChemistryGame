@@ -7,10 +7,12 @@ export default class LabInventory {
   }
 
   add(reagentId) {
-    if (!this.selected.includes(reagentId)) {
-      this.selected.push(reagentId);
+    if (this.selected.includes(reagentId)) {
+      return false;
     }
-    return this.selected;
+
+    this.selected.push(reagentId);
+    return true;
   }
 
   clear() {
