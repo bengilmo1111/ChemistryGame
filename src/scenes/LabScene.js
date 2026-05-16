@@ -12,6 +12,18 @@ import LabNotebook from '../ui/LabNotebook.js';
 import Meter from '../ui/Meter.js';
 import Tooltip from '../ui/Tooltip.js';
 
+const ACTION_DETAILS = {
+  stirred: { label: 'Stir', note: 'The spoon spreads ingredients through the flask.', icon: '🥄' },
+  heated: { label: 'Warm', note: 'Warmth makes pretend particles wiggle faster.', icon: '🔥' },
+  cooled: { label: 'Cool', note: 'Cooling slows motion so patterns and layers can settle.', icon: '❄️' },
+  sealed: { label: 'Seal', note: 'A cork traps pretend gas, so pressure can build.', icon: '🧱' },
+  shaken: { label: 'Shake', note: 'Gentle shaking gives mixtures more motion.', icon: '🌀' },
+};
+
+function actionLabel(action) {
+  return ACTION_DETAILS[action]?.label ?? action;
+}
+
 export default class LabScene extends Phaser.Scene {
   constructor() {
     super('LabScene');
@@ -24,6 +36,7 @@ export default class LabScene extends Phaser.Scene {
     this.engine = new ReactionEngine();
     this.danger = new DangerMeter();
     this.actions = { stirred: false, heated: false, cooled: false, sealed: false, shaken: false };
+    this.toolEffectSprites = [];
   }
 
   create() {
@@ -38,10 +51,12 @@ export default class LabScene extends Phaser.Scene {
     this.createPredictionButtons();
     this.createLabCard();
     this.createFlask();
+    this.createObservationClues();
     this.createReagents();
     this.createToolButtons();
     this.mixButton = new Button(this, 858, 570, 'Mix!', () => this.mix(), { width: 180, fill: 0xffd166 });
     this.mixButton.setEnabled(false);
+    this.resetButton = new Button(this, 666, 570, 'Reset Flask', () => this.resetFlask(), { width: 170, height: 46, fill: 0xffffff, stroke: 0x273469, fontSize: '18px', color: '#273469' });
     new Button(this, 92, 44, 'Cards', () => this.scene.start('LevelSelectScene'), { width: 136, height: 44, fill: 0xff8bd1, stroke: 0x7e2453, fontSize: '18px' });
     this.updateNotebook();
   }
@@ -103,6 +118,23 @@ export default class LabScene extends Phaser.Scene {
     this.input.on('drop', (_pointer, gameObject) => this.addIngredient(gameObject));
   }
 
+  createObservationClues() {
+    this.add.rectangle(392, 586, 320, 78, 0x15183a, 0.5).setStrokeStyle(3, 0x9de8ff);
+    this.add.text(392, 556, 'Observation Clues', {
+      fontFamily: 'Trebuchet MS, sans-serif',
+      fontSize: '18px',
+      color: '#fff5a8',
+    }).setOrigin(0.5);
+    this.add.text(392, 594, this.experiment.hints.map((hint) => `• ${hint}`).join('\n'), {
+      fontFamily: 'Trebuchet MS, sans-serif',
+      fontSize: '15px',
+      color: '#ffffff',
+      align: 'center',
+      lineSpacing: 3,
+      wordWrap: { width: 286 },
+    }).setOrigin(0.5);
+  }
+
   createReagents() {
     this.add.text(42, 252, '2. Pick Fictional Ingredients', { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '24px', color: '#ffffff' });
     reagents.forEach((reagent, index) => {
@@ -131,16 +163,11 @@ export default class LabScene extends Phaser.Scene {
 
   createToolButtons() {
     this.add.text(586, 244, '3. Lab Tools', { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '24px', color: '#ffffff' });
-    const tools = [
-      ['stirred', 'Stir'],
-      ['heated', 'Warm'],
-      ['cooled', 'Cool'],
-      ['sealed', 'Seal'],
-      ['shaken', 'Shake'],
-    ];
+    const tools = Object.entries(ACTION_DETAILS).map(([key, detail]) => [key, `${detail.icon} ${detail.label}`]);
+    this.add.text(646, 268, 'Tools change cause and effect.', { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '14px', color: '#fff5a8' }).setOrigin(0.5);
     this.toolButtons = new Map();
     tools.forEach(([key, label], index) => {
-      const button = new Button(this, 622, 300 + index * 48, label, () => this.useTool(key, label), { width: 120, height: 38, fill: 0xb388ff, stroke: 0x4b2bbf, fontSize: '17px', color: '#ffffff' });
+      const button = new Button(this, 622, 306 + index * 46, label, () => this.useTool(key), { width: 134, height: 36, fill: 0xb388ff, stroke: 0x4b2bbf, fontSize: '16px', color: '#ffffff' });
       this.toolButtons.set(key, button);
     });
   }
@@ -164,14 +191,16 @@ export default class LabScene extends Phaser.Scene {
     this.updateMixButton();
   }
 
-  useTool(key, label) {
+  useTool(key) {
+    const detail = ACTION_DETAILS[key];
     this.actions[key] = true;
     this.danger.add(key === 'sealed' || key === 'heated' ? 18 : 8);
     this.meter.setValue(this.danger.value, this.danger.label());
     this.cameras.main.shake(90, key === 'shaken' ? 0.01 : 0.004);
     this.toolButtons.get(key)?.back.setFillStyle(0xa8ffb0);
     this.toolButtons.get(key)?.text.setColor('#173f20');
-    this.dialogue.say(`${label} used. Tools can change reaction speed, temperature, pressure, or motion.`);
+    this.playToolEffect(key);
+    this.dialogue.say(`${detail.label} used. ${detail.note}`);
     this.updateNotebook();
   }
 
@@ -179,13 +208,31 @@ export default class LabScene extends Phaser.Scene {
     this.notebook.update({
       prediction: this.predictions.currentPrediction,
       ingredients: this.inventory.selected.map((id) => findReagent(id).name),
-      actions: Object.entries(this.actions).filter(([, used]) => used).map(([key]) => key),
+      actions: Object.entries(this.actions).filter(([, used]) => used).map(([key]) => actionLabel(key)),
       toolHint: this.experiment.actionHint,
+      observations: this.experiment.hints,
     });
   }
 
   updateMixButton() {
     this.mixButton.setEnabled(Boolean(this.predictions.currentPrediction) && this.inventory.selected.length > 0);
+  }
+
+  resetFlask() {
+    this.inventory.clear();
+    this.actions = { stirred: false, heated: false, cooled: false, sealed: false, shaken: false };
+    this.danger = new DangerMeter();
+    this.liquid.setFillStyle(0x83d8ff, 0.65);
+    this.meter.setValue(this.danger.value, this.danger.label());
+    this.toolEffectSprites.forEach((sprite) => sprite.destroy());
+    this.toolEffectSprites = [];
+    this.toolButtons.forEach((button) => {
+      button.back.setFillStyle(0xb388ff);
+      button.text.setColor('#ffffff');
+    });
+    this.dialogue.say('Flask reset. Make a prediction, choose ingredients, try tools, and observe again.');
+    this.updateNotebook();
+    this.updateMixButton();
   }
 
   mix() {
@@ -224,6 +271,58 @@ export default class LabScene extends Phaser.Scene {
     if (outcome.effect === 'duck') this.duckPortal();
     if (outcome.effect === 'layers') this.layerLagoon();
     if (outcome.effect === 'swirl') this.speedySwirls();
+  }
+
+  playToolEffect(key) {
+    if (key === 'stirred') this.stirEffect();
+    if (key === 'heated') this.heatEffect();
+    if (key === 'cooled') this.coolEffect();
+    if (key === 'sealed') this.sealEffect();
+    if (key === 'shaken') this.shakeEffect();
+  }
+
+  rememberEffect(sprite, lifetime = 1200) {
+    this.toolEffectSprites.push(sprite);
+    this.time.delayedCall(lifetime, () => {
+      sprite.destroy();
+      this.toolEffectSprites = this.toolEffectSprites.filter((item) => item !== sprite);
+    });
+    return sprite;
+  }
+
+  stirEffect() {
+    const spoon = this.rememberEffect(this.add.text(392, 342, '🥄', { fontSize: '54px' }).setOrigin(0.5).setAngle(-38), 900);
+    this.tweens.add({ targets: spoon, angle: 322, duration: 650, ease: 'Sine.InOut' });
+    this.spawnBubbles(10, 0xd8fbff);
+  }
+
+  heatEffect() {
+    [-24, 0, 24].forEach((offset, index) => {
+      const flame = this.rememberEffect(this.add.text(392 + offset, 500, '🔥', { fontSize: '34px' }).setOrigin(0.5), 1100);
+      this.tweens.add({ targets: flame, y: 488, scale: 1.25, duration: 260 + index * 70, yoyo: true, repeat: 2 });
+    });
+    this.liquid.setFillStyle(0xffd166, 0.72);
+    this.spawnBubbles(12, 0xfff176);
+  }
+
+  coolEffect() {
+    for (let i = 0; i < 8; i += 1) {
+      const flake = this.rememberEffect(this.add.text(334 + i * 16, 276 + Phaser.Math.Between(-16, 10), '❄️', { fontSize: '24px' }).setOrigin(0.5), 1300);
+      this.tweens.add({ targets: flake, y: flake.y + 82, alpha: 0.2, duration: 1000, ease: 'Sine.In' });
+    }
+    this.liquid.setFillStyle(0x72d6ff, 0.65);
+  }
+
+  sealEffect() {
+    const cork = this.rememberEffect(this.add.image(392, 270, 'cork').setAngle(-4), 1600);
+    const ring = this.rememberEffect(this.add.circle(392, 336, 48, 0xffd166, 0.14).setStrokeStyle(4, 0xffd166), 900);
+    this.tweens.add({ targets: cork, y: 292, duration: 260, ease: 'Bounce.Out' });
+    this.tweens.add({ targets: ring, radius: 86, alpha: 0, duration: 820 });
+  }
+
+  shakeEffect() {
+    this.tweens.add({ targets: this.flask, x: 380, angle: -5, duration: 80, yoyo: true, repeat: 5, onComplete: () => this.flask.setPosition(392, 386).setAngle(0) });
+    this.spawnBubbles(16, 0xffffff);
   }
 
   foamEruption() {

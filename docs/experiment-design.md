@@ -20,3 +20,7 @@ Mad Flask Lab uses the loop **Predict → Mix → Observe → Explain**. Each la
 ## Funny failure pattern
 
 Wrong combinations still produce an outcome. Failures should be visually rewarding and teach observation instead of punishment. Current failure outcomes include cork rockets, soot clouds, slime escapes, and duck portals. If players pick the correct ingredients but skip the card's tool clue, the game creates a cartoon failure and encourages another observation cycle.
+
+## PRD gap follow-up
+
+The lab now gives each tool an observable effect instead of only recording a button press: stirring shows a spoon and extra bubbles, warming shows flames and quicker bubbling, cooling drops snowflakes and blue liquid, sealing places a cork with a pressure pulse, and shaking wobbles the flask. The lab card also keeps visible observation clues on the bench and includes a Reset Flask button so players can quickly repeat the Predict → Mix → Observe → Explain loop without leaving the level.
