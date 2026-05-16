@@ -16,7 +16,7 @@ export default class LabNotebook {
     }).setDepth(6);
   }
 
-  update({ prediction, ingredients, actions, toolHint }) {
+  update({ prediction, ingredients, actions, toolHint, observations = [] }) {
     this.lines.setText([
       `Prediction: ${prediction?.label ?? 'choose one'}`,
       '',
@@ -25,6 +25,8 @@ export default class LabNotebook {
       `Tools: ${actions.length ? actions.join(', ') : 'try a tool'}`,
       '',
       `Clue: ${toolHint}`,
+      '',
+      `Watch for: ${observations.length ? observations.join(' / ') : 'changes'}`,
     ]);
   }
 }
