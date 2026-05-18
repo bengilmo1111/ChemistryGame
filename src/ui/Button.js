@@ -15,7 +15,11 @@ export default class Button {
     }).setOrigin(0.5);
     this.container.add([this.back, this.text]);
     this.container.setSize(width, height).setInteractive({ useHandCursor: true });
-    this.container.on('pointerdown', onClick);
+    this.container.on('pointerdown', (...args) => {
+      const sfx = scene.registry.get('sfx');
+      if (sfx) { sfx.resume(); sfx.click(); }
+      onClick?.(...args);
+    });
     this.container.on('pointerover', () => this.scene.tweens.add({ targets: this.container, scale: 1.06, duration: 120 }));
     this.container.on('pointerout', () => this.scene.tweens.add({ targets: this.container, scale: 1, duration: 120 }));
   }

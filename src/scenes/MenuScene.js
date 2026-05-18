@@ -36,8 +36,30 @@ export default class MenuScene extends Phaser.Scene {
       align: 'center',
       wordWrap: { width: 720 },
     }).setOrigin(0.5);
-    new Button(this, 512, 398, `Play as ${hero.shortName}`, () => this.scene.start('LevelSelectScene'), { width: 300 });
-    new Button(this, 512, 474, 'Safety Promise', () => this.showSafety(), { width: 260, fill: 0x9de8ff, stroke: 0x235b72 });
+    new Button(this, 512, 388, `Play as ${hero.shortName}`, () => this.scene.start('LevelSelectScene'), { width: 300 });
+    new Button(this, 512, 452, '🧪 MAD MIX (Sandbox)', () => this.scene.start('LabScene', { experimentId: 'sandbox' }), { width: 300, fill: 0xa8ffb0, stroke: 0x2f7d38 });
+    new Button(this, 512, 514, 'Safety Promise', () => this.showSafety(), { width: 260, fill: 0x9de8ff, stroke: 0x235b72 });
+    this.muteButton = new Button(this, 940, 44, this.muteLabel(), () => this.toggleMute(), { width: 140, height: 40, fill: 0x273469, stroke: 0x9de8ff, fontSize: '14px', color: '#ffffff' });
+    const score = this.registry.get('score');
+    if (score && (score.best > 0 || score.longestStreak > 0)) {
+      this.add.text(512, 588, `Best score: ${score.best}   •   Longest streak: ${score.longestStreak}`, {
+        fontFamily: 'Trebuchet MS, sans-serif',
+        fontSize: '15px',
+        color: '#9de8ff',
+      }).setOrigin(0.5);
+    }
+  }
+
+  muteLabel() {
+    const sfx = this.registry.get('sfx');
+    return sfx && sfx.muted ? '🔇 Sound OFF' : '🔊 Sound ON';
+  }
+
+  toggleMute() {
+    const sfx = this.registry.get('sfx');
+    if (!sfx) return;
+    sfx.toggleMute();
+    this.muteButton.text.setText(this.muteLabel());
   }
 
   addDecorations() {

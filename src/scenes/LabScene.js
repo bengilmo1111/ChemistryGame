@@ -8,6 +8,7 @@ import DialogueSystem from '../systems/DialogueSystem.js';
 import LabInventory from '../systems/LabInventory.js';
 import PredictionSystem, { predictions } from '../systems/PredictionSystem.js';
 import ReactionEngine from '../systems/ReactionEngine.js';
+import DiscoverySystem from '../systems/DiscoverySystem.js';
 import Button from '../ui/Button.js';
 import LabNotebook from '../ui/LabNotebook.js';
 import Meter from '../ui/Meter.js';
@@ -21,8 +22,38 @@ const ACTION_DETAILS = {
   shaken: { label: 'Shake', note: 'Gentle shaking gives mixtures more motion.', icon: '🌀' },
 };
 
+const SANDBOX_EXPERIMENT = {
+  id: 'sandbox',
+  title: '🧪 MAD MIX — Sandbox Lab',
+  goal: 'Mix anything! Discover every wild reaction.',
+  prompt: 'Drop in any ingredients and try any tools — see what happens!',
+  required: [],
+  requiredActions: [],
+  actionHint: 'Try wild combos. Every recipe is unlocked.',
+  hints: ['Mix 2 or 3 ingredients to find a real reaction.', 'Tools change the result — try Seal for booms!'],
+  vocabulary: ['particles', 'bubbles', 'gas'],
+};
+
+const SPLASH_WORDS = {
+  foam: { word: 'WHOOOSH!', color: '#ffffff' },
+  rainbow: { word: 'KAPOW!', color: '#ff8bd1' },
+  crystal: { word: 'SHAZAM!', color: '#9de8ff' },
+  layers: { word: 'PLOP!', color: '#67f2c4' },
+  pop: { word: 'BA-BOOM!', color: '#ffd166' },
+  swirl: { word: 'ZOOM!', color: '#fff176' },
+  cork: { word: 'BOING!', color: '#ffd166' },
+  soot: { word: 'POOF!', color: '#888888' },
+  slime: { word: 'BLERG!', color: '#67f2c4' },
+  duck: { word: 'QUACK?!', color: '#fff176' },
+};
+
 function actionLabel(action) {
   return ACTION_DETAILS[action]?.label ?? action;
+}
+
+function findExperiment(id) {
+  if (id === 'sandbox') return SANDBOX_EXPERIMENT;
+  return experiments.find((experiment) => experiment.id === id) ?? experiments[0];
 }
 
 export default class LabScene extends Phaser.Scene {
@@ -31,7 +62,8 @@ export default class LabScene extends Phaser.Scene {
   }
 
   init(data) {
-    this.experiment = experiments.find((experiment) => experiment.id === data.experimentId) ?? experiments[0];
+    this.experiment = findExperiment(data.experimentId);
+    this.isSandbox = this.experiment.id === 'sandbox';
     this.inventory = new LabInventory();
     this.predictions = new PredictionSystem();
     this.engine = new ReactionEngine();
@@ -39,14 +71,20 @@ export default class LabScene extends Phaser.Scene {
     this.actions = { stirred: false, heated: false, cooled: false, sealed: false, shaken: false };
     this.toolEffectSprites = [];
     this.predictionButtons = new Map();
+    this.mixCount = 0;
+    this.sfx = this.registry.get('sfx');
+    this.scoreSystem = this.registry.get('score');
   }
 
   create() {
-    this.cameras.main.setBackgroundColor('#232a62');
+    this.cameras.main.setBackgroundColor(this.isSandbox ? '#1a3a2a' : '#232a62');
     this.physics.world.setBounds(0, 0, 1024, 640);
     this.addLabBench();
     this.dialogue = new DialogueSystem(this, 380, 80, 650, 56);
-    this.dialogue.say(`${hero.shortName}, ${this.experiment.prompt}`);
+    const greet = this.isSandbox
+      ? `${hero.shortName}, ${this.experiment.prompt}`
+      : `${hero.shortName}, ${this.experiment.prompt}`;
+    this.dialogue.say(greet);
     this.notebook = new LabNotebook(this, 858, 250);
     this.meter = new Meter(this, 858, 422, 'Chaos Meter');
     this.tooltip = new Tooltip(this);
@@ -56,10 +94,11 @@ export default class LabScene extends Phaser.Scene {
     this.createObservationClues();
     this.createReagents();
     this.createToolButtons();
-    this.mixButton = new Button(this, 858, 570, 'Mix!', () => this.mix(), { width: 180, fill: 0xffd166 });
+    this.createScoreHud();
+    this.mixButton = new Button(this, 858, 570, 'MIX!', () => this.mix(), { width: 180, height: 58, fill: 0xffd166, fontSize: '26px' });
     this.mixButton.setEnabled(false);
     this.resetButton = new Button(this, 666, 570, 'Reset Flask', () => this.resetFlask(), { width: 170, height: 46, fill: 0xffffff, stroke: 0x273469, fontSize: '18px', color: '#273469' });
-    new Button(this, 92, 44, 'Cards', () => this.scene.start('LevelSelectScene'), { width: 136, height: 44, fill: 0xff8bd1, stroke: 0x7e2453, fontSize: '18px' });
+    new Button(this, 92, 44, this.isSandbox ? 'Menu' : 'Cards', () => this.scene.start(this.isSandbox ? 'MenuScene' : 'LevelSelectScene'), { width: 136, height: 44, fill: 0xff8bd1, stroke: 0x7e2453, fontSize: '18px' });
     this.updateNotebook();
   }
 
@@ -68,12 +107,13 @@ export default class LabScene extends Phaser.Scene {
     this.add.text(512, 28, this.experiment.title, {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '26px',
-      color: '#fff5a8',
+      color: this.isSandbox ? '#a8ffb0' : '#fff5a8',
     }).setOrigin(0.5);
   }
 
   createPredictionButtons() {
-    this.add.text(42, 124, '1. Predict', { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '22px', color: '#ffffff' });
+    const labelText = this.isSandbox ? '1. Predict (optional — bonus points!)' : '1. Predict';
+    this.add.text(42, 124, labelText, { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '18px', color: '#ffffff' });
     predictions.forEach((prediction, index) => {
       const x = 88 + (index % 4) * 104;
       const y = 162 + Math.floor(index / 4) * 44;
@@ -118,6 +158,38 @@ export default class LabScene extends Phaser.Scene {
     }).setOrigin(0.5);
   }
 
+  createScoreHud() {
+    if (!this.scoreSystem) return;
+    this.scoreText = this.add.text(252, 44, this.scoreHudText(), {
+      fontFamily: 'Trebuchet MS, sans-serif',
+      fontSize: '16px',
+      color: '#fff176',
+      stroke: '#11152f',
+      strokeThickness: 4,
+    }).setOrigin(0, 0.5).setDepth(20);
+  }
+
+  scoreHudText() {
+    if (!this.scoreSystem) return '';
+    const streakFlame = this.scoreSystem.streak >= 2 ? ` 🔥x${this.scoreSystem.streak}` : '';
+    return `⭐ ${this.scoreSystem.score}${streakFlame}`;
+  }
+
+  refreshScoreHud(gainedAmount = 0) {
+    if (!this.scoreText) return;
+    this.scoreText.setText(this.scoreHudText());
+    if (gainedAmount > 0) {
+      const popup = this.add.text(this.scoreText.x + 8, this.scoreText.y - 8, `+${gainedAmount}`, {
+        fontFamily: 'Trebuchet MS, sans-serif',
+        fontSize: '20px',
+        color: '#a8ffb0',
+        stroke: '#11152f',
+        strokeThickness: 4,
+      }).setDepth(21);
+      this.tweens.add({ targets: popup, y: popup.y - 36, alpha: 0, duration: 900, ease: 'Sine.Out', onComplete: () => popup.destroy() });
+    }
+  }
+
   createFlask() {
     this.flask = this.add.container(392, 386);
     const glass = this.add.graphics();
@@ -133,7 +205,7 @@ export default class LabScene extends Phaser.Scene {
 
   createObservationClues() {
     this.add.rectangle(392, 584, 320, 76, 0x15183a, 0.78).setStrokeStyle(3, 0x9de8ff);
-    this.add.text(392, 556, 'Observation Clues', {
+    this.add.text(392, 556, this.isSandbox ? 'Try Anything!' : 'Observation Clues', {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '16px',
       color: '#fff5a8',
@@ -207,11 +279,13 @@ export default class LabScene extends Phaser.Scene {
     if (sourceObject) {
       this.tweens.add({ targets: sourceObject, scale: 1.12, duration: 90, yoyo: true, ease: 'Sine.InOut' });
     }
+    this.sfx?.pour();
+    this.time.delayedCall(180, () => this.sfx?.bubble());
     this.playPour(reagent);
     this.liquid.setFillStyle(reagent.color, 0.62);
     this.danger.add(12);
     this.meter.setValue(this.danger.value, this.danger.label());
-    this.spawnBubbles(6, reagent.color);
+    this.spawnBubbles(8, reagent.color);
     this.dialogue.say(`${reagent.name} added. Observe: ${reagent.clue}`);
     this.updateNotebook();
     this.updateMixButton();
@@ -235,8 +309,18 @@ export default class LabScene extends Phaser.Scene {
     this.toolButtons.get(key)?.back.setFillStyle(0xa8ffb0);
     this.toolButtons.get(key)?.text.setColor('#173f20');
     this.playToolEffect(key);
+    this.playToolSound(key);
     this.dialogue.say(`${detail.label} used. ${detail.note}`);
     this.updateNotebook();
+  }
+
+  playToolSound(key) {
+    if (!this.sfx) return;
+    if (key === 'stirred') this.sfx.whoosh();
+    if (key === 'heated') this.sfx.fizz();
+    if (key === 'cooled') this.sfx.sparkle();
+    if (key === 'sealed') this.sfx.pop();
+    if (key === 'shaken') this.sfx.whoosh();
   }
 
   updateNotebook() {
@@ -262,7 +346,11 @@ export default class LabScene extends Phaser.Scene {
   }
 
   updateMixButton() {
-    this.mixButton.setEnabled(Boolean(this.predictions.currentPrediction) && this.inventory.selected.length > 0);
+    const hasIngredients = this.inventory.selected.length > 0;
+    const ready = this.isSandbox
+      ? hasIngredients
+      : (Boolean(this.predictions.currentPrediction) && hasIngredients);
+    this.mixButton.setEnabled(ready);
   }
 
   resetFlask() {
@@ -285,21 +373,51 @@ export default class LabScene extends Phaser.Scene {
   }
 
   mix() {
-    const outcome = this.engine.resolve(this.experiment, this.inventory.selected, this.actions);
+    const outcome = this.isSandbox
+      ? this.engine.resolveSandbox(this.inventory.selected, this.actions)
+      : this.engine.resolve(this.experiment, this.inventory.selected, this.actions);
     const predictionMatched = this.predictions.matchesOutcome(outcome);
+    this.mixCount += 1;
+
+    let isNewDiscovery = false;
+    if (this.scoreSystem) {
+      const discoveries = new DiscoverySystem();
+      const before = discoveries.getForExperiment(this.experiment.id) ?? [];
+      isNewDiscovery = !before.includes(outcome.id);
+      const result = this.scoreSystem.award({
+        kind: outcome.kind,
+        predictionMatched,
+        isNewDiscovery,
+        ingredientCount: this.inventory.selected.length,
+      });
+      this.refreshScoreHud(result.gained);
+    }
+
     this.playOutcome(outcome);
     new BadgeSystem().award(outcome.badge);
-    this.time.delayedCall(2300, () => {
-      this.tweens.killAll();
-      this.scene.start('ResultsScene', {
-        experimentId: this.experiment.id,
-        outcome,
-        prediction: this.predictions.currentPrediction,
-        predictionMatched,
-        selectedIngredientIds: this.inventory.selected,
-        actions: this.actions,
+
+    if (this.isSandbox) {
+      this.time.delayedCall(2300, () => this.sandboxAftermath(outcome));
+    } else {
+      this.time.delayedCall(2300, () => {
+        this.tweens.killAll();
+        this.scene.start('ResultsScene', {
+          experimentId: this.experiment.id,
+          outcome,
+          prediction: this.predictions.currentPrediction,
+          predictionMatched,
+          selectedIngredientIds: this.inventory.selected,
+          actions: this.actions,
+        });
       });
-    });
+    }
+  }
+
+  sandboxAftermath(outcome) {
+    this.dialogue.say(`${outcome.title} — ${outcome.explanation}`);
+    this.tweens.killTweensOf(this.flask);
+    this.flask.setAngle(0).setPosition(392, 386);
+    this.resetFlask();
   }
 
   spawnBubbles(count, tint = 0x9de8ff) {
@@ -310,10 +428,33 @@ export default class LabScene extends Phaser.Scene {
     }
   }
 
+  flashScreen(color = 0xffffff, alpha = 0.55, duration = 280) {
+    const flash = this.add.rectangle(512, 320, 1024, 640, color, alpha).setDepth(40);
+    this.tweens.add({ targets: flash, alpha: 0, duration, onComplete: () => flash.destroy() });
+  }
+
+  showSplash(effect) {
+    const splash = SPLASH_WORDS[effect] ?? { word: 'WOW!', color: '#ffffff' };
+    const text = this.add.text(512, 300, splash.word, {
+      fontFamily: 'Trebuchet MS, sans-serif',
+      fontSize: '110px',
+      color: splash.color,
+      stroke: '#11152f',
+      strokeThickness: 12,
+    }).setOrigin(0.5).setDepth(45).setScale(0).setAngle(Phaser.Math.Between(-12, 12));
+    this.tweens.add({ targets: text, scale: 1.15, duration: 320, ease: 'Back.Out' });
+    this.tweens.add({ targets: text, scale: 1, duration: 180, delay: 320, ease: 'Sine.InOut' });
+    this.tweens.add({ targets: text, alpha: 0, y: text.y - 40, duration: 480, delay: 900, onComplete: () => text.destroy() });
+  }
+
   playOutcome(outcome) {
     this.mixButton.setEnabled(false);
     this.dialogue.say(outcome.title);
-    this.cameras.main.shake(260, outcome.kind === 'success' ? 0.008 : 0.018);
+    const intensity = outcome.kind === 'success' ? 0.014 : 0.022;
+    this.cameras.main.shake(360, intensity);
+    this.flashScreen(outcome.kind === 'success' ? 0xfff5a8 : 0xff8bd1);
+    this.showSplash(outcome.effect);
+    this.playOutcomeSound(outcome);
     if (outcome.effect === 'foam') this.foamEruption();
     if (outcome.effect === 'rainbow') this.rainbowSludge();
     if (outcome.effect === 'crystal') this.crystalJam();
@@ -324,6 +465,24 @@ export default class LabScene extends Phaser.Scene {
     if (outcome.effect === 'layers') this.layerLagoon();
     if (outcome.effect === 'swirl') this.speedySwirls();
     if (outcome.effect === 'pop') this.pressurePop();
+  }
+
+  playOutcomeSound(outcome) {
+    if (!this.sfx) return;
+    const big = ['pop', 'cork', 'foam'];
+    if (big.includes(outcome.effect)) this.sfx.boom();
+    if (outcome.effect === 'cork' || outcome.effect === 'pop') this.sfx.rocket();
+    if (outcome.effect === 'foam') this.sfx.fizz();
+    if (outcome.effect === 'rainbow') this.sfx.sparkle();
+    if (outcome.effect === 'crystal') this.sfx.sparkle();
+    if (outcome.effect === 'layers') this.sfx.bubble();
+    if (outcome.effect === 'swirl') this.sfx.whoosh();
+    if (outcome.effect === 'soot') this.sfx.boom();
+    if (outcome.effect === 'slime') this.sfx.wahWah();
+    if (outcome.effect === 'duck') this.sfx.zap();
+    this.time.delayedCall(380, () => {
+      if (outcome.kind === 'success') this.sfx.jingle(); else this.sfx.wahWah();
+    });
   }
 
   playToolEffect(key) {
@@ -380,73 +539,85 @@ export default class LabScene extends Phaser.Scene {
   }
 
   foamEruption() {
-    for (let i = 0; i < 34; i += 1) this.spawnFlying('foam', 392, 345, 0xffffff);
+    for (let i = 0; i < 60; i += 1) this.spawnFlying('foam', 392, 345, 0xffffff);
+    this.time.delayedCall(180, () => { for (let i = 0; i < 30; i += 1) this.spawnFlying('foam', 392, 345, 0xffffff, -440); });
   }
 
   rainbowSludge() {
-    [0xff4d6d, 0xffd166, 0x72d6ff, 0xb388ff, 0xa8ffb0].forEach((color, index) => {
-      this.time.delayedCall(index * 140, () => {
-        this.liquid.setFillStyle(color, 0.72);
-        this.spawnBubbles(8, color);
+    [0xff4d6d, 0xffd166, 0x72d6ff, 0xb388ff, 0xa8ffb0, 0xff8bd1, 0x67f2c4].forEach((color, index) => {
+      this.time.delayedCall(index * 120, () => {
+        this.liquid.setFillStyle(color, 0.78);
+        this.spawnBubbles(14, color);
+        for (let i = 0; i < 6; i += 1) this.spawnFlying('bubble', 392, 380, color, -260);
       });
     });
   }
 
   crystalJam() {
-    for (let i = 0; i < 16; i += 1) this.spawnFlying('crystal', 392, 405, 0xffffff, -260);
+    for (let i = 0; i < 28; i += 1) this.spawnFlying('crystal', 392, 405, 0xffffff, -360);
+    this.time.delayedCall(220, () => { for (let i = 0; i < 16; i += 1) this.spawnFlying('crystal', 392, 405, 0xd8fbff, -440); });
   }
 
   corkRocket() {
     const cork = this.physics.add.image(392, 270, 'cork');
-    cork.setVelocity(Phaser.Math.Between(-160, 160), -520).setAngularVelocity(540).setBounce(0.8).setCollideWorldBounds(true);
+    cork.setVelocity(Phaser.Math.Between(-160, 160), -640).setAngularVelocity(540).setBounce(0.8).setCollideWorldBounds(true);
+    for (let i = 0; i < 14; i += 1) this.spawnFlying('foam', 392, 300, 0xffd166, -380);
   }
 
   sootBlast() {
-    for (let i = 0; i < 22; i += 1) this.spawnFlying('soot', 392, 336, 0xffffff, -180);
+    for (let i = 0; i < 40; i += 1) this.spawnFlying('soot', 392, 336, 0xffffff, -260);
   }
 
   slimeEscape() {
-    for (let i = 0; i < 10; i += 1) this.spawnFlying('slime', 392, 428, 0xffffff, -80);
+    for (let i = 0; i < 24; i += 1) this.spawnFlying('slime', 392, 428, 0xffffff, -180);
   }
 
   duckPortal() {
     const portal = this.add.circle(392, 340, 18, 0xb388ff, 0.7).setStrokeStyle(6, 0x9de8ff);
-    const duck = this.add.text(392, 340, '🦆', { fontSize: '60px' }).setOrigin(0.5).setScale(0);
-    this.tweens.add({ targets: portal, radius: 92, angle: 360, duration: 900, yoyo: true, repeat: 1 });
-    this.tweens.add({ targets: duck, scale: 1.4, angle: 12, duration: 700, ease: 'Back.Out' });
+    const duck = this.add.text(392, 340, '🦆', { fontSize: '78px' }).setOrigin(0.5).setScale(0);
+    this.tweens.add({ targets: portal, radius: 110, angle: 720, duration: 900, yoyo: true, repeat: 1 });
+    this.tweens.add({ targets: duck, scale: 1.7, angle: 18, duration: 700, ease: 'Back.Out' });
+    for (let i = 0; i < 6; i += 1) {
+      this.time.delayedCall(i * 120, () => {
+        const extra = this.add.text(392 + Phaser.Math.Between(-180, 180), 340 + Phaser.Math.Between(-100, 100), '🦆', { fontSize: '34px' }).setOrigin(0.5);
+        this.tweens.add({ targets: extra, alpha: 0, y: extra.y - 80, duration: 700, onComplete: () => extra.destroy() });
+      });
+    }
   }
 
   layerLagoon() {
-    const colors = [0x67f2c4, 0xb4ff7a, 0xd8fbff];
+    const colors = [0x67f2c4, 0xb4ff7a, 0xd8fbff, 0xffd166];
     colors.forEach((color, index) => {
-      const layer = this.add.rectangle(392, 462 - index * 24, 104, 22, color, 0.72).setOrigin(0.5);
-      this.tweens.add({ targets: layer, x: 392 + Phaser.Math.Between(-8, 8), duration: 700, yoyo: true, repeat: 2 });
+      const layer = this.add.rectangle(392, 470 - index * 22, 110, 20, color, 0.78).setOrigin(0.5);
+      this.tweens.add({ targets: layer, x: 392 + Phaser.Math.Between(-10, 10), duration: 700, yoyo: true, repeat: 3 });
     });
-    this.spawnBubbles(12, 0xb4ff7a);
+    this.spawnBubbles(18, 0xb4ff7a);
   }
 
   speedySwirls() {
-    const swirlColors = [0xfff176, 0xb4ff7a, 0xffffff];
-    for (let i = 0; i < 18; i += 1) {
-      this.time.delayedCall(i * 45, () => this.spawnFlying('bubble', 392, 420, swirlColors[i % swirlColors.length], -260));
+    const swirlColors = [0xfff176, 0xb4ff7a, 0xffffff, 0xff8bd1];
+    for (let i = 0; i < 36; i += 1) {
+      this.time.delayedCall(i * 30, () => this.spawnFlying('bubble', 392, 420, swirlColors[i % swirlColors.length], -340));
     }
-    this.tweens.add({ targets: this.liquid, angle: 6, duration: 100, yoyo: true, repeat: 8 });
+    this.tweens.add({ targets: this.liquid, angle: 8, duration: 100, yoyo: true, repeat: 12 });
   }
 
 
   pressurePop() {
     const cork = this.physics.add.image(392, 270, 'cork').setAngle(-4);
-    cork.setVelocity(Phaser.Math.Between(-80, 80), -360).setAngularVelocity(360).setBounce(0.85).setCollideWorldBounds(true);
-    this.spawnBubbles(20, 0xfff176);
-    [0xffd166, 0xff8bd1, 0x9de8ff, 0xa8ffb0].forEach((color, index) => {
-      this.time.delayedCall(index * 90, () => this.spawnFlying('bubble', 392, 330, color, -300));
+    cork.setVelocity(Phaser.Math.Between(-80, 80), -520).setAngularVelocity(360).setBounce(0.85).setCollideWorldBounds(true);
+    this.spawnBubbles(30, 0xfff176);
+    [0xffd166, 0xff8bd1, 0x9de8ff, 0xa8ffb0, 0xfff176, 0xff8bd1].forEach((color, index) => {
+      this.time.delayedCall(index * 70, () => {
+        for (let i = 0; i < 6; i += 1) this.spawnFlying('bubble', 392, 330, color, -380);
+      });
     });
     this.time.delayedCall(1800, () => cork.destroy());
   }
 
   spawnFlying(texture, x, y, tint, yVelocity = -360) {
     const sprite = this.physics.add.image(x + Phaser.Math.Between(-35, 35), y + Phaser.Math.Between(-20, 20), texture).setTint(tint).setScale(Phaser.Math.FloatBetween(0.55, 1.2));
-    sprite.setVelocity(Phaser.Math.Between(-220, 220), yVelocity + Phaser.Math.Between(-80, 80)).setAngularVelocity(Phaser.Math.Between(-360, 360)).setBounce(0.7).setCollideWorldBounds(true);
+    sprite.setVelocity(Phaser.Math.Between(-280, 280), yVelocity + Phaser.Math.Between(-100, 100)).setAngularVelocity(Phaser.Math.Between(-540, 540)).setBounce(0.7).setCollideWorldBounds(true);
     this.time.delayedCall(1800, () => sprite.destroy());
   }
 }
