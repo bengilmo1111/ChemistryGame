@@ -48,4 +48,32 @@ export default class ReactionEngine {
       safetyNote: 'This was a cartoon failure, not a real recipe. Safe scientists test ideas carefully.',
     };
   }
+
+  resolveSandbox(ingredientIds, labActions = {}) {
+    const uniqueIngredients = [...new Set(ingredientIds)];
+    const match = reactionOutcomes.find(
+      (outcome) => sameSet(outcome.ingredients, uniqueIngredients)
+        && hasRequiredActions(outcome.requiredActions, labActions),
+    );
+
+    if (match) {
+      return {
+        ...match,
+        vocabulary: match.vocabulary ?? [],
+        safetyNote: 'Mad Mix is sandbox play — all reagents are pretend.',
+      };
+    }
+
+    const seed = uniqueIngredients.join('').length
+      + Object.values(labActions).filter(Boolean).length * 3;
+    const failure = funnyFailures[seed % funnyFailures.length];
+    return {
+      ...failure,
+      kind: 'failure',
+      badge: 'chaos-noticer',
+      missingActions: [],
+      vocabulary: failure.vocabulary ?? [],
+      safetyNote: 'Mad Mix is sandbox play — surprising combos make pretend mess only.',
+    };
+  }
 }

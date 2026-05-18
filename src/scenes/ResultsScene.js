@@ -43,6 +43,25 @@ export default class ResultsScene extends Phaser.Scene {
       strokeThickness: 7,
     }).setOrigin(0.5);
 
+    const score = this.registry.get('score');
+    if (score) {
+      const banner = this.add.text(900, 44, `⭐ ${score.score}`, {
+        fontFamily: 'Trebuchet MS, sans-serif',
+        fontSize: '24px',
+        color: '#fff176',
+        stroke: '#11152f',
+        strokeThickness: 5,
+      }).setOrigin(1, 0.5);
+      if (score.streak >= 2) {
+        this.add.text(900, 76, `🔥 streak x${score.streak}`, {
+          fontFamily: 'Trebuchet MS, sans-serif',
+          fontSize: '16px',
+          color: '#ff8bd1',
+        }).setOrigin(1, 0.5);
+      }
+      this.tweens.add({ targets: banner, scale: 1.15, duration: 220, yoyo: true, ease: 'Sine.InOut' });
+    }
+
     this.add.rectangle(550, 296, 700, 432, 0xfff7d6).setStrokeStyle(5, 0x8a5a24);
     this.layoutRows().forEach((row) => {
       this.add.text(row.x ?? 550, row.y, row.text, {

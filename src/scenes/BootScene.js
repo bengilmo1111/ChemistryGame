@@ -1,10 +1,14 @@
 import Phaser from 'phaser';
+import SoundFx from '../systems/SoundFx.js';
+import ScoreSystem from '../systems/ScoreSystem.js';
 export default class BootScene extends Phaser.Scene {
   constructor() {
     super('BootScene');
   }
 
   create() {
+    this.registry.set('sfx', new SoundFx());
+    this.registry.set('score', new ScoreSystem());
     this.cameras.main.setBackgroundColor('#15183a');
     this.add.text(512, 292, 'Mad Flask Lab', {
       fontFamily: 'Trebuchet MS, sans-serif',
