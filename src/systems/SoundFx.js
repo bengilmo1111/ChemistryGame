@@ -1,19 +1,19 @@
+import { safeStorage } from './safeStorage.js';
+
 const STORAGE_KEY = 'mad-flask-lab-sound-muted';
 
-function createMemoryStorage() {
-  const values = new Map();
-  return {
-    getItem: (key) => values.get(key) ?? null,
-    setItem: (key, value) => values.set(key, String(value)),
-  };
-}
-
 export default class SoundFx {
-  constructor(storage = globalThis.localStorage ?? createMemoryStorage()) {
+  constructor(storage = safeStorage()) {
     this.storage = storage;
     this.context = null;
     this.master = null;
-    this.muted = this.storage.getItem(STORAGE_KEY) === '1';
+    let muted = false;
+    try {
+      muted = this.storage.getItem(STORAGE_KEY) === '1';
+    } catch (_error) {
+      muted = false;
+    }
+    this.muted = muted;
   }
 
   ensure() {
@@ -38,7 +38,11 @@ export default class SoundFx {
 
   setMuted(value) {
     this.muted = Boolean(value);
-    this.storage.setItem(STORAGE_KEY, this.muted ? '1' : '0');
+    try {
+      this.storage.setItem(STORAGE_KEY, this.muted ? '1' : '0');
+    } catch (_error) {
+      /* storage unavailable; in-memory state still applies */
+    }
   }
 
   toggleMute() {

@@ -1,23 +1,25 @@
 import { badges } from '../data/badges.js';
+import { safeStorage } from './safeStorage.js';
 
 const STORAGE_KEY = 'mad-flask-lab-badges';
 
-function createMemoryStorage() {
-  const values = new Map();
-  return {
-    getItem: (key) => values.get(key) ?? null,
-    setItem: (key, value) => values.set(key, String(value)),
-  };
-}
-
 function readEarned(storage) {
-  const rawValue = storage.getItem(STORAGE_KEY);
-  const parsed = rawValue ? JSON.parse(rawValue) : [];
-  return Array.isArray(parsed) ? parsed : [];
+  let rawValue = null;
+  try {
+    rawValue = storage.getItem(STORAGE_KEY);
+  } catch (_error) {
+    rawValue = null;
+  }
+  try {
+    const parsed = rawValue ? JSON.parse(rawValue) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (_error) {
+    return [];
+  }
 }
 
 export default class BadgeSystem {
-  constructor(storage = globalThis.localStorage ?? createMemoryStorage()) {
+  constructor(storage = safeStorage()) {
     this.storage = storage;
     this.earned = new Set(readEarned(this.storage));
   }
@@ -25,7 +27,11 @@ export default class BadgeSystem {
   award(badgeId) {
     if (badgeId) {
       this.earned.add(badgeId);
-      this.storage.setItem(STORAGE_KEY, JSON.stringify([...this.earned]));
+      try {
+        this.storage.setItem(STORAGE_KEY, JSON.stringify([...this.earned]));
+      } catch (_error) {
+        /* storage unavailable; badges remain in memory this session */
+      }
     }
     return this.getEarned();
   }
