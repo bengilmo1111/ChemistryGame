@@ -8,7 +8,7 @@
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0",
     "check": "node scripts/check-js.mjs",
-    "test": "node tests/reaction-engine.test.mjs && node tests/content-integrity.test.mjs"
+    "test": "node tests/reaction-engine.test.mjs && node tests/content-integrity.test.mjs && node tests/storage-resilience.test.mjs"
   },
   "dependencies": {
     "phaser": "^3.80.0",

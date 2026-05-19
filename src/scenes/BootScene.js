@@ -7,8 +7,6 @@ export default class BootScene extends Phaser.Scene {
   }
 
   create() {
-    this.registry.set('sfx', new SoundFx());
-    this.registry.set('score', new ScoreSystem());
     this.cameras.main.setBackgroundColor('#15183a');
     this.add.text(512, 292, 'Mad Flask Lab', {
       fontFamily: 'Trebuchet MS, sans-serif',
@@ -23,5 +21,15 @@ export default class BootScene extends Phaser.Scene {
       color: '#9de8ff',
     }).setOrigin(0.5);
     this.time.delayedCall(450, () => this.scene.start('PreloadScene'));
+    try {
+      this.registry.set('sfx', new SoundFx());
+    } catch (error) {
+      console.warn('SoundFx init failed; continuing without audio.', error);
+    }
+    try {
+      this.registry.set('score', new ScoreSystem());
+    } catch (error) {
+      console.warn('ScoreSystem init failed; continuing without persistent score.', error);
+    }
   }
 }

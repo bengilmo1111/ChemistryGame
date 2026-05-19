@@ -1,15 +1,14 @@
+import { safeStorage } from './safeStorage.js';
+
 const STORAGE_KEY = 'mad-flask-lab-score';
 
-function createMemoryStorage() {
-  const values = new Map();
-  return {
-    getItem: (key) => values.get(key) ?? null,
-    setItem: (key, value) => values.set(key, String(value)),
-  };
-}
-
 function readState(storage) {
-  const raw = storage.getItem(STORAGE_KEY);
+  let raw = null;
+  try {
+    raw = storage.getItem(STORAGE_KEY);
+  } catch (_error) {
+    raw = null;
+  }
   if (!raw) return { score: 0, best: 0, streak: 0, longestStreak: 0 };
   try {
     const parsed = JSON.parse(raw);
@@ -25,7 +24,7 @@ function readState(storage) {
 }
 
 export default class ScoreSystem {
-  constructor(storage = globalThis.localStorage ?? createMemoryStorage()) {
+  constructor(storage = safeStorage()) {
     this.storage = storage;
     this.state = readState(storage);
   }
@@ -57,7 +56,11 @@ export default class ScoreSystem {
   }
 
   persist() {
-    this.storage.setItem(STORAGE_KEY, JSON.stringify(this.state));
+    try {
+      this.storage.setItem(STORAGE_KEY, JSON.stringify(this.state));
+    } catch (_error) {
+      /* storage unavailable; keep state in memory only */
+    }
   }
 
   get score() { return this.state.score; }

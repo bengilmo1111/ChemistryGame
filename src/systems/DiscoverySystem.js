@@ -1,12 +1,6 @@
-const STORAGE_KEY = 'mad-flask-lab-discoveries';
+import { safeStorage } from './safeStorage.js';
 
-function createMemoryStorage() {
-  const values = new Map();
-  return {
-    getItem: (key) => values.get(key) ?? null,
-    setItem: (key, value) => values.set(key, String(value)),
-  };
-}
+const STORAGE_KEY = 'mad-flask-lab-discoveries';
 
 function parseDiscoveries(rawValue) {
   if (!rawValue) return {};
@@ -19,14 +13,22 @@ function parseDiscoveries(rawValue) {
   }
 }
 
+function readRaw(storage) {
+  try {
+    return storage.getItem(STORAGE_KEY);
+  } catch (_error) {
+    return null;
+  }
+}
+
 function unique(values = []) {
   return [...new Set(values.filter(Boolean))];
 }
 
 export default class DiscoverySystem {
-  constructor(storage = globalThis.localStorage ?? createMemoryStorage()) {
+  constructor(storage = safeStorage()) {
     this.storage = storage;
-    this.discoveries = parseDiscoveries(this.storage.getItem(STORAGE_KEY));
+    this.discoveries = parseDiscoveries(readRaw(this.storage));
   }
 
   record(experimentId, outcomeId) {
@@ -36,7 +38,11 @@ export default class DiscoverySystem {
     if (!current.includes(outcomeId)) {
       current.push(outcomeId);
       this.discoveries = { ...this.discoveries, [experimentId]: current };
-      this.storage.setItem(STORAGE_KEY, JSON.stringify(this.discoveries));
+      try {
+        this.storage.setItem(STORAGE_KEY, JSON.stringify(this.discoveries));
+      } catch (_error) {
+        /* storage unavailable; discoveries remain in memory this session */
+      }
     }
 
     return current;
