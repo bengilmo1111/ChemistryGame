@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { experiments } from '../data/experiments.js';
-import { hero } from '../data/hero.js';
+import { hero, randomQuip } from '../data/hero.js';
 import { findReagent } from '../data/reagents.js';
 import { formatVocabularyDefinitions } from '../data/vocabulary.js';
 import BadgeSystem from '../systems/BadgeSystem.js';
@@ -9,8 +9,30 @@ import { buildQuiz } from '../systems/QuizSystem.js';
 import StarSystem, { MAX_STARS, computeStars } from '../systems/StarSystem.js';
 import VariableCoach from '../systems/VariableCoach.js';
 import Button from '../ui/Button.js';
+import { confettiBurst } from '../ui/effects.js';
 
 const QUIZ_BONUS = 25;
+
+const EFFECT_EMOJI = {
+  foam: '🫧',
+  rainbow: '🌈',
+  crystal: '💎',
+  layers: '🥞',
+  pop: '🍾',
+  swirl: '🌀',
+  cork: '🚀',
+  soot: '☁️',
+  slime: '👾',
+  duck: '🦆',
+  lava: '🌋',
+  galaxy: '🌌',
+  disco: '🪩',
+  blob: '🟢',
+  dragon: '🐉',
+  snow: '☃️',
+  tornado: '🌪️',
+  burp: '💨',
+};
 
 export default class ResultsScene extends Phaser.Scene {
   constructor() {
@@ -45,13 +67,27 @@ export default class ResultsScene extends Phaser.Scene {
       align: 'center',
       wordWrap: { width: 150 },
     }).setOrigin(0.5);
-    this.add.text(512, 44, this.outcome.title, {
+    this.add.text(96, 484, `💬 "${randomQuip(this.outcome.kind)}"`, {
+      fontFamily: 'Trebuchet MS, sans-serif',
+      fontSize: '13px',
+      fontStyle: 'italic',
+      color: '#9de8ff',
+      align: 'center',
+      lineSpacing: 2,
+      wordWrap: { width: 168 },
+    }).setOrigin(0.5);
+    const title = this.add.text(512, 44, this.outcome.title, {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '42px',
       color: this.outcome.kind === 'success' ? '#a8ffb0' : '#ffd166',
       stroke: '#11152f',
       strokeThickness: 7,
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setScale(0);
+    this.tweens.add({ targets: title, scale: 1, duration: 380, ease: 'Back.Out' });
+    const emoji = this.add.text(962, 300, EFFECT_EMOJI[this.outcome.effect] ?? '🧪', { fontSize: '78px' }).setOrigin(0.5).setScale(0);
+    this.tweens.add({ targets: emoji, scale: 1, duration: 420, delay: 200, ease: 'Back.Out' });
+    this.tweens.add({ targets: emoji, y: 312, angle: 8, duration: 1400, delay: 650, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
+    if (this.outcome.kind === 'success') confettiBurst(this, 40);
 
     const score = this.registry.get('score');
     this.scoreSystem = score ?? null;
@@ -97,18 +133,19 @@ export default class ResultsScene extends Phaser.Scene {
   layoutRows() {
     const ingredientNames = this.selectedIngredientIds.map((id) => findReagent(id)?.name).filter(Boolean).join(' + ');
     const actionNames = Object.entries(this.actions).filter(([, used]) => used).map(([name]) => ({ stirred: 'Stir', heated: 'Warm', cooled: 'Cool', sealed: 'Seal', shaken: 'Shake' }[name] ?? name)).join(', ');
-    const predictionMessage = this.predictionMatched
-      ? `Nice observing, ${hero.shortName} — your prediction matched!`
-      : `Surprise, ${hero.shortName}! The observation was different from your prediction.`;
+    const predictionMessage = !this.prediction
+      ? `No prediction this time — take a guess next mix for bonus ⭐!`
+      : this.predictionMatched
+        ? `Nailed it, ${hero.shortName} — your prediction matched!${this.outcome.kind === 'success' ? ' +50 ⭐' : ''}`
+        : `Surprise, ${hero.shortName}! The flask had other plans.`;
     return [
       { y: 110, size: '20px', color: '#4b2f10', text: `${hero.shortName}'s prediction: ${this.prediction?.icon ?? '❔'} ${this.prediction?.label ?? 'none'}` },
       { y: 140, size: '17px', color: this.predictionMatched ? '#2f7d38' : '#7e2453', text: predictionMessage },
-      { y: 188, size: '18px', color: '#273469', text: this.outcome.explanation },
-      { y: 256, size: '14px', color: '#4b2f10', text: `Notes: ${ingredientNames || 'no ingredients'} + ${actionNames || 'no tools'} → ${this.outcome.title}` },
-      { y: 320, size: '14px', color: '#7e2453', text: `Science words:\n${formatVocabularyDefinitions(this.outcome.vocabulary)}` },
-      { y: 396, size: '14px', color: '#273469', text: `Discovery log: ${this.discoveryCount} outcome${this.discoveryCount === 1 ? '' : 's'} found here. Replay to compare results.` },
-      { y: 436, size: '14px', color: '#2f7d38', text: `Next variable test: ${this.variableCoach.nextStep(this.experiment, this.outcome, this.selectedIngredientIds, this.actions)}` },
-      { y: 484, size: '13px', color: '#4b2f10', text: this.outcome.safetyNote },
+      { y: 196, size: '19px', color: '#273469', text: this.outcome.explanation },
+      { y: 272, size: '14px', color: '#4b2f10', text: `Recipe: ${ingredientNames || 'no ingredients'} + ${actionNames || 'no tools'} → ${this.outcome.title}` },
+      { y: 338, size: '13px', color: '#7e2453', text: `Science words:\n${formatVocabularyDefinitions(this.outcome.vocabulary)}` },
+      { y: 420, size: '14px', color: '#2f7d38', text: `🔬 Next mad idea: ${this.variableCoach.nextStep(this.experiment, this.outcome, this.selectedIngredientIds, this.actions)}` },
+      { y: 478, size: '11px', color: '#8a7a5a', text: this.outcome.safetyNote },
     ];
   }
 
@@ -143,7 +180,7 @@ export default class ResultsScene extends Phaser.Scene {
 
   createQuizButton() {
     if (!this.outcome.vocabulary?.length) return;
-    this.quizButton = new Button(this, 110, 520, `🧠 Brain Bonus +${QUIZ_BONUS}`, () => this.openQuiz(), {
+    this.quizButton = new Button(this, 110, 540, `🧠 Brain Bonus +${QUIZ_BONUS}`, () => this.openQuiz(), {
       width: 180,
       height: 46,
       fill: 0xb388ff,

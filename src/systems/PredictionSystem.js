@@ -1,11 +1,11 @@
 export const predictions = [
   { id: 'foam', label: 'Foam climbs up', icon: '🫧', effects: ['foam'] },
-  { id: 'color', label: 'Color changes', icon: '🌈', effects: ['rainbow'] },
-  { id: 'crystal', label: 'Crystals grow', icon: '💎', effects: ['crystal'] },
+  { id: 'color', label: 'Color changes', icon: '🌈', effects: ['rainbow', 'disco', 'galaxy'] },
+  { id: 'crystal', label: 'Crystals grow', icon: '💎', effects: ['crystal', 'snow'] },
   { id: 'layers', label: 'Layers stack', icon: '🥞', effects: ['layers'] },
   { id: 'pressure', label: 'Pressure pops', icon: '🚀', effects: ['pop', 'cork'] },
-  { id: 'speed', label: 'Motion speeds up', icon: '⚡', effects: ['swirl'] },
-  { id: 'chaos', label: 'Funny chaos', icon: '💥', effects: ['soot', 'slime', 'duck'] },
+  { id: 'speed', label: 'Motion speeds up', icon: '⚡', effects: ['swirl', 'lava'] },
+  { id: 'chaos', label: 'Funny chaos', icon: '💥', effects: ['soot', 'slime', 'duck', 'tornado', 'burp', 'blob', 'dragon'] },
 ];
 
 export default class PredictionSystem {

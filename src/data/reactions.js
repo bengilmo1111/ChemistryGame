@@ -178,4 +178,18 @@ export const funnyFailures = [
     explanation: 'That combination was pure lab silliness. The important discovery: not every prediction comes true!',
     vocabulary: ['particles'],
   },
+  {
+    id: 'glitter-tornado',
+    title: 'Glitter Tornado!',
+    effect: 'tornado',
+    explanation: 'The mixture spun itself into a sparkly cartoon tornado. Fast-moving particles can make a real mess!',
+    vocabulary: ['particles', 'reaction speed'],
+  },
+  {
+    id: 'giant-burp',
+    title: 'Giant Flask Burp!',
+    effect: 'burp',
+    explanation: 'Pretend gas built up and escaped all at once — BURP! Excuse the flask. Gas always finds a way out.',
+    vocabulary: ['gas', 'bubbles'],
+  },
 ];

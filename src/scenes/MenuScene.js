@@ -12,8 +12,10 @@ export default class MenuScene extends Phaser.Scene {
   create() {
     this.cameras.main.setBackgroundColor('#15183a');
     this.addDecorations();
-    this.add.image(512, 104, 'art-logo').setDisplaySize(520, 146);
-    this.add.image(150, 426, 'art-junior-scientist').setDisplaySize(164, 210).setAngle(-4);
+    const logo = this.add.image(512, 104, 'art-logo').setDisplaySize(520, 146);
+    this.tweens.add({ targets: logo, y: 110, angle: 1.4, duration: 1900, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
+    const heroArt = this.add.image(150, 426, 'art-junior-scientist').setDisplaySize(164, 210).setAngle(-4);
+    this.tweens.add({ targets: heroArt, y: 420, angle: 2, duration: 1500, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
     this.add.text(150, 552, hero.tagline, {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '17px',
@@ -38,7 +40,8 @@ export default class MenuScene extends Phaser.Scene {
       align: 'center',
       wordWrap: { width: 720 },
     }).setOrigin(0.5);
-    new Button(this, 512, 388, `Play as ${hero.shortName}`, () => this.scene.start('LevelSelectScene'), { width: 300 });
+    const playButton = new Button(this, 512, 388, `Play as ${hero.shortName}`, () => this.scene.start('LevelSelectScene'), { width: 300 });
+    this.tweens.add({ targets: playButton.container, scale: 1.05, duration: 520, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
     new Button(this, 512, 452, '🧪 MAD MIX (Sandbox)', () => this.scene.start('LabScene', { experimentId: 'sandbox' }), { width: 300, fill: 0xa8ffb0, stroke: 0x2f7d38 });
     const sandboxFinds = new DiscoverySystem().getForExperiment('sandbox');
     const secretsFound = secretReactions.filter((secret) => sandboxFinds.includes(secret.id)).length;

@@ -170,4 +170,9 @@ export default class SoundFx {
     this.tone({ freq: 220, sweepTo: 1400, type: 'sawtooth', duration: 0.45, peak: 0.32 });
     this.noise({ duration: 0.5, peak: 0.3, type: 'pink', filterFreq: 2200 });
   }
+
+  burp() {
+    this.tone({ freq: 180, sweepTo: 70, type: 'sawtooth', duration: 0.4, peak: 0.45, decay: 0.3, release: 0.1 });
+    this.noise({ duration: 0.35, peak: 0.3, type: 'brown', filterFreq: 500 });
+  }
 }

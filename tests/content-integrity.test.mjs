@@ -7,6 +7,7 @@ import { experiments } from '../src/data/experiments.js';
 import { funnyFailures, reactionOutcomes, secretReactions } from '../src/data/reactions.js';
 import { reagents } from '../src/data/reagents.js';
 import { vocabularyDefinitions } from '../src/data/vocabulary.js';
+import { predictions } from '../src/systems/PredictionSystem.js';
 
 const validActions = new Set(['stirred', 'heated', 'cooled', 'sealed', 'shaken']);
 const reagentIds = new Set(reagents.map((reagent) => reagent.id));
@@ -76,6 +77,11 @@ for (const failure of funnyFailures) {
   for (const word of failure.vocabulary) {
     assert.ok(vocabularyWords.has(word), `${failure.id} references undefined word ${word}`);
   }
+}
+
+const predictableEffects = new Set(predictions.flatMap((prediction) => prediction.effects));
+for (const outcome of [...reactionOutcomes, ...secretReactions, ...funnyFailures]) {
+  assert.ok(predictableEffects.has(outcome.effect), `${outcome.id} effect "${outcome.effect}" cannot be matched by any prediction button`);
 }
 
 for (const reagent of reagents) {
