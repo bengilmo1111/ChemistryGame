@@ -3,6 +3,7 @@ import { experiments } from '../data/experiments.js';
 import { funnyFailures, reactionOutcomes } from '../data/reactions.js';
 import { defineVocabulary } from '../data/vocabulary.js';
 import DiscoverySystem from '../systems/DiscoverySystem.js';
+import StarSystem from '../systems/StarSystem.js';
 import Button from '../ui/Button.js';
 
 export default class LevelSelectScene extends Phaser.Scene {
@@ -13,6 +14,7 @@ export default class LevelSelectScene extends Phaser.Scene {
   create() {
     this.cameras.main.setBackgroundColor('#20275f');
     this.discoveries = new DiscoverySystem();
+    this.stars = new StarSystem();
     this.add.text(512, 54, 'Choose a Lab Card', {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '44px',
@@ -31,6 +33,13 @@ export default class LevelSelectScene extends Phaser.Scene {
 
   createCard(experiment, x, y) {
     this.add.rectangle(x, y, 280, 216, 0xfff7d6).setStrokeStyle(5, 0x8a5a24);
+    this.add.text(x, y - 108, this.stars.display(experiment.id), {
+      fontFamily: 'Trebuchet MS, sans-serif',
+      fontSize: '22px',
+      color: '#ffd166',
+      stroke: '#11152f',
+      strokeThickness: 5,
+    }).setOrigin(0.5);
     this.add.text(x, y - 86, experiment.title, {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '20px',

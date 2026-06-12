@@ -37,6 +37,12 @@ export const badges = [
     description: 'Used warmth to observe a faster pretend reaction.',
   },
   {
+    id: 'secret-scientist',
+    name: 'Secret Scientist',
+    icon: '🕵️',
+    description: 'Uncovered a secret recipe in the sandbox lab.',
+  },
+  {
     id: 'chaos-noticer',
     name: 'Chaos Noticer',
     icon: '🧪',

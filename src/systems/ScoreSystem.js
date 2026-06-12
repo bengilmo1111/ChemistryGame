@@ -49,6 +49,14 @@ export default class ScoreSystem {
     return { gained, total: this.state.score, streak: this.state.streak };
   }
 
+  addBonus(points = 0) {
+    const gained = Math.max(0, Math.floor(points) || 0);
+    this.state.score += gained;
+    if (this.state.score > this.state.best) this.state.best = this.state.score;
+    this.persist();
+    return { gained, total: this.state.score };
+  }
+
   reset() {
     this.state.score = 0;
     this.state.streak = 0;

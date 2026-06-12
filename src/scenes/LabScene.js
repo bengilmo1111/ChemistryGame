@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { experiments } from '../data/experiments.js';
 import { hero } from '../data/hero.js';
+import { secretReactions } from '../data/reactions.js';
 import { reagents, findReagent } from '../data/reagents.js';
 import BadgeSystem from '../systems/BadgeSystem.js';
 import DangerMeter from '../systems/DangerMeter.js';
@@ -25,12 +26,12 @@ const ACTION_DETAILS = {
 const SANDBOX_EXPERIMENT = {
   id: 'sandbox',
   title: '🧪 MAD MIX — Sandbox Lab',
-  goal: 'Mix anything! Discover every wild reaction.',
-  prompt: 'Drop in any ingredients and try any tools — see what happens!',
+  goal: `Mix anything! ${secretReactions.length} secret recipes are hiding in here.`,
+  prompt: 'Drop in any ingredients and try any tools — secret recipes are hiding!',
   required: [],
   requiredActions: [],
-  actionHint: 'Try wild combos. Every recipe is unlocked.',
-  hints: ['Mix 2 or 3 ingredients to find a real reaction.', 'Tools change the result — try Seal for booms!'],
+  actionHint: 'Open the Recipe Book for secret clues.',
+  hints: ['Secret recipes hide here — check the Recipe Book!', 'Tools change the result — try Seal for booms!'],
   vocabulary: ['particles', 'bubbles', 'gas'],
 };
 
@@ -45,6 +46,12 @@ const SPLASH_WORDS = {
   soot: { word: 'POOF!', color: '#888888' },
   slime: { word: 'BLERG!', color: '#67f2c4' },
   duck: { word: 'QUACK?!', color: '#fff176' },
+  lava: { word: 'BLORP!', color: '#ff9e54' },
+  galaxy: { word: 'WHOA!', color: '#b388ff' },
+  disco: { word: 'GROOVY!', color: '#ff8bd1' },
+  blob: { word: 'BOING!', color: '#a8ffb0' },
+  dragon: { word: 'ACHOO!', color: '#b4ff7a' },
+  snow: { word: 'BRRRR!', color: '#d8fbff' },
 };
 
 function actionLabel(action) {
@@ -74,6 +81,13 @@ export default class LabScene extends Phaser.Scene {
     this.mixCount = 0;
     this.sfx = this.registry.get('sfx');
     this.scoreSystem = this.registry.get('score');
+    this.discoveries = new DiscoverySystem();
+    this.recipeBook = null;
+  }
+
+  secretsFound() {
+    const found = this.discoveries.getForExperiment('sandbox');
+    return secretReactions.filter((secret) => found.includes(secret.id)).length;
   }
 
   create() {
@@ -99,6 +113,9 @@ export default class LabScene extends Phaser.Scene {
     this.mixButton.setEnabled(false);
     this.resetButton = new Button(this, 666, 570, 'Reset Flask', () => this.resetFlask(), { width: 170, height: 46, fill: 0xffffff, stroke: 0x273469, fontSize: '18px', color: '#273469' });
     new Button(this, 92, 44, this.isSandbox ? 'Menu' : 'Cards', () => this.scene.start(this.isSandbox ? 'MenuScene' : 'LevelSelectScene'), { width: 136, height: 44, fill: 0xff8bd1, stroke: 0x7e2453, fontSize: '18px' });
+    if (this.isSandbox) {
+      new Button(this, 666, 512, '📖 Recipe Book', () => this.toggleRecipeBook(), { width: 170, height: 42, fill: 0xfff7d6, stroke: 0x8a5a24, fontSize: '16px', color: '#4b2f10' });
+    }
     this.updateNotebook();
   }
 
@@ -148,7 +165,10 @@ export default class LabScene extends Phaser.Scene {
       lineSpacing: 2,
       wordWrap: { width: 254 },
     }).setOrigin(0.5);
-    this.add.text(858, 110, `Tool clue: ${this.experiment.actionHint}`, {
+    const clueText = this.isSandbox
+      ? `🕵️ Secrets found: ${this.secretsFound()}/${secretReactions.length} — open the Recipe Book!`
+      : `Tool clue: ${this.experiment.actionHint}`;
+    this.labCardClue = this.add.text(858, 110, clueText, {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '11px',
       color: '#273469',
@@ -156,6 +176,59 @@ export default class LabScene extends Phaser.Scene {
       lineSpacing: 2,
       wordWrap: { width: 254 },
     }).setOrigin(0.5);
+  }
+
+  refreshSecretCounter() {
+    if (!this.isSandbox || !this.labCardClue) return;
+    this.labCardClue.setText(`🕵️ Secrets found: ${this.secretsFound()}/${secretReactions.length} — open the Recipe Book!`);
+  }
+
+  toggleRecipeBook() {
+    if (this.recipeBook) {
+      this.closeRecipeBook();
+    } else {
+      this.openRecipeBook();
+    }
+  }
+
+  closeRecipeBook() {
+    this.recipeBook?.destroy();
+    this.recipeBook = null;
+  }
+
+  openRecipeBook() {
+    const found = this.discoveries.getForExperiment('sandbox');
+    this.recipeBook = this.add.container(512, 320).setDepth(60);
+    const backdrop = this.add.rectangle(0, 0, 1024, 640, 0x11152f, 0.55).setInteractive();
+    backdrop.on('pointerdown', () => this.closeRecipeBook());
+    const page = this.add.rectangle(0, 0, 660, 480, 0xfff7d6, 0.98).setStrokeStyle(6, 0x8a5a24);
+    page.setInteractive();
+    const title = this.add.text(0, -210, `📖 Secret Recipe Book — ${this.secretsFound()}/${secretReactions.length} found`, {
+      fontFamily: 'Trebuchet MS, sans-serif',
+      fontSize: '22px',
+      color: '#4b2f10',
+    }).setOrigin(0.5);
+    this.recipeBook.add([backdrop, page, title]);
+    secretReactions.forEach((secret, index) => {
+      const y = -158 + index * 58;
+      const isFound = found.includes(secret.id);
+      const recipe = `${secret.ingredients.map((id) => findReagent(id).name).join(' + ')} + ${secret.requiredActions.map(actionLabel).join(' + ')}`;
+      const heading = isFound ? `✅ ${secret.title}` : '❓ ??? Mystery Recipe';
+      const detail = isFound ? recipe : `Hint: ${secret.hint}`;
+      this.recipeBook.add(this.add.text(-300, y, heading, {
+        fontFamily: 'Trebuchet MS, sans-serif',
+        fontSize: '17px',
+        color: isFound ? '#2f7d38' : '#7e2453',
+      }).setOrigin(0, 0.5));
+      this.recipeBook.add(this.add.text(-300, y + 22, detail, {
+        fontFamily: 'Trebuchet MS, sans-serif',
+        fontSize: '13px',
+        color: '#273469',
+        wordWrap: { width: 600 },
+      }).setOrigin(0, 0.5));
+    });
+    const closeButton = new Button(this, 0, 212, 'Back to mixing!', () => this.closeRecipeBook(), { width: 220, height: 42, fill: 0xffd166, stroke: 0x8a5a24, fontSize: '17px' });
+    this.recipeBook.add(closeButton.container);
   }
 
   createScoreHud() {
@@ -379,11 +452,9 @@ export default class LabScene extends Phaser.Scene {
     const predictionMatched = this.predictions.matchesOutcome(outcome);
     this.mixCount += 1;
 
-    let isNewDiscovery = false;
+    const before = this.discoveries.getForExperiment(this.experiment.id);
+    const isNewDiscovery = !before.includes(outcome.id);
     if (this.scoreSystem) {
-      const discoveries = new DiscoverySystem();
-      const before = discoveries.getForExperiment(this.experiment.id) ?? [];
-      isNewDiscovery = !before.includes(outcome.id);
       const result = this.scoreSystem.award({
         kind: outcome.kind,
         predictionMatched,
@@ -397,6 +468,11 @@ export default class LabScene extends Phaser.Scene {
     new BadgeSystem().award(outcome.badge);
 
     if (this.isSandbox) {
+      this.discoveries.record(this.experiment.id, outcome.id);
+      this.refreshSecretCounter();
+      if (outcome.secret && isNewDiscovery) {
+        this.time.delayedCall(900, () => this.celebrateSecretDiscovery());
+      }
       this.time.delayedCall(2300, () => this.sandboxAftermath(outcome));
     } else {
       this.time.delayedCall(2300, () => {
@@ -418,6 +494,33 @@ export default class LabScene extends Phaser.Scene {
     this.tweens.killTweensOf(this.flask);
     this.flask.setAngle(0).setPosition(392, 386);
     this.resetFlask();
+  }
+
+  celebrateSecretDiscovery() {
+    this.sfx?.jingle();
+    this.confettiBurst();
+    const banner = this.add.text(512, 180, '🕵️ NEW SECRET DISCOVERED!', {
+      fontFamily: 'Trebuchet MS, sans-serif',
+      fontSize: '40px',
+      color: '#fff176',
+      stroke: '#11152f',
+      strokeThickness: 10,
+    }).setOrigin(0.5).setDepth(46).setScale(0);
+    this.tweens.add({ targets: banner, scale: 1, duration: 300, ease: 'Back.Out' });
+    this.tweens.add({ targets: banner, alpha: 0, y: 140, duration: 500, delay: 1300, onComplete: () => banner.destroy() });
+  }
+
+  confettiBurst() {
+    const palette = [0xff4d6d, 0xffd166, 0x72d6ff, 0xb388ff, 0xa8ffb0, 0xff8bd1, 0xfff176];
+    for (let i = 0; i < 50; i += 1) {
+      const piece = this.physics.add.image(Phaser.Math.Between(80, 944), Phaser.Math.Between(-60, -10), 'confetti')
+        .setTint(Phaser.Math.RND.pick(palette))
+        .setScale(Phaser.Math.FloatBetween(0.7, 1.4))
+        .setDepth(44);
+      piece.setVelocity(Phaser.Math.Between(-60, 60), Phaser.Math.Between(40, 160)).setAngularVelocity(Phaser.Math.Between(-360, 360));
+      piece.body.setGravityY(-280);
+      this.time.delayedCall(2600, () => piece.destroy());
+    }
   }
 
   spawnBubbles(count, tint = 0x9de8ff) {
@@ -465,6 +568,13 @@ export default class LabScene extends Phaser.Scene {
     if (outcome.effect === 'layers') this.layerLagoon();
     if (outcome.effect === 'swirl') this.speedySwirls();
     if (outcome.effect === 'pop') this.pressurePop();
+    if (outcome.effect === 'lava') this.lavaLampGlow();
+    if (outcome.effect === 'galaxy') this.galaxySwirl();
+    if (outcome.effect === 'disco') this.discoStorm();
+    if (outcome.effect === 'blob') this.bouncyBlob();
+    if (outcome.effect === 'dragon') this.dragonSneeze();
+    if (outcome.effect === 'snow') this.snowGlobe();
+    if (outcome.kind === 'success') this.confettiBurst();
   }
 
   playOutcomeSound(outcome) {
@@ -480,6 +590,12 @@ export default class LabScene extends Phaser.Scene {
     if (outcome.effect === 'soot') this.sfx.boom();
     if (outcome.effect === 'slime') this.sfx.wahWah();
     if (outcome.effect === 'duck') this.sfx.zap();
+    if (outcome.effect === 'lava') { this.sfx.bubble(); this.sfx.fizz(); }
+    if (outcome.effect === 'galaxy') this.sfx.sparkle();
+    if (outcome.effect === 'disco') { this.sfx.sparkle(); this.sfx.zap(); }
+    if (outcome.effect === 'blob') this.sfx.pop();
+    if (outcome.effect === 'dragon') { this.sfx.boom(); this.sfx.fizz(); }
+    if (outcome.effect === 'snow') this.sfx.sparkle();
     this.time.delayedCall(380, () => {
       if (outcome.kind === 'success') this.sfx.jingle(); else this.sfx.wahWah();
     });
@@ -613,6 +729,86 @@ export default class LabScene extends Phaser.Scene {
       });
     });
     this.time.delayedCall(1800, () => cork.destroy());
+  }
+
+  lavaLampGlow() {
+    this.liquid.setFillStyle(0xff9e54, 0.8);
+    for (let i = 0; i < 9; i += 1) {
+      const blob = this.add.image(392 + Phaser.Math.Between(-38, 38), 440, 'slime')
+        .setTint(Phaser.Math.RND.pick([0xff9e54, 0xffd166, 0xff4d6d]))
+        .setScale(Phaser.Math.FloatBetween(0.4, 0.9))
+        .setAlpha(0.9);
+      this.tweens.add({
+        targets: blob,
+        y: 300 + Phaser.Math.Between(-24, 24),
+        duration: Phaser.Math.Between(600, 1100),
+        yoyo: true,
+        ease: 'Sine.InOut',
+        delay: i * 90,
+        onComplete: () => blob.destroy(),
+      });
+    }
+    this.spawnBubbles(10, 0xffd166);
+  }
+
+  galaxySwirl() {
+    this.liquid.setFillStyle(0x4b2bbf, 0.85);
+    for (let i = 0; i < 18; i += 1) {
+      const star = this.add.text(392 + Phaser.Math.Between(-150, 150), 340 + Phaser.Math.Between(-110, 110), Phaser.Math.RND.pick(['✦', '✧', '⭐']), {
+        fontSize: `${Phaser.Math.Between(14, 30)}px`,
+        color: Phaser.Math.RND.pick(['#ffffff', '#d8fbff', '#fff176']),
+      }).setOrigin(0.5).setAlpha(0).setDepth(8);
+      this.tweens.add({ targets: star, alpha: 1, scale: 1.3, angle: 180, duration: 500, delay: i * 70, yoyo: true, onComplete: () => star.destroy() });
+    }
+    for (let i = 0; i < 12; i += 1) this.spawnFlying('bubble', 392, 380, Phaser.Math.RND.pick([0xb388ff, 0xff8bd1, 0x9de8ff]), -240);
+  }
+
+  discoStorm() {
+    const colors = [0xff4d6d, 0xfff176, 0x72d6ff, 0xb388ff, 0xa8ffb0, 0xff8bd1];
+    colors.forEach((color, index) => {
+      this.time.delayedCall(index * 160, () => {
+        this.flashScreen(color, 0.25, 150);
+        this.liquid.setFillStyle(color, 0.8);
+        for (let i = 0; i < 5; i += 1) this.spawnFlying('crystal', 392, 380, color, -380);
+      });
+    });
+  }
+
+  bouncyBlob() {
+    const blob = this.physics.add.image(392, 380, 'slime').setScale(2.2).setTint(0xa8ffb0);
+    blob.setVelocity(Phaser.Math.Between(-120, 120), -500).setBounce(0.92).setCollideWorldBounds(true).setAngularVelocity(220);
+    this.tweens.add({ targets: blob, scaleX: 2.6, scaleY: 1.8, duration: 160, yoyo: true, repeat: 8 });
+    for (let i = 0; i < 10; i += 1) this.spawnFlying('slime', 392, 420, 0xb4ff7a, -220);
+    this.time.delayedCall(2100, () => blob.destroy());
+  }
+
+  dragonSneeze() {
+    const dragon = this.add.text(392, 300, '🐉', { fontSize: '84px' }).setOrigin(0.5).setScale(0).setDepth(8);
+    this.tweens.add({ targets: dragon, scale: 1.4, duration: 420, ease: 'Back.Out' });
+    this.tweens.add({ targets: dragon, alpha: 0, y: 240, duration: 600, delay: 1100, onComplete: () => dragon.destroy() });
+    for (let i = 0; i < 12; i += 1) {
+      this.time.delayedCall(i * 70, () => {
+        const flame = this.add.text(392 + Phaser.Math.Between(-60, 60), 350, '🔥', { fontSize: `${Phaser.Math.Between(26, 44)}px` }).setOrigin(0.5).setDepth(8);
+        this.tweens.add({ targets: flame, y: flame.y - Phaser.Math.Between(60, 140), alpha: 0, duration: 700, onComplete: () => flame.destroy() });
+      });
+    }
+    this.liquid.setFillStyle(0xb4ff7a, 0.8);
+    for (let i = 0; i < 20; i += 1) this.spawnFlying('foam', 392, 340, 0xb4ff7a, -320);
+  }
+
+  snowGlobe() {
+    this.liquid.setFillStyle(0xd8fbff, 0.7);
+    const dome = this.add.circle(392, 360, 120, 0xd8fbff, 0.12).setStrokeStyle(4, 0xd8fbff, 0.8);
+    this.tweens.add({ targets: dome, alpha: 0, duration: 600, delay: 1600, onComplete: () => dome.destroy() });
+    for (let i = 0; i < 22; i += 1) {
+      this.time.delayedCall(i * 80, () => {
+        const flake = this.add.text(392 + Phaser.Math.Between(-110, 110), 250 + Phaser.Math.Between(-20, 10), '❄️', {
+          fontSize: `${Phaser.Math.Between(14, 26)}px`,
+        }).setOrigin(0.5).setDepth(8);
+        this.tweens.add({ targets: flake, y: flake.y + Phaser.Math.Between(120, 200), x: flake.x + Phaser.Math.Between(-24, 24), alpha: 0.1, duration: 1300, ease: 'Sine.In', onComplete: () => flake.destroy() });
+      });
+    }
+    for (let i = 0; i < 8; i += 1) this.spawnFlying('crystal', 392, 400, 0xffffff, -260);
   }
 
   spawnFlying(texture, x, y, tint, yVelocity = -360) {
