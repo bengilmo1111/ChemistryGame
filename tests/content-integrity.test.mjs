@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { artAssets, reagentArt } from '../src/data/artAssets.js';
 import { badges } from '../src/data/badges.js';
 import { experiments } from '../src/data/experiments.js';
-import { funnyFailures, reactionOutcomes } from '../src/data/reactions.js';
+import { funnyFailures, reactionOutcomes, secretReactions } from '../src/data/reactions.js';
 import { reagents } from '../src/data/reagents.js';
 import { vocabularyDefinitions } from '../src/data/vocabulary.js';
 
@@ -39,6 +39,35 @@ for (const outcome of reactionOutcomes) {
   }
   for (const action of outcome.requiredActions) {
     assert.ok(validActions.has(action), `${outcome.id} references unknown action ${action}`);
+  }
+}
+
+function recipeKey(outcome) {
+  return `${[...outcome.ingredients].sort().join('+')}|${[...outcome.requiredActions].sort().join('+')}`;
+}
+
+const recipeKeys = new Set();
+for (const outcome of [...reactionOutcomes, ...secretReactions]) {
+  const key = recipeKey(outcome);
+  assert.ok(!recipeKeys.has(key), `${outcome.id} duplicates another recipe (${key})`);
+  recipeKeys.add(key);
+}
+
+for (const secret of secretReactions) {
+  assert.ok(secret.secret === true, `${secret.id} should be flagged as secret`);
+  assert.ok(secret.hint, `${secret.id} should give children a cryptic hint`);
+  assert.ok(secret.explanation, `${secret.id} should explain its science idea`);
+  assert.ok(badgeIds.has(secret.badge), `${secret.id} references missing badge ${secret.badge}`);
+  assert.ok(secret.requiredActions.length > 0, `${secret.id} should require at least one tool action`);
+  assert.ok(secret.ingredients.length >= 2, `${secret.id} should mix at least two reagents`);
+  for (const reagentId of secret.ingredients) {
+    assert.ok(reagentIds.has(reagentId), `${secret.id} references missing reagent ${reagentId}`);
+  }
+  for (const action of secret.requiredActions) {
+    assert.ok(validActions.has(action), `${secret.id} references unknown action ${action}`);
+  }
+  for (const word of secret.vocabulary) {
+    assert.ok(vocabularyWords.has(word), `${secret.id} references undefined word ${word}`);
   }
 }
 

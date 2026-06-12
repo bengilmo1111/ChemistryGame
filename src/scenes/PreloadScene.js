@@ -18,7 +18,15 @@ export default class PreloadScene extends Phaser.Scene {
     this.createCircleTexture('slime', 0x67f2c4, 34, 0x1ab98d);
     this.createCrystalTexture();
     this.createCorkTexture();
+    this.createConfettiTexture();
     this.scene.start('MenuScene');
+  }
+
+  createConfettiTexture() {
+    const graphics = this.add.graphics();
+    graphics.fillStyle(0xffffff, 1).fillRoundedRect(0, 0, 14, 9, 3);
+    graphics.generateTexture('confetti', 14, 9);
+    graphics.destroy();
   }
 
   createCircleTexture(key, fill, radius, stroke) {

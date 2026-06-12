@@ -1,5 +1,7 @@
 import Phaser from 'phaser';
 import { hero } from '../data/hero.js';
+import { secretReactions } from '../data/reactions.js';
+import DiscoverySystem from '../systems/DiscoverySystem.js';
 import Button from '../ui/Button.js';
 
 export default class MenuScene extends Phaser.Scene {
@@ -38,6 +40,13 @@ export default class MenuScene extends Phaser.Scene {
     }).setOrigin(0.5);
     new Button(this, 512, 388, `Play as ${hero.shortName}`, () => this.scene.start('LevelSelectScene'), { width: 300 });
     new Button(this, 512, 452, '🧪 MAD MIX (Sandbox)', () => this.scene.start('LabScene', { experimentId: 'sandbox' }), { width: 300, fill: 0xa8ffb0, stroke: 0x2f7d38 });
+    const sandboxFinds = new DiscoverySystem().getForExperiment('sandbox');
+    const secretsFound = secretReactions.filter((secret) => sandboxFinds.includes(secret.id)).length;
+    this.add.text(512, 562, `🕵️ Secret recipes found: ${secretsFound}/${secretReactions.length}`, {
+      fontFamily: 'Trebuchet MS, sans-serif',
+      fontSize: '14px',
+      color: '#a8ffb0',
+    }).setOrigin(0.5);
     new Button(this, 512, 514, 'Safety Promise', () => this.showSafety(), { width: 260, fill: 0x9de8ff, stroke: 0x235b72 });
     this.muteButton = new Button(this, 940, 44, this.muteLabel(), () => this.toggleMute(), { width: 140, height: 40, fill: 0x273469, stroke: 0x9de8ff, fontSize: '14px', color: '#ffffff' });
     const score = this.registry.get('score');

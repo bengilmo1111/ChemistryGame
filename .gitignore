@@ -12,3 +12,4 @@ npm-debug.log*
 # Playtest artifacts
 tests/screenshots/
 tests/screenshots-sandbox/
+tests/screenshots-new-features/

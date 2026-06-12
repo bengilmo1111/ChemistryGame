@@ -1,4 +1,4 @@
-import { funnyFailures, reactionOutcomes } from '../data/reactions.js';
+import { funnyFailures, reactionOutcomes, secretReactions } from '../data/reactions.js';
 
 function sameSet(left, right) {
   return left.length === right.length && left.every((item) => right.includes(item));
@@ -51,7 +51,7 @@ export default class ReactionEngine {
 
   resolveSandbox(ingredientIds, labActions = {}) {
     const uniqueIngredients = [...new Set(ingredientIds)];
-    const match = reactionOutcomes.find(
+    const match = [...secretReactions, ...reactionOutcomes].find(
       (outcome) => sameSet(outcome.ingredients, uniqueIngredients)
         && hasRequiredActions(outcome.requiredActions, labActions),
     );
@@ -60,7 +60,9 @@ export default class ReactionEngine {
       return {
         ...match,
         vocabulary: match.vocabulary ?? [],
-        safetyNote: 'Mad Mix is sandbox play — all reagents are pretend.',
+        safetyNote: match.secret
+          ? 'You found a secret pretend recipe! Real labs never mix mystery chemicals.'
+          : 'Mad Mix is sandbox play — all reagents are pretend.',
       };
     }
 
