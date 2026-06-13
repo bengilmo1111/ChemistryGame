@@ -372,10 +372,10 @@ export default class LabScene extends Phaser.Scene {
   }
 
   createReagents() {
-    this.add.text(42, 248, '2. Grab Ingredients', { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '20px', color: '#ffffff' });
+    this.add.text(42, 242, '2. Grab Ingredients', { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '20px', color: '#ffffff' });
     reagents.forEach((reagent, index) => {
       const x = 60 + (index % 3) * 100;
-      const y = 304 + Math.floor(index / 3) * 92;
+      const y = 322 + Math.floor(index / 3) * 92;
       const bottle = this.add.container(x, y);
       const bottleArt = this.add.image(0, -8, reagent.artKey).setDisplaySize(62, 74);
       const label = this.add.text(0, 34, reagent.name, { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '12px', color: '#ffffff', align: 'center' }).setOrigin(0.5);
