@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { experiments } from '../src/data/experiments.js';
+import { hero, randomQuip } from '../src/data/hero.js';
 import { reactionOutcomes, secretReactions } from '../src/data/reactions.js';
 import DiscoverySystem from '../src/systems/DiscoverySystem.js';
 import LabInventory from '../src/systems/LabInventory.js';
@@ -94,6 +95,9 @@ assert.equal(computeStars({ kind: 'failure' }), 0);
 assert.equal(computeStars({ kind: 'success' }), 1);
 assert.equal(computeStars({ kind: 'success', predictionMatched: true }), 2);
 assert.equal(computeStars({ kind: 'success', predictionMatched: true, discoveryCount: 3 }), 3);
+
+assert.ok(hero.successQuips.includes(randomQuip('success')));
+assert.ok(hero.failureQuips.includes(randomQuip('failure')));
 
 const quiz = buildQuiz(['pressure', 'gas']);
 assert.ok(['pressure', 'gas'].includes(quiz.answer));

@@ -14,6 +14,7 @@ import Button from '../ui/Button.js';
 import LabNotebook from '../ui/LabNotebook.js';
 import Meter from '../ui/Meter.js';
 import Tooltip from '../ui/Tooltip.js';
+import { confettiBurst } from '../ui/effects.js';
 
 const ACTION_DETAILS = {
   stirred: { label: 'Stir', note: 'The spoon spreads ingredients through the flask.', icon: '🥄' },
@@ -52,6 +53,8 @@ const SPLASH_WORDS = {
   blob: { word: 'BOING!', color: '#a8ffb0' },
   dragon: { word: 'ACHOO!', color: '#b4ff7a' },
   snow: { word: 'BRRRR!', color: '#d8fbff' },
+  tornado: { word: 'WHIRRRL!', color: '#fff176' },
+  burp: { word: 'BUUURP!', color: '#b4ff7a' },
 };
 
 function actionLabel(action) {
@@ -129,7 +132,7 @@ export default class LabScene extends Phaser.Scene {
   }
 
   createPredictionButtons() {
-    const labelText = this.isSandbox ? '1. Predict (optional — bonus points!)' : '1. Predict';
+    const labelText = '1. Predict — bonus ⭐ if right!';
     this.add.text(42, 124, labelText, { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '18px', color: '#ffffff' });
     predictions.forEach((prediction, index) => {
       const x = 88 + (index % 4) * 104;
@@ -264,6 +267,7 @@ export default class LabScene extends Phaser.Scene {
   }
 
   createFlask() {
+    this.dropGlow = this.add.ellipse(392, 386, 210, 250, 0xfff176, 0.12).setStrokeStyle(4, 0xfff176, 0.8).setVisible(false);
     this.flask = this.add.container(392, 386);
     const glass = this.add.graphics();
     glass.fillStyle(0xffffff, 0.18).fillRoundedRect(-66, -100, 132, 180, 30);
@@ -271,9 +275,83 @@ export default class LabScene extends Phaser.Scene {
     glass.fillStyle(0x83d8ff, 0.45).fillRoundedRect(-50, 8, 100, 64, 24);
     this.liquid = this.add.rectangle(0, 40, 100, 64, 0x83d8ff, 0.65);
     this.flask.add([glass, this.liquid]);
+    this.createFlaskFace();
     this.dropZone = this.add.zone(392, 386, 160, 200).setRectangleDropZone(160, 200);
     this.add.text(392, 478, 'Drop or tap ingredients here', { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '13px', color: '#ffffff' }).setOrigin(0.5);
     this.input.on('drop', (_pointer, gameObject) => this.addIngredient(gameObject));
+    this.time.addEvent({ delay: 850, loop: true, callback: () => this.ambientBubble() });
+    this.time.addEvent({ delay: 3400, loop: true, callback: () => this.blink() });
+  }
+
+  createFlaskFace() {
+    this.eyes = [];
+    [-24, 24].forEach((offsetX) => {
+      const white = this.add.ellipse(offsetX, -52, 28, 32, 0xffffff, 0.95).setStrokeStyle(3, 0x273469, 0.55);
+      const pupil = this.add.circle(offsetX, -52, 7, 0x273469);
+      this.flask.add([white, pupil]);
+      this.eyes.push({ white, pupil, baseX: offsetX, baseY: -52 });
+    });
+    this.mouth = this.add.graphics();
+    this.flask.add(this.mouth);
+    this.faceMood = null;
+    this.setFaceMood();
+  }
+
+  drawMouth(mood) {
+    this.mouth.clear();
+    this.mouth.lineStyle(4, 0x273469, 0.75);
+    if (mood === 'happy') {
+      this.mouth.beginPath();
+      this.mouth.arc(0, -28, 13, Phaser.Math.DegToRad(25), Phaser.Math.DegToRad(155), false);
+      this.mouth.strokePath();
+    } else if (mood === 'flat') {
+      this.mouth.lineBetween(-11, -20, 11, -20);
+    } else {
+      this.mouth.strokeCircle(0, -19, 7);
+    }
+  }
+
+  setFaceMood() {
+    const label = this.danger.label();
+    const mood = label === 'Curious' ? 'happy' : label === 'Wobbly' ? 'flat' : 'worried';
+    if (mood === this.faceMood) return;
+    this.faceMood = mood;
+    this.drawMouth(mood);
+    if (mood === 'worried') {
+      const sweat = this.add.text(this.flask.x + 48, this.flask.y - 92, '💧', { fontSize: '22px' }).setOrigin(0.5).setDepth(8);
+      this.tweens.add({ targets: sweat, y: sweat.y + 28, alpha: 0, duration: 850, repeat: 2, onComplete: () => sweat.destroy() });
+    }
+  }
+
+  blink() {
+    this.eyes?.forEach(({ white, pupil }) => {
+      this.tweens.add({ targets: [white, pupil], scaleY: 0.12, duration: 70, yoyo: true });
+    });
+  }
+
+  update() {
+    if (!this.eyes?.length) return;
+    const pointer = this.input.activePointer;
+    this.eyes.forEach(({ pupil, baseX, baseY }) => {
+      const eyeX = this.flask.x + baseX;
+      const eyeY = this.flask.y + baseY;
+      const angle = Math.atan2(pointer.worldY - eyeY, pointer.worldX - eyeX);
+      const reach = Math.min(5, Phaser.Math.Distance.Between(pointer.worldX, pointer.worldY, eyeX, eyeY) * 0.05);
+      pupil.x = baseX + Math.cos(angle) * reach;
+      pupil.y = baseY + Math.sin(angle) * reach;
+    });
+  }
+
+  ambientBubble() {
+    if (!this.inventory.selected.length) return;
+    const bubble = this.add.image(392 + Phaser.Math.Between(-34, 34), 442, 'bubble').setScale(0.22).setAlpha(0.65);
+    this.tweens.add({ targets: bubble, y: 392, alpha: 0, duration: 900, ease: 'Sine.Out', onComplete: () => bubble.destroy() });
+  }
+
+  updateLiquidLevel() {
+    const level = Math.min(64 + this.inventory.selected.length * 11, 108);
+    this.liquid.setSize(100, level);
+    this.liquid.y = 72 - level / 2;
   }
 
   createObservationClues() {
@@ -294,10 +372,10 @@ export default class LabScene extends Phaser.Scene {
   }
 
   createReagents() {
-    this.add.text(42, 248, '2. Pick Fictional Ingredients', { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '20px', color: '#ffffff' });
+    this.add.text(42, 242, '2. Grab Ingredients', { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '20px', color: '#ffffff' });
     reagents.forEach((reagent, index) => {
       const x = 60 + (index % 3) * 100;
-      const y = 304 + Math.floor(index / 3) * 92;
+      const y = 322 + Math.floor(index / 3) * 92;
       const bottle = this.add.container(x, y);
       const bottleArt = this.add.image(0, -8, reagent.artKey).setDisplaySize(62, 74);
       const label = this.add.text(0, 34, reagent.name, { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '12px', color: '#ffffff', align: 'center' }).setOrigin(0.5);
@@ -315,8 +393,16 @@ export default class LabScene extends Phaser.Scene {
       this.input.setDraggable(bottle);
     });
 
+    this.input.on('dragstart', (_pointer, gameObject) => {
+      gameObject.setScale?.(1.18);
+      this.dropGlow.setVisible(true).setAlpha(0.6);
+      this.tweens.add({ targets: this.dropGlow, alpha: 1, scaleX: 1.06, scaleY: 1.06, duration: 360, yoyo: true, repeat: -1 });
+    });
     this.input.on('drag', (_pointer, gameObject, dragX, dragY) => gameObject.setPosition(dragX, dragY));
     this.input.on('dragend', (_pointer, gameObject, dropped) => {
+      gameObject.setScale?.(1);
+      this.tweens.killTweensOf(this.dropGlow);
+      this.dropGlow.setVisible(false).setScale(1);
       if (!dropped) {
         const home = gameObject.getData('home');
         this.tweens.add({ targets: gameObject, x: home.x, y: home.y, duration: 220, ease: 'Back.Out' });
@@ -356,8 +442,10 @@ export default class LabScene extends Phaser.Scene {
     this.time.delayedCall(180, () => this.sfx?.bubble());
     this.playPour(reagent);
     this.liquid.setFillStyle(reagent.color, 0.62);
+    this.updateLiquidLevel();
     this.danger.add(12);
     this.meter.setValue(this.danger.value, this.danger.label());
+    this.setFaceMood();
     this.spawnBubbles(8, reagent.color);
     this.dialogue.say(`${reagent.name} added. Observe: ${reagent.clue}`);
     this.updateNotebook();
@@ -378,6 +466,7 @@ export default class LabScene extends Phaser.Scene {
     this.actions[key] = true;
     this.danger.add(key === 'sealed' || key === 'heated' ? 18 : 8);
     this.meter.setValue(this.danger.value, this.danger.label());
+    this.setFaceMood();
     this.cameras.main.shake(90, key === 'shaken' ? 0.01 : 0.004);
     this.toolButtons.get(key)?.back.setFillStyle(0xa8ffb0);
     this.toolButtons.get(key)?.text.setColor('#173f20');
@@ -419,11 +508,20 @@ export default class LabScene extends Phaser.Scene {
   }
 
   updateMixButton() {
-    const hasIngredients = this.inventory.selected.length > 0;
-    const ready = this.isSandbox
-      ? hasIngredients
-      : (Boolean(this.predictions.currentPrediction) && hasIngredients);
+    const ready = this.inventory.selected.length > 0;
     this.mixButton.setEnabled(ready);
+    if (ready && !this.mixPulse) {
+      this.mixPulse = this.tweens.add({ targets: this.mixButton.container, scale: 1.07, duration: 380, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
+    } else if (!ready) {
+      this.stopMixPulse();
+    }
+  }
+
+  stopMixPulse() {
+    if (!this.mixPulse) return;
+    this.mixPulse.stop();
+    this.mixPulse = null;
+    this.mixButton.container.setScale(1);
   }
 
   resetFlask() {
@@ -431,7 +529,9 @@ export default class LabScene extends Phaser.Scene {
     this.actions = { stirred: false, heated: false, cooled: false, sealed: false, shaken: false };
     this.danger = new DangerMeter();
     this.liquid.setFillStyle(0x83d8ff, 0.65);
+    this.updateLiquidLevel();
     this.meter.setValue(this.danger.value, this.danger.label());
+    this.setFaceMood();
     this.toolEffectSprites.forEach((sprite) => sprite.destroy());
     this.toolEffectSprites = [];
     this.predictions = new PredictionSystem();
@@ -498,7 +598,7 @@ export default class LabScene extends Phaser.Scene {
 
   celebrateSecretDiscovery() {
     this.sfx?.jingle();
-    this.confettiBurst();
+    confettiBurst(this);
     const banner = this.add.text(512, 180, '🕵️ NEW SECRET DISCOVERED!', {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '40px',
@@ -510,18 +610,6 @@ export default class LabScene extends Phaser.Scene {
     this.tweens.add({ targets: banner, alpha: 0, y: 140, duration: 500, delay: 1300, onComplete: () => banner.destroy() });
   }
 
-  confettiBurst() {
-    const palette = [0xff4d6d, 0xffd166, 0x72d6ff, 0xb388ff, 0xa8ffb0, 0xff8bd1, 0xfff176];
-    for (let i = 0; i < 50; i += 1) {
-      const piece = this.physics.add.image(Phaser.Math.Between(80, 944), Phaser.Math.Between(-60, -10), 'confetti')
-        .setTint(Phaser.Math.RND.pick(palette))
-        .setScale(Phaser.Math.FloatBetween(0.7, 1.4))
-        .setDepth(44);
-      piece.setVelocity(Phaser.Math.Between(-60, 60), Phaser.Math.Between(40, 160)).setAngularVelocity(Phaser.Math.Between(-360, 360));
-      piece.body.setGravityY(-280);
-      this.time.delayedCall(2600, () => piece.destroy());
-    }
-  }
 
   spawnBubbles(count, tint = 0x9de8ff) {
     for (let i = 0; i < count; i += 1) {
@@ -551,8 +639,14 @@ export default class LabScene extends Phaser.Scene {
   }
 
   playOutcome(outcome) {
+    this.stopMixPulse();
     this.mixButton.setEnabled(false);
     this.dialogue.say(outcome.title);
+    this.eyes?.forEach(({ pupil }) => {
+      this.tweens.add({ targets: pupil, scale: 1.6, duration: 180, yoyo: true, repeat: 2 });
+    });
+    this.cameras.main.zoomTo(1.06, 130, 'Sine.easeInOut');
+    this.time.delayedCall(280, () => this.cameras.main.zoomTo(1, 240, 'Sine.easeInOut'));
     const intensity = outcome.kind === 'success' ? 0.014 : 0.022;
     this.cameras.main.shake(360, intensity);
     this.flashScreen(outcome.kind === 'success' ? 0xfff5a8 : 0xff8bd1);
@@ -574,7 +668,9 @@ export default class LabScene extends Phaser.Scene {
     if (outcome.effect === 'blob') this.bouncyBlob();
     if (outcome.effect === 'dragon') this.dragonSneeze();
     if (outcome.effect === 'snow') this.snowGlobe();
-    if (outcome.kind === 'success') this.confettiBurst();
+    if (outcome.effect === 'tornado') this.glitterTornado();
+    if (outcome.effect === 'burp') this.burpBlast();
+    if (outcome.kind === 'success') confettiBurst(this);
   }
 
   playOutcomeSound(outcome) {
@@ -596,6 +692,8 @@ export default class LabScene extends Phaser.Scene {
     if (outcome.effect === 'blob') this.sfx.pop();
     if (outcome.effect === 'dragon') { this.sfx.boom(); this.sfx.fizz(); }
     if (outcome.effect === 'snow') this.sfx.sparkle();
+    if (outcome.effect === 'tornado') { this.sfx.whoosh(); this.sfx.zap(); }
+    if (outcome.effect === 'burp') this.sfx.burp();
     this.time.delayedCall(380, () => {
       if (outcome.kind === 'success') this.sfx.jingle(); else this.sfx.wahWah();
     });
@@ -809,6 +907,21 @@ export default class LabScene extends Phaser.Scene {
       });
     }
     for (let i = 0; i < 8; i += 1) this.spawnFlying('crystal', 392, 400, 0xffffff, -260);
+  }
+
+  glitterTornado() {
+    const tornado = this.add.text(392, 370, '🌪️', { fontSize: '92px' }).setOrigin(0.5).setDepth(8).setScale(0);
+    this.tweens.add({ targets: tornado, scale: 1.3, angle: 1080, y: 290, duration: 1600, ease: 'Sine.InOut', onComplete: () => tornado.destroy() });
+    for (let i = 0; i < 30; i += 1) {
+      this.time.delayedCall(i * 50, () => this.spawnFlying('crystal', 392, 380, Phaser.Math.RND.pick([0xfff176, 0xff8bd1, 0xd8fbff]), -300));
+    }
+  }
+
+  burpBlast() {
+    const burp = this.add.text(392, 320, '💨', { fontSize: '82px' }).setOrigin(0.5).setScale(0).setDepth(8);
+    this.tweens.add({ targets: burp, scale: 1.8, y: 215, alpha: 0, duration: 1100, ease: 'Sine.Out', onComplete: () => burp.destroy() });
+    this.tweens.add({ targets: this.flask, scaleX: 1.12, scaleY: 0.9, duration: 140, yoyo: true, repeat: 3, onComplete: () => this.flask.setScale(1) });
+    this.spawnBubbles(24, 0xb4ff7a);
   }
 
   spawnFlying(texture, x, y, tint, yVelocity = -360) {

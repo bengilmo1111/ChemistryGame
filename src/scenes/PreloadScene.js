@@ -1,13 +1,17 @@
 import Phaser from 'phaser';
 import { artAssets } from '../data/artAssets.js';
+import { displayScale } from '../systems/displayScale.js';
 export default class PreloadScene extends Phaser.Scene {
   constructor() {
     super('PreloadScene');
   }
 
   preload() {
+    // Rasterize the SVGs at the device pixel ratio. Scenes set the on-screen
+    // size with setDisplaySize, so a denser source texture stays sharp.
+    const scale = displayScale();
     artAssets.forEach((asset) => {
-      this.load.svg(asset.key, asset.path, { width: asset.width, height: asset.height });
+      this.load.svg(asset.key, asset.path, { width: asset.width * scale, height: asset.height * scale });
     });
   }
 
