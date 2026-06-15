@@ -32,13 +32,36 @@ const paulingHero = {
   ],
 };
 
-const paulingFailures = henryFailures.map((failure) => ({
-  ...failure,
-  title: failure.id === 'duck-portal' ? 'Uncontrolled Variable' : failure.title,
-  explanation: failure.id === 'duck-portal'
-    ? 'The combination did not match a supported reaction model. Revise one variable, then test again.'
-    : failure.explanation.replace(/pretend|cartoon/gi, 'classroom-model'),
-}));
+const paulingFailures = [
+  {
+    id: 'no-reaction',
+    title: 'No Reaction Observed',
+    effect: 'soot',
+    explanation: 'The selected reagents do not match a supported reaction model under these simulated conditions. Record the negative result, revise one variable, and test again.',
+    vocabulary: ['evidence', 'variable', 'model'],
+  },
+  {
+    id: 'incomplete-process',
+    title: 'Incomplete Process',
+    effect: 'swirl',
+    explanation: 'The procedure started but did not provide enough evidence for a completed reaction. Check reagent identity, amounts, and the required process step before repeating the trial.',
+    vocabulary: ['procedure', 'evidence', 'reactant'],
+  },
+  {
+    id: 'missing-variable',
+    title: 'Missing Variable',
+    effect: 'layers',
+    explanation: 'The ingredients were appropriate, but a required variable or tool step was missing. Change only that variable and compare the next observation.',
+    vocabulary: ['controlled variable', 'procedure', 'observation'],
+  },
+  {
+    id: 'uncontrolled-variable',
+    title: 'Uncontrolled Variable',
+    effect: 'tornado',
+    explanation: 'Too many variables changed at once, so the simulated observation cannot support a clear conclusion. Reset the trial and control one factor at a time.',
+    vocabulary: ['controlled variable', 'hypothesis', 'conclusion'],
+  },
+];
 
 export const modes = {
   henry: {
@@ -50,7 +73,7 @@ export const modes = {
     reagents: henryReagents,
     reactionOutcomes: henryOutcomes,
     secretReactions: henrySecrets,
-    funnyFailures: henryFailures,
+    failures: henryFailures,
     safetyText: 'All reagents are pretend. Real experiments need a trusted grown-up, goggles, and safe school instructions.',
     colors: { menuBackground: '#15183a', labBackground: '#232a62', sandboxBackground: '#1a3a2a', accent: '#ffd166', cardFill: 0xfff7d6, cardStroke: 0x8a5a24 },
     labels: { play: 'Play as Henry', sandbox: '🧪 MAD MIX (Sandbox)', levelTitle: 'Choose a Lab Card', labIngredients: '2. Grab Ingredients', labTools: '3. Lab Tools', meter: 'Chaos Meter', mix: 'MIX!' },
@@ -64,7 +87,7 @@ export const modes = {
     reagents: paulingReagents,
     reactionOutcomes: paulingOutcomes,
     secretReactions: paulingSecrets,
-    funnyFailures: paulingFailures,
+    failures: paulingFailures,
     safetyText: 'Use classroom chemistry only with an instructor, goggles, labeled dilute solutions, and approved disposal instructions.',
     colors: { menuBackground: '#102334', labBackground: '#18354a', sandboxBackground: '#17352d', accent: '#9de8ff', cardFill: 0xf4fbff, cardStroke: 0x235b72 },
     labels: { play: 'Study with Linus Pauling', sandbox: '🔬 Open Exploration', levelTitle: 'Choose a Chemistry Investigation', labIngredients: '2. Select Reagents', labTools: '3. Procedure Tools', meter: 'Safety Meter', mix: 'React!' },
