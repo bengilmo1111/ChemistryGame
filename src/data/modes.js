@@ -1,9 +1,9 @@
-import { experiments as henryExperiments } from './experiments.js';
+import { experiments as henryExperiments } from './henry/experiments.js';
 import { experiments as paulingExperiments } from './pauling/experiments.js';
-import { hero as henryHero } from './hero.js';
-import { funnyFailures as henryFailures, reactionOutcomes as henryOutcomes, secretReactions as henrySecrets } from './reactions.js';
+import { hero as henryHero } from './henry/hero.js';
+import { funnyFailures as henryFailures, reactionOutcomes as henryOutcomes, secretReactions as henrySecrets } from './henry/reactions.js';
 import { reactionOutcomes as paulingOutcomes, secretReactions as paulingSecrets } from './pauling/reactions.js';
-import { reagents as henryReagents } from './reagents.js';
+import { reagents as henryReagents } from './henry/reagents.js';
 import { reagents as paulingReagents } from './pauling/reagents.js';
 
 const paulingHero = {
