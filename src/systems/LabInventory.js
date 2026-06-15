@@ -1,8 +1,8 @@
 import { reagents } from '../data/reagents.js';
 
 export default class LabInventory {
-  constructor() {
-    this.available = reagents;
+  constructor(available = reagents) {
+    this.available = available;
     this.selected = [];
   }
 

@@ -1,7 +1,5 @@
 import Phaser from 'phaser';
-import { experiments } from '../data/experiments.js';
-import { hero, randomQuip } from '../data/hero.js';
-import { findReagent } from '../data/reagents.js';
+import { getMode } from '../data/modes.js';
 import { formatVocabularyDefinitions } from '../data/vocabulary.js';
 import BadgeSystem from '../systems/BadgeSystem.js';
 import DiscoverySystem from '../systems/DiscoverySystem.js';
@@ -40,7 +38,11 @@ export default class ResultsScene extends Phaser.Scene {
   }
 
   init(data) {
-    this.experiment = experiments.find((experiment) => experiment.id === data.experimentId) ?? experiments[0];
+    this.modeId = data.modeId ?? 'henry';
+    this.mode = getMode(this.modeId);
+    this.hero = this.mode.hero;
+    this.experiment = this.mode.experiments.find((experiment) => experiment.id === data.experimentId) ?? this.mode.experiments[0];
+    this.findReagent = (id) => this.mode.reagents.find((reagent) => reagent.id === id);
     this.outcome = data.outcome;
     this.prediction = data.prediction;
     this.predictionMatched = data.predictionMatched;
@@ -60,14 +62,14 @@ export default class ResultsScene extends Phaser.Scene {
     });
     new StarSystem().record(this.experiment.id, this.starsEarned);
     this.add.image(96, 348, 'art-junior-scientist').setDisplaySize(116, 148).setAngle(-6);
-    this.add.text(96, 442, hero.name, {
+    this.add.text(96, 442, this.hero.name, {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '15px',
       color: '#fff5a8',
       align: 'center',
       wordWrap: { width: 150 },
     }).setOrigin(0.5);
-    this.add.text(96, 484, `💬 "${randomQuip(this.outcome.kind)}"`, {
+    this.add.text(96, 484, `💬 "${this.randomQuip(this.outcome.kind)}"`, {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '13px',
       fontStyle: 'italic',
@@ -125,21 +127,27 @@ export default class ResultsScene extends Phaser.Scene {
     this.showStars();
     this.showBadges();
     this.createQuizButton();
-    new Button(this, 384, 588, 'Replay', () => this.scene.start('LabScene', { experimentId: this.experiment.id }), { width: 170, height: 44, fill: 0x9de8ff, stroke: 0x235b72, fontSize: '20px' });
-    new Button(this, 600, 588, 'More Cards', () => this.scene.start('LevelSelectScene'), { width: 200, height: 44, fill: 0xffd166, stroke: 0x8a5a24, fontSize: '20px' });
+    new Button(this, 384, 588, 'Replay', () => this.scene.start('LabScene', { modeId: this.modeId, experimentId: this.experiment.id }), { width: 170, height: 44, fill: 0x9de8ff, stroke: 0x235b72, fontSize: '20px' });
+    new Button(this, 600, 588, 'More Cards', () => this.scene.start('LevelSelectScene', { modeId: this.modeId }), { width: 200, height: 44, fill: 0xffd166, stroke: 0x8a5a24, fontSize: '20px' });
     new Button(this, 810, 588, 'Menu', () => this.scene.start('MenuScene'), { width: 130, height: 44, fill: 0xff8bd1, stroke: 0x7e2453, fontSize: '20px' });
   }
 
+
+  randomQuip(kind = 'success') {
+    const pool = kind === 'success' ? this.hero.successQuips : this.hero.failureQuips;
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+
   layoutRows() {
-    const ingredientNames = this.selectedIngredientIds.map((id) => findReagent(id)?.name).filter(Boolean).join(' + ');
+    const ingredientNames = this.selectedIngredientIds.map((id) => this.findReagent(id)?.name).filter(Boolean).join(' + ');
     const actionNames = Object.entries(this.actions).filter(([, used]) => used).map(([name]) => ({ stirred: 'Stir', heated: 'Warm', cooled: 'Cool', sealed: 'Seal', shaken: 'Shake' }[name] ?? name)).join(', ');
     const predictionMessage = !this.prediction
       ? `No prediction this time — take a guess next mix for bonus ⭐!`
       : this.predictionMatched
-        ? `Nailed it, ${hero.shortName} — your prediction matched!${this.outcome.kind === 'success' ? ' +50 ⭐' : ''}`
-        : `Surprise, ${hero.shortName}! The flask had other plans.`;
+        ? `Nailed it, ${this.hero.shortName} — your prediction matched!${this.outcome.kind === 'success' ? ' +50 ⭐' : ''}`
+        : `Surprise, ${this.hero.shortName}! The flask had other plans.`;
     return [
-      { y: 110, size: '20px', color: '#4b2f10', text: `${hero.shortName}'s prediction: ${this.prediction?.icon ?? '❔'} ${this.prediction?.label ?? 'none'}` },
+      { y: 110, size: '20px', color: '#4b2f10', text: `${this.hero.shortName}'s prediction: ${this.prediction?.icon ?? '❔'} ${this.prediction?.label ?? 'none'}` },
       { y: 140, size: '17px', color: this.predictionMatched ? '#2f7d38' : '#7e2453', text: predictionMessage },
       { y: 196, size: '19px', color: '#273469', text: this.outcome.explanation },
       { y: 272, size: '14px', color: '#4b2f10', text: `Recipe: ${ingredientNames || 'no ingredients'} + ${actionNames || 'no tools'} → ${this.outcome.title}` },
