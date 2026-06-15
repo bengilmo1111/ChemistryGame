@@ -84,7 +84,7 @@ export default class LabScene extends Phaser.Scene {
     this.reagents = this.mode.reagents;
     this.reactionOutcomes = this.mode.reactionOutcomes;
     this.secretReactions = this.mode.secretReactions;
-    this.funnyFailures = this.mode.funnyFailures;
+    this.failures = this.mode.failures ?? this.mode.funnyFailures;
     this.safetyText = this.mode.safetyText;
     this.modeColors = this.mode.colors;
     this.modeLabels = this.mode.labels;
@@ -94,7 +94,12 @@ export default class LabScene extends Phaser.Scene {
     this.isSandbox = this.experiment.id === 'sandbox';
     this.inventory = new LabInventory(this.reagents);
     this.predictions = new PredictionSystem();
-    this.engine = new ReactionEngine(this.mode);
+    this.engine = new ReactionEngine({
+      reactionOutcomes: this.reactionOutcomes,
+      secretReactions: this.secretReactions,
+      failures: this.failures,
+      safetyCopy: this.safetyText,
+    });
     this.danger = new DangerMeter();
     this.actions = { stirred: false, heated: false, cooled: false, sealed: false, shaken: false };
     this.toolEffectSprites = [];

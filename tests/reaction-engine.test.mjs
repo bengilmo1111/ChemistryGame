@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { experiments } from '../src/data/experiments.js';
 import { hero, randomQuip } from '../src/data/hero.js';
-import { reactionOutcomes, secretReactions } from '../src/data/reactions.js';
+import { reactionOutcomes, secretReactions, funnyFailures } from '../src/data/reactions.js';
+import { getMode } from '../src/data/modes.js';
 import DiscoverySystem from '../src/systems/DiscoverySystem.js';
 import LabInventory from '../src/systems/LabInventory.js';
 import PredictionSystem from '../src/systems/PredictionSystem.js';
@@ -12,7 +13,7 @@ import StarSystem, { computeStars } from '../src/systems/StarSystem.js';
 import VariableCoach from '../src/systems/VariableCoach.js';
 import { defineVocabulary, formatVocabularyDefinitions, vocabularyDefinitions } from '../src/data/vocabulary.js';
 
-const engine = new ReactionEngine();
+const engine = new ReactionEngine({ reactionOutcomes, secretReactions, failures: funnyFailures });
 
 assert.deepEqual(defineVocabulary(['gas'])[0], {
   word: 'gas',
@@ -90,6 +91,23 @@ assert.equal(sandboxKnown.id, 'foam-eruption', 'sandbox should still resolve reg
 
 const sandboxMess = engine.resolveSandbox(['fizz-powder'], {});
 assert.equal(sandboxMess.kind, 'failure');
+
+const paulingMode = getMode('pauling');
+const paulingEngine = new ReactionEngine({
+  reactionOutcomes: paulingMode.reactionOutcomes,
+  secretReactions: paulingMode.secretReactions,
+  failures: paulingMode.failures,
+  safetyCopy: paulingMode.safetyText,
+});
+const paulingExperiment = paulingMode.experiments.find((item) => item.id === 'co2-generation');
+const paulingMissingTool = paulingEngine.resolve(paulingExperiment, paulingExperiment.required);
+assert.equal(paulingMissingTool.id, 'missing-variable');
+assert.match(paulingMissingTool.title, /Missing Variable/i);
+assert.doesNotMatch(paulingMissingTool.explanation, /cartoon|duck|goblin/i);
+const paulingNoReaction = paulingEngine.resolve(paulingExperiment, ['water'], {});
+assert.ok(['no-reaction', 'incomplete-process', 'uncontrolled-variable', 'missing-variable'].includes(paulingNoReaction.id));
+assert.doesNotMatch(paulingNoReaction.explanation, /cartoon|duck|goblin/i);
+
 
 assert.equal(computeStars({ kind: 'failure' }), 0);
 assert.equal(computeStars({ kind: 'success' }), 1);
