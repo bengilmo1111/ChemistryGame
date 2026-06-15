@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="220" height="280" viewBox="0 0 220 280" role="img" aria-labelledby="title desc">
-  <title id="title">Henry Gilmore, Junior Mad Scientist</title>
-  <desc id="desc">Henry Gilmore, a smiling child scientist with goggles, gloves, and a friendly lab coat with a name badge.</desc>
+  <title id="title">Henry the Mad Scientist</title>
+  <desc id="desc">Henry the Mad Scientist, a smiling child scientist with goggles, gloves, and a friendly lab coat with a name badge.</desc>
   <defs>
     <linearGradient id="hair" x1="0" x2="1"><stop offset="0" stop-color="#4b2f10"/><stop offset="1" stop-color="#7e2453"/></linearGradient>
   </defs>
