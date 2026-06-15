@@ -1,8 +1,5 @@
 import Phaser from 'phaser';
-import { experiments } from '../data/experiments.js';
-import { hero } from '../data/hero.js';
-import { secretReactions } from '../data/reactions.js';
-import { reagents, findReagent } from '../data/reagents.js';
+import { getMode } from '../data/modes.js';
 import BadgeSystem from '../systems/BadgeSystem.js';
 import DangerMeter from '../systems/DangerMeter.js';
 import DialogueSystem from '../systems/DialogueSystem.js';
@@ -27,7 +24,7 @@ const ACTION_DETAILS = {
 const SANDBOX_EXPERIMENT = {
   id: 'sandbox',
   title: '🧪 MAD MIX — Sandbox Lab',
-  goal: `Mix anything! ${secretReactions.length} secret recipes are hiding in here.`,
+  goal: 'Mix anything! Secret recipes are hiding in here.',
   prompt: 'Drop in any ingredients and try any tools — secret recipes are hiding!',
   required: [],
   requiredActions: [],
@@ -61,8 +58,16 @@ function actionLabel(action) {
   return ACTION_DETAILS[action]?.label ?? action;
 }
 
-function findExperiment(id) {
-  if (id === 'sandbox') return SANDBOX_EXPERIMENT;
+function makeSandboxExperiment(secretReactions, labels) {
+  return {
+    ...SANDBOX_EXPERIMENT,
+    goal: `Mix anything! ${secretReactions.length} secret recipes are hiding in here.`,
+    title: labels?.sandbox ?? SANDBOX_EXPERIMENT.title,
+  };
+}
+
+function findExperiment(id, experiments, sandboxExperiment) {
+  if (id === 'sandbox') return sandboxExperiment;
   return experiments.find((experiment) => experiment.id === id) ?? experiments[0];
 }
 
@@ -71,12 +76,25 @@ export default class LabScene extends Phaser.Scene {
     super('LabScene');
   }
 
-  init(data) {
-    this.experiment = findExperiment(data.experimentId);
+  init(data = {}) {
+    this.modeId = data.modeId ?? 'henry';
+    this.mode = getMode(this.modeId);
+    this.hero = this.mode.hero;
+    this.experiments = this.mode.experiments;
+    this.reagents = this.mode.reagents;
+    this.reactionOutcomes = this.mode.reactionOutcomes;
+    this.secretReactions = this.mode.secretReactions;
+    this.funnyFailures = this.mode.funnyFailures;
+    this.safetyText = this.mode.safetyText;
+    this.modeColors = this.mode.colors;
+    this.modeLabels = this.mode.labels;
+    this.findReagent = (id) => this.reagents.find((reagent) => reagent.id === id);
+    this.sandboxExperiment = makeSandboxExperiment(this.secretReactions, this.modeLabels);
+    this.experiment = findExperiment(data.experimentId, this.experiments, this.sandboxExperiment);
     this.isSandbox = this.experiment.id === 'sandbox';
-    this.inventory = new LabInventory();
+    this.inventory = new LabInventory(this.reagents);
     this.predictions = new PredictionSystem();
-    this.engine = new ReactionEngine();
+    this.engine = new ReactionEngine(this.mode);
     this.danger = new DangerMeter();
     this.actions = { stirred: false, heated: false, cooled: false, sealed: false, shaken: false };
     this.toolEffectSprites = [];
@@ -90,20 +108,20 @@ export default class LabScene extends Phaser.Scene {
 
   secretsFound() {
     const found = this.discoveries.getForExperiment('sandbox');
-    return secretReactions.filter((secret) => found.includes(secret.id)).length;
+    return this.secretReactions.filter((secret) => found.includes(secret.id)).length;
   }
 
   create() {
-    this.cameras.main.setBackgroundColor(this.isSandbox ? '#1a3a2a' : '#232a62');
+    this.cameras.main.setBackgroundColor(this.isSandbox ? this.modeColors.sandboxBackground : this.modeColors.labBackground);
     this.physics.world.setBounds(0, 0, 1024, 640);
     this.addLabBench();
     this.dialogue = new DialogueSystem(this, 380, 80, 650, 56);
     const greet = this.isSandbox
-      ? `${hero.shortName}, ${this.experiment.prompt}`
-      : `${hero.shortName}, ${this.experiment.prompt}`;
+      ? `${this.hero.shortName}, ${this.experiment.prompt}`
+      : `${this.hero.shortName}, ${this.experiment.prompt}`;
     this.dialogue.say(greet);
     this.notebook = new LabNotebook(this, 858, 250);
-    this.meter = new Meter(this, 858, 422, 'Chaos Meter');
+    this.meter = new Meter(this, 858, 422, this.modeLabels.meter);
     this.tooltip = new Tooltip(this);
     this.createPredictionButtons();
     this.createLabCard();
@@ -112,10 +130,10 @@ export default class LabScene extends Phaser.Scene {
     this.createReagents();
     this.createToolButtons();
     this.createScoreHud();
-    this.mixButton = new Button(this, 858, 570, 'MIX!', () => this.mix(), { width: 180, height: 58, fill: 0xffd166, fontSize: '26px' });
+    this.mixButton = new Button(this, 858, 570, this.modeLabels.mix, () => this.mix(), { width: 180, height: 58, fill: 0xffd166, fontSize: '26px' });
     this.mixButton.setEnabled(false);
     this.resetButton = new Button(this, 666, 570, 'Reset Flask', () => this.resetFlask(), { width: 170, height: 46, fill: 0xffffff, stroke: 0x273469, fontSize: '18px', color: '#273469' });
-    new Button(this, 92, 44, this.isSandbox ? 'Menu' : 'Cards', () => this.scene.start(this.isSandbox ? 'MenuScene' : 'LevelSelectScene'), { width: 136, height: 44, fill: 0xff8bd1, stroke: 0x7e2453, fontSize: '18px' });
+    new Button(this, 92, 44, this.isSandbox ? 'Menu' : 'Cards', () => this.scene.start(this.isSandbox ? 'MenuScene' : 'LevelSelectScene', { modeId: this.modeId }), { width: 136, height: 44, fill: 0xff8bd1, stroke: 0x7e2453, fontSize: '18px' });
     if (this.isSandbox) {
       new Button(this, 666, 512, '📖 Recipe Book', () => this.toggleRecipeBook(), { width: 170, height: 42, fill: 0xfff7d6, stroke: 0x8a5a24, fontSize: '16px', color: '#4b2f10' });
     }
@@ -127,7 +145,7 @@ export default class LabScene extends Phaser.Scene {
     this.add.text(512, 28, this.experiment.title, {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '26px',
-      color: this.isSandbox ? '#a8ffb0' : '#fff5a8',
+      color: this.isSandbox ? '#a8ffb0' : this.modeColors.accent,
     }).setOrigin(0.5);
   }
 
@@ -140,7 +158,7 @@ export default class LabScene extends Phaser.Scene {
       const button = new Button(this, x, y, `${prediction.icon} ${prediction.label}`, () => {
         this.predictions.choose(prediction.id);
         this.highlightPrediction(prediction.id);
-        this.dialogue.say(`${hero.shortName}'s prediction: ${prediction.label}. Drag or tap ingredients into the flask.`);
+        this.dialogue.say(`${this.hero.shortName}'s prediction: ${prediction.label}. Drag or tap ingredients into the flask.`);
         this.updateNotebook();
         this.updateMixButton();
       }, { width: 98, height: 38, fill: 0x9de8ff, stroke: 0x235b72, fontSize: '11px' });
@@ -169,7 +187,7 @@ export default class LabScene extends Phaser.Scene {
       wordWrap: { width: 254 },
     }).setOrigin(0.5);
     const clueText = this.isSandbox
-      ? `🕵️ Secrets found: ${this.secretsFound()}/${secretReactions.length} — open the Recipe Book!`
+      ? `🕵️ Secrets found: ${this.secretsFound()}/${this.secretReactions.length} — open the Recipe Book!`
       : `Tool clue: ${this.experiment.actionHint}`;
     this.labCardClue = this.add.text(858, 110, clueText, {
       fontFamily: 'Trebuchet MS, sans-serif',
@@ -183,7 +201,7 @@ export default class LabScene extends Phaser.Scene {
 
   refreshSecretCounter() {
     if (!this.isSandbox || !this.labCardClue) return;
-    this.labCardClue.setText(`🕵️ Secrets found: ${this.secretsFound()}/${secretReactions.length} — open the Recipe Book!`);
+    this.labCardClue.setText(`🕵️ Secrets found: ${this.secretsFound()}/${this.secretReactions.length} — open the Recipe Book!`);
   }
 
   toggleRecipeBook() {
@@ -206,16 +224,16 @@ export default class LabScene extends Phaser.Scene {
     backdrop.on('pointerdown', () => this.closeRecipeBook());
     const page = this.add.rectangle(0, 0, 660, 480, 0xfff7d6, 0.98).setStrokeStyle(6, 0x8a5a24);
     page.setInteractive();
-    const title = this.add.text(0, -210, `📖 Secret Recipe Book — ${this.secretsFound()}/${secretReactions.length} found`, {
+    const title = this.add.text(0, -210, `📖 Secret Recipe Book — ${this.secretsFound()}/${this.secretReactions.length} found`, {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '22px',
       color: '#4b2f10',
     }).setOrigin(0.5);
     this.recipeBook.add([backdrop, page, title]);
-    secretReactions.forEach((secret, index) => {
+    this.secretReactions.forEach((secret, index) => {
       const y = -158 + index * 58;
       const isFound = found.includes(secret.id);
-      const recipe = `${secret.ingredients.map((id) => findReagent(id).name).join(' + ')} + ${secret.requiredActions.map(actionLabel).join(' + ')}`;
+      const recipe = `${secret.ingredients.map((id) => this.findReagent(id).name).join(' + ')} + ${secret.requiredActions.map(actionLabel).join(' + ')}`;
       const heading = isFound ? `✅ ${secret.title}` : '❓ ??? Mystery Recipe';
       const detail = isFound ? recipe : `Hint: ${secret.hint}`;
       this.recipeBook.add(this.add.text(-300, y, heading, {
@@ -372,8 +390,8 @@ export default class LabScene extends Phaser.Scene {
   }
 
   createReagents() {
-    this.add.text(42, 242, '2. Grab Ingredients', { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '20px', color: '#ffffff' });
-    reagents.forEach((reagent, index) => {
+    this.add.text(42, 242, this.modeLabels.labIngredients, { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '20px', color: '#ffffff' });
+    this.reagents.forEach((reagent, index) => {
       const x = 60 + (index % 3) * 100;
       const y = 322 + Math.floor(index / 3) * 92;
       const bottle = this.add.container(x, y);
@@ -411,7 +429,7 @@ export default class LabScene extends Phaser.Scene {
   }
 
   createToolButtons() {
-    this.add.text(564, 248, '3. Lab Tools', { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '22px', color: '#ffffff' });
+    this.add.text(564, 248, this.modeLabels.labTools, { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '22px', color: '#ffffff' });
     const tools = Object.entries(ACTION_DETAILS).map(([key, detail]) => [key, `${detail.icon} ${detail.label}`]);
     this.add.text(622, 274, 'Tools change cause and effect.', { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '13px', color: '#fff5a8' }).setOrigin(0.5);
     this.toolButtons = new Map();
@@ -429,7 +447,7 @@ export default class LabScene extends Phaser.Scene {
   }
 
   addIngredientById(reagentId, sourceObject = null) {
-    const reagent = findReagent(reagentId);
+    const reagent = this.findReagent(reagentId);
     const added = this.inventory.add(reagentId);
     if (!added) {
       this.dialogue.say(`${reagent.name} is already in the flask. Try a different ingredient or mix your prediction!`);
@@ -488,7 +506,7 @@ export default class LabScene extends Phaser.Scene {
   updateNotebook() {
     this.notebook.update({
       prediction: this.predictions.currentPrediction,
-      ingredients: this.inventory.selected.map((id) => findReagent(id).name),
+      ingredients: this.inventory.selected.map((id) => this.findReagent(id).name),
       actions: Object.entries(this.actions).filter(([, used]) => used).map(([key]) => actionLabel(key)),
       toolHint: this.experiment.actionHint,
       observations: this.experiment.hints,
@@ -540,7 +558,7 @@ export default class LabScene extends Phaser.Scene {
       button.back.setFillStyle(0xb388ff);
       button.text.setColor('#ffffff');
     });
-    this.dialogue.say(`Flask reset, ${hero.shortName}. Make a prediction, choose ingredients, try tools, and observe again.`);
+    this.dialogue.say(`Flask reset, ${this.hero.shortName}. Make a prediction, choose ingredients, try tools, and observe again.`);
     this.updateNotebook();
     this.updateMixButton();
   }
@@ -579,6 +597,7 @@ export default class LabScene extends Phaser.Scene {
         this.tweens.killAll();
         this.scene.start('ResultsScene', {
           experimentId: this.experiment.id,
+          modeId: this.modeId,
           outcome,
           prediction: this.predictions.currentPrediction,
           predictionMatched,

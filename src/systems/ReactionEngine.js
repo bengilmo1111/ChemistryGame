@@ -1,4 +1,4 @@
-import { funnyFailures, reactionOutcomes, secretReactions } from '../data/reactions.js';
+import { funnyFailures as defaultFailures, reactionOutcomes as defaultOutcomes, secretReactions as defaultSecrets } from '../data/reactions.js';
 
 function sameSet(left, right) {
   return left.length === right.length && left.every((item) => right.includes(item));
@@ -9,9 +9,16 @@ function hasRequiredActions(requiredActions = [], labActions = {}) {
 }
 
 export default class ReactionEngine {
+  constructor({ reactionOutcomes = defaultOutcomes, secretReactions = defaultSecrets, funnyFailures = defaultFailures, safetyText = null } = {}) {
+    this.reactionOutcomes = reactionOutcomes;
+    this.secretReactions = secretReactions;
+    this.funnyFailures = funnyFailures;
+    this.safetyText = safetyText;
+  }
+
   resolve(experiment, ingredientIds, labActions = {}) {
     const uniqueIngredients = [...new Set(ingredientIds)];
-    const success = reactionOutcomes.find(
+    const success = this.reactionOutcomes.find(
       (outcome) => outcome.experimentId === experiment.id
         && sameSet(outcome.ingredients, uniqueIngredients)
         && hasRequiredActions(outcome.requiredActions, labActions),
@@ -21,16 +28,16 @@ export default class ReactionEngine {
       return {
         ...success,
         vocabulary: experiment.vocabulary,
-        safetyNote: 'Mad Flask Lab uses fictional ingredients only. Real labs need a grown-up, goggles, and safe instructions.',
+        safetyNote: this.safetyText ?? 'Mad Flask Lab uses fictional ingredients only. Real labs need a grown-up, goggles, and safe instructions.',
       };
     }
 
     const missingActions = (experiment.requiredActions ?? []).filter((action) => !labActions[action]);
     const actionBonus = labActions.sealed ? 0 : labActions.heated ? 1 : labActions.shaken ? 2 : 3;
-    const failureIndex = (uniqueIngredients.join('').length + experiment.id.length + actionBonus) % funnyFailures.length;
+    const failureIndex = (uniqueIngredients.join('').length + experiment.id.length + actionBonus) % this.funnyFailures.length;
     const failure = missingActions.length > 0 && sameSet(experiment.required, uniqueIngredients)
-      ? funnyFailures.find((item) => item.id === 'soot-face')
-      : funnyFailures[failureIndex];
+      ? this.funnyFailures.find((item) => item.id === 'soot-face')
+      : this.funnyFailures[failureIndex];
 
     const explanation = missingActions.length > 0 && sameSet(experiment.required, uniqueIngredients)
       ? `The ingredients were close, but the flask needed a tool step: ${missingActions.join(', ')}. Scientists change one thing at a time and try again.`
@@ -45,13 +52,13 @@ export default class ReactionEngine {
       badge: 'chaos-noticer',
       missingActions,
       vocabulary,
-      safetyNote: 'This was a cartoon failure, not a real recipe. Safe scientists test ideas carefully.',
+      safetyNote: this.safetyText ?? 'This was a cartoon failure, not a real recipe. Safe scientists test ideas carefully.',
     };
   }
 
   resolveSandbox(ingredientIds, labActions = {}) {
     const uniqueIngredients = [...new Set(ingredientIds)];
-    const match = [...secretReactions, ...reactionOutcomes].find(
+    const match = [...this.secretReactions, ...this.reactionOutcomes].find(
       (outcome) => sameSet(outcome.ingredients, uniqueIngredients)
         && hasRequiredActions(outcome.requiredActions, labActions),
     );
@@ -60,22 +67,22 @@ export default class ReactionEngine {
       return {
         ...match,
         vocabulary: match.vocabulary ?? [],
-        safetyNote: match.secret
+        safetyNote: this.safetyText ?? (match.secret
           ? 'You found a secret pretend recipe! Real labs never mix mystery chemicals.'
-          : 'Mad Mix is sandbox play — all reagents are pretend.',
+          : 'Mad Mix is sandbox play — all reagents are pretend.'),
       };
     }
 
     const seed = uniqueIngredients.join('').length
       + Object.values(labActions).filter(Boolean).length * 3;
-    const failure = funnyFailures[seed % funnyFailures.length];
+    const failure = this.funnyFailures[seed % this.funnyFailures.length];
     return {
       ...failure,
       kind: 'failure',
       badge: 'chaos-noticer',
       missingActions: [],
       vocabulary: failure.vocabulary ?? [],
-      safetyNote: 'Mad Mix is sandbox play — surprising combos make pretend mess only.',
+      safetyNote: this.safetyText ?? 'Mad Mix is sandbox play — surprising combos make pretend mess only.',
     };
   }
 }

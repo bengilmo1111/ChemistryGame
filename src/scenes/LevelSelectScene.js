@@ -1,6 +1,5 @@
 import Phaser from 'phaser';
-import { experiments } from '../data/experiments.js';
-import { funnyFailures, reactionOutcomes } from '../data/reactions.js';
+import { getMode } from '../data/modes.js';
 import { defineVocabulary } from '../data/vocabulary.js';
 import DiscoverySystem from '../systems/DiscoverySystem.js';
 import StarSystem from '../systems/StarSystem.js';
@@ -11,11 +10,19 @@ export default class LevelSelectScene extends Phaser.Scene {
     super('LevelSelectScene');
   }
 
+  init(data = {}) {
+    this.modeId = data.modeId ?? 'henry';
+    this.mode = getMode(this.modeId);
+    this.experiments = this.mode.experiments;
+    this.reactionOutcomes = this.mode.reactionOutcomes;
+    this.funnyFailures = this.mode.funnyFailures;
+  }
+
   create() {
     this.cameras.main.setBackgroundColor('#20275f');
     this.discoveries = new DiscoverySystem();
     this.stars = new StarSystem();
-    this.add.text(512, 54, 'Choose a Lab Card', {
+    this.add.text(512, 54, this.mode.labels.levelTitle, {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '44px',
       color: '#ffffff',
@@ -23,7 +30,7 @@ export default class LevelSelectScene extends Phaser.Scene {
       strokeThickness: 6,
     }).setOrigin(0.5);
 
-    experiments.forEach((experiment, index) => {
+    this.experiments.forEach((experiment, index) => {
       const column = index % 3;
       const row = Math.floor(index / 3);
       this.createCard(experiment, 206 + column * 306, 236 + row * 230);
@@ -66,7 +73,7 @@ export default class LevelSelectScene extends Phaser.Scene {
       lineSpacing: 2,
       wordWrap: { width: 252 },
     }).setOrigin(0.5);
-    const totalDiscoveries = reactionOutcomes.filter((outcome) => outcome.experimentId === experiment.id).length + funnyFailures.length;
+    const totalDiscoveries = this.reactionOutcomes.filter((outcome) => outcome.experimentId === experiment.id).length + this.funnyFailures.length;
     const foundDiscoveries = this.discoveries.countForExperiment(experiment.id);
     this.add.text(x, y + 56, `Discovered: ${foundDiscoveries}/${totalDiscoveries} outcomes`, {
       fontFamily: 'Trebuchet MS, sans-serif',
@@ -75,7 +82,7 @@ export default class LevelSelectScene extends Phaser.Scene {
       align: 'center',
       wordWrap: { width: 254 },
     }).setOrigin(0.5);
-    new Button(this, x, y + 82, 'Experiment!', () => this.scene.start('LabScene', { experimentId: experiment.id }), {
+    new Button(this, x, y + 82, 'Experiment!', () => this.scene.start('LabScene', { modeId: this.modeId, experimentId: experiment.id }), {
       width: 170,
       height: 38,
       fill: 0xa8ffb0,
