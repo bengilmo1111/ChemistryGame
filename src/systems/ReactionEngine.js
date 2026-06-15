@@ -28,7 +28,7 @@ export default class ReactionEngine {
       return {
         ...success,
         vocabulary: experiment.vocabulary,
-        safetyNote: this.safetyText ?? 'Mad Flask Lab uses fictional ingredients only. Real labs need a grown-up, goggles, and safe instructions.',
+        safetyNote: success.safetyNote ?? this.safetyText ?? 'Mad Flask Lab uses fictional ingredients only. Real labs need a grown-up, goggles, and safe instructions.',
       };
     }
 
@@ -67,7 +67,7 @@ export default class ReactionEngine {
       return {
         ...match,
         vocabulary: match.vocabulary ?? [],
-        safetyNote: this.safetyText ?? (match.secret
+        safetyNote: match.safetyNote ?? this.safetyText ?? (match.secret
           ? 'You found a secret pretend recipe! Real labs never mix mystery chemicals.'
           : 'Mad Mix is sandbox play — all reagents are pretend.'),
       };
