@@ -53,7 +53,7 @@ export default class ResultsScene extends Phaser.Scene {
   }
 
   create() {
-    this.cameras.main.setBackgroundColor('#15183a');
+    this.cameras.main.setBackgroundColor(this.mode.colors.menuBackground ?? '#15183a');
     this.discoveryCount = new DiscoverySystem().record(this.experiment.id, this.outcome.id, this.modeId).length;
     this.starsEarned = computeStars({
       kind: this.outcome.kind,
@@ -138,21 +138,33 @@ export default class ResultsScene extends Phaser.Scene {
     return pool[Math.floor(Math.random() * pool.length)];
   }
 
+  predictionFeedback() {
+    if (!this.prediction) {
+      return this.modeId === 'pauling'
+        ? 'No hypothesis recorded — choose one next trial to compare evidence clearly.'
+        : 'No prediction this time — take a guess next mix for bonus ⭐!';
+    }
+    if (this.predictionMatched) {
+      return this.modeId === 'pauling'
+        ? `Evidence matched the hypothesis, ${this.hero.shortName}.${this.outcome.kind === 'success' ? ' +50 ⭐' : ''}`
+        : `Nailed it, ${this.hero.shortName} — your prediction matched!${this.outcome.kind === 'success' ? ' +50 ⭐' : ''}`;
+    }
+    return this.modeId === 'pauling'
+      ? `The evidence did not match the hypothesis, ${this.hero.shortName}. Revise one variable and test again.`
+      : `Surprise, ${this.hero.shortName}! The flask had other plans.`;
+  }
+
   layoutRows() {
     const ingredientNames = this.selectedIngredientIds.map((id) => this.findReagent(id)?.name).filter(Boolean).join(' + ');
     const actionNames = Object.entries(this.actions).filter(([, used]) => used).map(([name]) => ({ stirred: 'Stir', heated: 'Warm', cooled: 'Cool', sealed: 'Seal', shaken: 'Shake' }[name] ?? name)).join(', ');
-    const predictionMessage = !this.prediction
-      ? `No prediction this time — take a guess next mix for bonus ⭐!`
-      : this.predictionMatched
-        ? `Nailed it, ${this.hero.shortName} — your prediction matched!${this.outcome.kind === 'success' ? ' +50 ⭐' : ''}`
-        : `Surprise, ${this.hero.shortName}! The flask had other plans.`;
+    const predictionMessage = this.predictionFeedback();
     return [
       { y: 110, size: '20px', color: '#4b2f10', text: `${this.hero.shortName}'s prediction: ${this.prediction?.icon ?? '❔'} ${this.prediction?.label ?? 'none'}` },
       { y: 140, size: '17px', color: this.predictionMatched ? '#2f7d38' : '#7e2453', text: predictionMessage },
       { y: 196, size: '19px', color: '#273469', text: this.outcome.explanation },
       { y: 272, size: '14px', color: '#4b2f10', text: `Recipe: ${ingredientNames || 'no ingredients'} + ${actionNames || 'no tools'} → ${this.outcome.title}` },
       { y: 338, size: '13px', color: '#7e2453', text: `Science words:\n${formatVocabularyDefinitions(this.outcome.vocabulary)}` },
-      { y: 420, size: '14px', color: '#2f7d38', text: `🔬 Next mad idea: ${this.variableCoach.nextStep(this.experiment, this.outcome, this.selectedIngredientIds, this.actions)}` },
+      { y: 420, size: '14px', color: '#2f7d38', text: `${this.modeId === 'pauling' ? '🔬 Next controlled trial' : '🔬 Next mad idea'}: ${this.variableCoach.nextStep(this.experiment, this.outcome, this.selectedIngredientIds, this.actions)}` },
       { y: 478, size: '11px', color: '#8a7a5a', text: this.outcome.safetyNote },
     ];
   }

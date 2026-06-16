@@ -125,7 +125,7 @@ export default class MenuScene extends Phaser.Scene {
       lineSpacing: 4,
       wordWrap: { width: cardWidth - 40 },
     }).setOrigin(0.5);
-    const progress = this.add.text(0, 66, this.progressSummary(mode), {
+    const progress = this.add.text(0, 58, this.progressSummary(mode), {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '13px',
       color: palette.subtitle,
@@ -133,20 +133,33 @@ export default class MenuScene extends Phaser.Scene {
       lineSpacing: 2,
       wordWrap: { width: cardWidth - 44 },
     }).setOrigin(0.5);
-    const button = this.add.rectangle(0, 104, cardWidth - 46, 42, palette.buttonFill, 0.98).setStrokeStyle(4, palette.stroke);
-    const buttonLabel = this.add.text(0, 104, palette.action, {
+    const button = this.add.rectangle(0, 92, cardWidth - 46, 36, palette.buttonFill, 0.98).setStrokeStyle(4, palette.stroke);
+    const buttonLabel = this.add.text(0, 92, palette.action, {
       fontFamily: 'Trebuchet MS, sans-serif',
-      fontSize: '16px',
+      fontSize: '15px',
       color: palette.buttonText,
       align: 'center',
     }).setOrigin(0.5);
 
-    container.add([back, topBand, emoji, title, eyebrow, subtitle, progress, button, buttonLabel]);
+    const sandboxButton = this.add.rectangle(0, 122, cardWidth - 70, 30, isHenry ? 0xa8ffb0 : 0xd9f4ff, 0.98).setStrokeStyle(3, palette.stroke);
+    const sandboxLabel = this.add.text(0, 122, mode.labels.sandbox, {
+      fontFamily: 'Trebuchet MS, sans-serif',
+      fontSize: '13px',
+      color: palette.buttonText,
+      align: 'center',
+    }).setOrigin(0.5);
+
+    container.add([back, topBand, emoji, title, eyebrow, subtitle, progress, button, buttonLabel, sandboxButton, sandboxLabel]);
     container.setSize(cardWidth, cardHeight).setInteractive({ useHandCursor: true });
-    container.on('pointerdown', () => {
+    container.on('pointerdown', (pointer) => {
       const sfx = this.registry.get('sfx');
       if (sfx) { sfx.resume(); sfx.click(); }
-      this.scene.start('LevelSelectScene', { modeId: mode.id });
+      const localPoint = container.getLocalPoint(pointer.x, pointer.y);
+      if (localPoint.y >= 106) {
+        this.scene.start('LabScene', { modeId: mode.id, experimentId: 'sandbox' });
+      } else {
+        this.scene.start('LevelSelectScene', { modeId: mode.id });
+      }
     });
     container.on('pointerover', () => this.tweens.add({ targets: container, scale: 1.04, duration: 120 }));
     container.on('pointerout', () => this.tweens.add({ targets: container, scale: 1, duration: 120 }));
