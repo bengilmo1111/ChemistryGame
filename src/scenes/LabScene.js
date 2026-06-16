@@ -59,10 +59,12 @@ function actionLabel(action) {
 }
 
 function makeSandboxExperiment(secretReactions, labels) {
+  const formatSecretCount = (text) => text?.replace('{secretCount}', secretReactions.length);
   return {
     ...SANDBOX_EXPERIMENT,
-    goal: `Mix anything! ${secretReactions.length} secret recipes are hiding in here.`,
-    title: labels?.sandbox ?? SANDBOX_EXPERIMENT.title,
+    title: labels?.sandboxTitle ?? labels?.sandbox ?? SANDBOX_EXPERIMENT.title,
+    goal: formatSecretCount(labels?.sandboxGoal) ?? `Mix anything! ${secretReactions.length} secret recipes are hiding in here.`,
+    prompt: labels?.sandboxPrompt ?? SANDBOX_EXPERIMENT.prompt,
   };
 }
 
@@ -125,8 +127,8 @@ export default class LabScene extends Phaser.Scene {
       ? `${this.hero.shortName}, ${this.experiment.prompt}`
       : `${this.hero.shortName}, ${this.experiment.prompt}`;
     this.dialogue.say(greet);
-    this.notebook = new LabNotebook(this, 858, 250);
-    this.meter = new Meter(this, 858, 422, this.modeLabels.meter);
+    this.notebook = new LabNotebook(this, 858, 250, { modeId: this.modeId, labels: this.modeLabels });
+    this.meter = new Meter(this, 858, 422, this.modeLabels.meterLabel);
     this.tooltip = new Tooltip(this);
     this.createPredictionButtons();
     this.createLabCard();
@@ -135,7 +137,7 @@ export default class LabScene extends Phaser.Scene {
     this.createReagents();
     this.createToolButtons();
     this.createScoreHud();
-    this.mixButton = new Button(this, 858, 570, this.modeLabels.mix, () => this.mix(), { width: 180, height: 58, fill: 0xffd166, fontSize: '26px' });
+    this.mixButton = new Button(this, 858, 570, this.modeLabels.mixButton, () => this.mix(), { width: 180, height: 58, fill: 0xffd166, fontSize: '26px' });
     this.mixButton.setEnabled(false);
     this.resetButton = new Button(this, 666, 570, 'Reset Flask', () => this.resetFlask(), { width: 170, height: 46, fill: 0xffffff, stroke: 0x273469, fontSize: '18px', color: '#273469' });
     new Button(this, 92, 44, this.isSandbox ? 'Menu' : 'Cards', () => this.scene.start(this.isSandbox ? 'MenuScene' : 'LevelSelectScene', { modeId: this.modeId }), { width: 136, height: 44, fill: 0xff8bd1, stroke: 0x7e2453, fontSize: '18px' });
@@ -155,8 +157,7 @@ export default class LabScene extends Phaser.Scene {
   }
 
   createPredictionButtons() {
-    const labelText = '1. Predict — bonus ⭐ if right!';
-    this.add.text(42, 124, labelText, { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '18px', color: '#ffffff' });
+    this.add.text(42, 124, this.modeLabels.predictionLabel, { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '18px', color: '#ffffff' });
     predictions.forEach((prediction, index) => {
       const x = 88 + (index % 4) * 104;
       const y = 162 + Math.floor(index / 4) * 44;
@@ -379,7 +380,7 @@ export default class LabScene extends Phaser.Scene {
 
   createObservationClues() {
     this.add.rectangle(392, 584, 320, 76, 0x15183a, 0.78).setStrokeStyle(3, 0x9de8ff);
-    this.add.text(392, 556, this.isSandbox ? 'Try Anything!' : 'Observation Clues', {
+    this.add.text(392, 556, this.isSandbox ? this.modeLabels.sandboxObservationHeading : this.modeLabels.observationHeading, {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '16px',
       color: '#fff5a8',
@@ -436,7 +437,7 @@ export default class LabScene extends Phaser.Scene {
   createToolButtons() {
     this.add.text(564, 248, this.modeLabels.labTools, { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '22px', color: '#ffffff' });
     const tools = Object.entries(ACTION_DETAILS).map(([key, detail]) => [key, `${detail.icon} ${detail.label}`]);
-    this.add.text(622, 274, 'Tools change cause and effect.', { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '13px', color: '#fff5a8' }).setOrigin(0.5);
+    this.add.text(622, 274, this.modeLabels.toolHint, { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '13px', color: '#fff5a8' }).setOrigin(0.5);
     this.toolButtons = new Map();
     tools.forEach(([key, label], index) => {
       const button = new Button(this, 622, 304 + index * 38, label, () => this.useTool(key), { width: 130, height: 32, fill: 0xb388ff, stroke: 0x4b2bbf, fontSize: '15px', color: '#ffffff' });
@@ -515,6 +516,7 @@ export default class LabScene extends Phaser.Scene {
       actions: Object.entries(this.actions).filter(([, used]) => used).map(([key]) => actionLabel(key)),
       toolHint: this.experiment.actionHint,
       observations: this.experiment.hints,
+      conclusion: this.experiment.conclusion,
       stepStatus: this.stepStatus(),
     });
   }
