@@ -19,7 +19,7 @@ export default class LevelSelectScene extends Phaser.Scene {
   }
 
   create() {
-    this.cameras.main.setBackgroundColor('#20275f');
+    this.cameras.main.setBackgroundColor(this.mode.colors.labBackground);
     this.discoveries = new DiscoverySystem();
     this.stars = new StarSystem();
     this.add.text(512, 54, this.mode.labels.levelTitle, {
@@ -39,7 +39,7 @@ export default class LevelSelectScene extends Phaser.Scene {
   }
 
   createCard(experiment, x, y) {
-    this.add.rectangle(x, y, 280, 216, 0xfff7d6).setStrokeStyle(5, 0x8a5a24);
+    this.add.rectangle(x, y, 280, 216, this.mode.colors.cardFill).setStrokeStyle(5, this.mode.colors.cardStroke);
     this.add.text(x, y - 108, this.stars.display(experiment.id, this.modeId), {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '22px',
