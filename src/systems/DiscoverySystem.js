@@ -25,19 +25,24 @@ function unique(values = []) {
   return [...new Set(values.filter(Boolean))];
 }
 
+function progressKey(experimentId, modeId = 'henry') {
+  return modeId ? `${modeId}:${experimentId}` : experimentId;
+}
+
 export default class DiscoverySystem {
   constructor(storage = safeStorage()) {
     this.storage = storage;
     this.discoveries = parseDiscoveries(readRaw(this.storage));
   }
 
-  record(experimentId, outcomeId) {
-    if (!experimentId || !outcomeId) return this.getForExperiment(experimentId);
+  record(experimentId, outcomeId, modeId = 'henry') {
+    if (!experimentId || !outcomeId) return this.getForExperiment(experimentId, modeId);
 
-    const current = unique(this.discoveries[experimentId]);
+    const key = progressKey(experimentId, modeId);
+    const current = unique(this.discoveries[key]);
     if (!current.includes(outcomeId)) {
       current.push(outcomeId);
-      this.discoveries = { ...this.discoveries, [experimentId]: current };
+      this.discoveries = { ...this.discoveries, [key]: current };
       try {
         this.storage.setItem(STORAGE_KEY, JSON.stringify(this.discoveries));
       } catch (_error) {
@@ -48,11 +53,11 @@ export default class DiscoverySystem {
     return current;
   }
 
-  getForExperiment(experimentId) {
-    return unique(this.discoveries[experimentId]);
+  getForExperiment(experimentId, modeId = 'henry') {
+    return unique(this.discoveries[progressKey(experimentId, modeId)]);
   }
 
-  countForExperiment(experimentId) {
-    return this.getForExperiment(experimentId).length;
+  countForExperiment(experimentId, modeId = 'henry') {
+    return this.getForExperiment(experimentId, modeId).length;
   }
 }

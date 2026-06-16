@@ -21,6 +21,10 @@ function readRaw(storage) {
   }
 }
 
+function progressKey(experimentId, modeId = 'henry') {
+  return modeId ? `${modeId}:${experimentId}` : experimentId;
+}
+
 export function computeStars({ kind = 'failure', predictionMatched = false, discoveryCount = 0 } = {}) {
   if (kind !== 'success') return 0;
   let stars = 1;
@@ -35,27 +39,28 @@ export default class StarSystem {
     this.stars = parseStars(readRaw(this.storage));
   }
 
-  record(experimentId, stars) {
+  record(experimentId, stars, modeId = 'henry') {
     if (!experimentId) return 0;
+    const key = progressKey(experimentId, modeId);
     const clamped = Math.max(0, Math.min(MAX_STARS, Math.floor(stars) || 0));
-    if (clamped > this.getStars(experimentId)) {
-      this.stars = { ...this.stars, [experimentId]: clamped };
+    if (clamped > this.getStars(experimentId, modeId)) {
+      this.stars = { ...this.stars, [key]: clamped };
       try {
         this.storage.setItem(STORAGE_KEY, JSON.stringify(this.stars));
       } catch (_error) {
         /* storage unavailable; stars remain in memory this session */
       }
     }
-    return this.getStars(experimentId);
+    return this.getStars(experimentId, modeId);
   }
 
-  getStars(experimentId) {
-    const value = Number(this.stars[experimentId]);
+  getStars(experimentId, modeId = 'henry') {
+    const value = Number(this.stars[progressKey(experimentId, modeId)]);
     return Number.isFinite(value) ? Math.max(0, Math.min(MAX_STARS, value)) : 0;
   }
 
-  display(experimentId) {
-    const earned = this.getStars(experimentId);
+  display(experimentId, modeId = 'henry') {
+    const earned = this.getStars(experimentId, modeId);
     return '★'.repeat(earned) + '☆'.repeat(MAX_STARS - earned);
   }
 }

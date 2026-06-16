@@ -76,7 +76,7 @@ export const modes = {
     failures: henryFailures,
     safetyText: 'All reagents are pretend. Real experiments need a trusted grown-up, goggles, and safe school instructions.',
     colors: { menuBackground: '#15183a', labBackground: '#232a62', sandboxBackground: '#1a3a2a', accent: '#ffd166', cardFill: 0xfff7d6, cardStroke: 0x8a5a24 },
-    labels: { play: 'Play as Henry', sandbox: '🧪 MAD MIX (Sandbox)', levelTitle: 'Choose a Lab Card', labIngredients: '2. Grab Ingredients', labTools: '3. Lab Tools', meter: 'Chaos Meter', mix: 'MIX!' },
+    labels: { play: 'Play as Henry', sandbox: '🧪 MAD MIX (Sandbox)', levelTitle: "Henry's Wild Lab Cards", labIngredients: '2. Grab Ingredients', labTools: '3. Lab Tools', meter: 'Chaos Meter', mix: 'MIX!' },
   },
   pauling: {
     id: 'pauling',
@@ -90,7 +90,7 @@ export const modes = {
     failures: paulingFailures,
     safetyText: 'Use classroom chemistry only with an instructor, goggles, labeled dilute solutions, and approved disposal instructions.',
     colors: { menuBackground: '#102334', labBackground: '#18354a', sandboxBackground: '#17352d', accent: '#9de8ff', cardFill: 0xf4fbff, cardStroke: 0x235b72 },
-    labels: { play: 'Study with Linus Pauling', sandbox: '🔬 Open Exploration', levelTitle: 'Choose a Chemistry Investigation', labIngredients: '2. Select Reagents', labTools: '3. Procedure Tools', meter: 'Safety Meter', mix: 'React!' },
+    labels: { play: 'Study with Linus Pauling', sandbox: '🔬 Open Exploration', levelTitle: 'Linus Pauling Scientific Investigations', labIngredients: '2. Select Reagents', labTools: '3. Procedure Tools', meter: 'Safety Meter', mix: 'React!' },
   },
 };
 
