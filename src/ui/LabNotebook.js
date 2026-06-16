@@ -1,6 +1,7 @@
 export default class LabNotebook {
-  constructor(scene, x, y) {
+  constructor(scene, x, y, { modeId = 'henry' } = {}) {
     this.scene = scene;
+    this.modeId = modeId;
     this.page = scene.add.rectangle(x, y, 280, 200, 0xfff7d6).setStrokeStyle(4, 0x8a5a24).setDepth(5);
     this.title = scene.add.text(x - 120, y - 88, 'Lab Notebook', {
       fontFamily: 'Trebuchet MS, sans-serif',
@@ -16,7 +17,12 @@ export default class LabNotebook {
     }).setDepth(6);
   }
 
-  update({ prediction, ingredients, actions, stepStatus = [] }) {
+  update({ prediction, ingredients, actions, observations = [], conclusion, stepStatus = [] }) {
+    if (this.modeId === 'pauling') {
+      this.updatePauling({ prediction, ingredients, actions, observations, conclusion });
+      return;
+    }
+
     this.lines.setText([
       `Prediction: ${prediction?.label ?? 'choose one'}`,
       '',
@@ -26,5 +32,16 @@ export default class LabNotebook {
       '',
       `Steps: ${stepStatus.length ? stepStatus.join('  ') : 'predict first'}`,
     ].join('\n'));
+  }
+
+  updatePauling({ prediction, ingredients, actions, observations, conclusion }) {
+    const observationText = observations.length ? observations[0] : 'record evidence after trial';
+    this.lines.setText([
+      `Hypothesis: ${prediction?.label ?? 'choose one'}`,
+      `Materials: ${ingredients.length ? ingredients.join(', ') : 'select reagents'}`,
+      `Procedure/tool step: ${actions.length ? actions.join(', ') : 'choose a tool'}`,
+      `Observations: ${observationText}`,
+      `Conclusion: ${conclusion ?? 'compare evidence to hypothesis'}`,
+    ].join('\n\n'));
   }
 }
