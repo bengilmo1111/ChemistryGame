@@ -15,7 +15,7 @@ export default class LevelSelectScene extends Phaser.Scene {
     this.mode = getMode(this.modeId);
     this.experiments = this.mode.experiments;
     this.reactionOutcomes = this.mode.reactionOutcomes;
-    this.funnyFailures = this.mode.funnyFailures;
+    this.failures = this.mode.failures ?? this.mode.funnyFailures ?? [];
   }
 
   create() {
@@ -40,7 +40,7 @@ export default class LevelSelectScene extends Phaser.Scene {
 
   createCard(experiment, x, y) {
     this.add.rectangle(x, y, 280, 216, 0xfff7d6).setStrokeStyle(5, 0x8a5a24);
-    this.add.text(x, y - 108, this.stars.display(experiment.id), {
+    this.add.text(x, y - 108, this.stars.display(experiment.id, this.modeId), {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '22px',
       color: '#ffd166',
@@ -73,8 +73,8 @@ export default class LevelSelectScene extends Phaser.Scene {
       lineSpacing: 2,
       wordWrap: { width: 252 },
     }).setOrigin(0.5);
-    const totalDiscoveries = this.reactionOutcomes.filter((outcome) => outcome.experimentId === experiment.id).length + this.funnyFailures.length;
-    const foundDiscoveries = this.discoveries.countForExperiment(experiment.id);
+    const totalDiscoveries = this.reactionOutcomes.filter((outcome) => outcome.experimentId === experiment.id).length + this.failures.length;
+    const foundDiscoveries = this.discoveries.countForExperiment(experiment.id, this.modeId);
     this.add.text(x, y + 56, `Discovered: ${foundDiscoveries}/${totalDiscoveries} outcomes`, {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '12px',

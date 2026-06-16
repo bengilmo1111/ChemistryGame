@@ -54,13 +54,13 @@ export default class ResultsScene extends Phaser.Scene {
 
   create() {
     this.cameras.main.setBackgroundColor('#15183a');
-    this.discoveryCount = new DiscoverySystem().record(this.experiment.id, this.outcome.id).length;
+    this.discoveryCount = new DiscoverySystem().record(this.experiment.id, this.outcome.id, this.modeId).length;
     this.starsEarned = computeStars({
       kind: this.outcome.kind,
       predictionMatched: this.predictionMatched,
       discoveryCount: this.discoveryCount,
     });
-    new StarSystem().record(this.experiment.id, this.starsEarned);
+    new StarSystem().record(this.experiment.id, this.starsEarned, this.modeId);
     this.add.image(96, 348, 'art-junior-scientist').setDisplaySize(116, 148).setAngle(-6);
     this.add.text(96, 442, this.hero.name, {
       fontFamily: 'Trebuchet MS, sans-serif',

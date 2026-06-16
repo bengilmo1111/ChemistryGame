@@ -112,7 +112,7 @@ export default class LabScene extends Phaser.Scene {
   }
 
   secretsFound() {
-    const found = this.discoveries.getForExperiment('sandbox');
+    const found = this.discoveries.getForExperiment('sandbox', this.modeId);
     return this.secretReactions.filter((secret) => found.includes(secret.id)).length;
   }
 
@@ -223,7 +223,7 @@ export default class LabScene extends Phaser.Scene {
   }
 
   openRecipeBook() {
-    const found = this.discoveries.getForExperiment('sandbox');
+    const found = this.discoveries.getForExperiment('sandbox', this.modeId);
     this.recipeBook = this.add.container(512, 320).setDepth(60);
     const backdrop = this.add.rectangle(0, 0, 1024, 640, 0x11152f, 0.55).setInteractive();
     backdrop.on('pointerdown', () => this.closeRecipeBook());
@@ -575,7 +575,7 @@ export default class LabScene extends Phaser.Scene {
     const predictionMatched = this.predictions.matchesOutcome(outcome);
     this.mixCount += 1;
 
-    const before = this.discoveries.getForExperiment(this.experiment.id);
+    const before = this.discoveries.getForExperiment(this.experiment.id, this.modeId);
     const isNewDiscovery = !before.includes(outcome.id);
     if (this.scoreSystem) {
       const result = this.scoreSystem.award({
@@ -591,7 +591,7 @@ export default class LabScene extends Phaser.Scene {
     new BadgeSystem().award(outcome.badge);
 
     if (this.isSandbox) {
-      this.discoveries.record(this.experiment.id, outcome.id);
+      this.discoveries.record(this.experiment.id, outcome.id, this.modeId);
       this.refreshSecretCounter();
       if (outcome.secret && isNewDiscovery) {
         this.time.delayedCall(900, () => this.celebrateSecretDiscovery());
