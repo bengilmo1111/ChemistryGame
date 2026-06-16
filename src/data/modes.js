@@ -3,8 +3,8 @@ import { experiments as paulingExperiments } from './pauling/experiments.js';
 import { hero as henryHero } from './henry/hero.js';
 import { funnyFailures as henryFailures, reactionOutcomes as henryOutcomes, secretReactions as henrySecrets } from './henry/reactions.js';
 import { reactionOutcomes as paulingOutcomes, secretReactions as paulingSecrets } from './pauling/reactions.js';
-import { reagents as henryReagents } from './henry/reagents.js';
-import { reagents as paulingReagents } from './pauling/reagents.js';
+import { findReagent as findHenryReagent, reagents as henryReagents } from './henry/reagents.js';
+import { findReagent as findPaulingReagent, reagents as paulingReagents } from './pauling/reagents.js';
 
 const paulingHero = {
   name: 'Linus Pauling',
@@ -71,6 +71,7 @@ export const modes = {
     hero: henryHero,
     experiments: henryExperiments,
     reagents: henryReagents,
+    findReagent: findHenryReagent,
     reactionOutcomes: henryOutcomes,
     secretReactions: henrySecrets,
     failures: henryFailures,
@@ -100,6 +101,7 @@ export const modes = {
     hero: paulingHero,
     experiments: paulingExperiments,
     reagents: paulingReagents,
+    findReagent: findPaulingReagent,
     reactionOutcomes: paulingOutcomes,
     secretReactions: paulingSecrets,
     failures: paulingFailures,
