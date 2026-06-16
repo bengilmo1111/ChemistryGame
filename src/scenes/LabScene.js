@@ -90,7 +90,7 @@ export default class LabScene extends Phaser.Scene {
     this.safetyText = this.mode.safetyText;
     this.modeColors = this.mode.colors;
     this.modeLabels = this.mode.labels;
-    this.findReagent = (id) => this.reagents.find((reagent) => reagent.id === id);
+    this.findReagent = this.mode.findReagent ?? ((id) => this.reagents.find((reagent) => reagent.id === id));
     this.sandboxExperiment = makeSandboxExperiment(this.secretReactions, this.modeLabels);
     this.experiment = findExperiment(data.experimentId, this.experiments, this.sandboxExperiment);
     this.isSandbox = this.experiment.id === 'sandbox';

@@ -80,3 +80,7 @@ export const reagents = [
     safetyNote: 'Simulation reagent only; real lab water is not for drinking.',
   },
 ];
+
+export function findReagent(id) {
+  return reagents.find((reagent) => reagent.id === id);
+}
