@@ -1,5 +1,7 @@
 import Phaser from 'phaser';
 import { modes } from '../data/modes.js';
+import DiscoverySystem from '../systems/DiscoverySystem.js';
+import StarSystem, { MAX_STARS } from '../systems/StarSystem.js';
 import Button from '../ui/Button.js';
 
 export default class MenuScene extends Phaser.Scene {
@@ -26,6 +28,9 @@ export default class MenuScene extends Phaser.Scene {
       fontSize: '26px',
       color: '#9de8ff',
     }).setOrigin(0.5);
+    this.discoveries = new DiscoverySystem();
+    this.stars = new StarSystem();
+
     this.add.text(512, 232, 'Choose Your Experiment Style', {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '30px',
@@ -112,7 +117,7 @@ export default class MenuScene extends Phaser.Scene {
       fontStyle: isHenry ? 'bold italic' : 'bold',
       wordWrap: { width: cardWidth - 36 },
     }).setOrigin(0.5);
-    const subtitle = this.add.text(0, 34, palette.subtitleText, {
+    const subtitle = this.add.text(0, 24, palette.subtitleText, {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '15px',
       color: palette.subtitle,
@@ -120,15 +125,23 @@ export default class MenuScene extends Phaser.Scene {
       lineSpacing: 4,
       wordWrap: { width: cardWidth - 40 },
     }).setOrigin(0.5);
-    const button = this.add.rectangle(0, 94, cardWidth - 46, 46, palette.buttonFill, 0.98).setStrokeStyle(4, palette.stroke);
-    const buttonLabel = this.add.text(0, 94, palette.action, {
+    const progress = this.add.text(0, 66, this.progressSummary(mode), {
+      fontFamily: 'Trebuchet MS, sans-serif',
+      fontSize: '13px',
+      color: palette.subtitle,
+      align: 'center',
+      lineSpacing: 2,
+      wordWrap: { width: cardWidth - 44 },
+    }).setOrigin(0.5);
+    const button = this.add.rectangle(0, 104, cardWidth - 46, 42, palette.buttonFill, 0.98).setStrokeStyle(4, palette.stroke);
+    const buttonLabel = this.add.text(0, 104, palette.action, {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '16px',
       color: palette.buttonText,
       align: 'center',
     }).setOrigin(0.5);
 
-    container.add([back, topBand, emoji, title, eyebrow, subtitle, button, buttonLabel]);
+    container.add([back, topBand, emoji, title, eyebrow, subtitle, progress, button, buttonLabel]);
     container.setSize(cardWidth, cardHeight).setInteractive({ useHandCursor: true });
     container.on('pointerdown', () => {
       const sfx = this.registry.get('sfx');
@@ -141,6 +154,32 @@ export default class MenuScene extends Phaser.Scene {
     if (isHenry) {
       this.tweens.add({ targets: topBand, angle: 2.5, duration: 480, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
     }
+  }
+
+
+  progressSummary(mode) {
+    const outcomesByExperiment = new Map();
+    mode.reactionOutcomes.forEach((outcome) => {
+      const current = outcomesByExperiment.get(outcome.experimentId) ?? 0;
+      outcomesByExperiment.set(outcome.experimentId, current + 1);
+    });
+
+    const totalOutcomes = mode.experiments.reduce((sum, experiment) => {
+      const outcomeCount = outcomesByExperiment.get(experiment.id) ?? 0;
+      return sum + outcomeCount + (mode.failures?.length ?? mode.funnyFailures?.length ?? 0);
+    }, 0);
+    const foundOutcomes = mode.experiments.reduce(
+      (sum, experiment) => sum + this.discoveries.countForExperiment(experiment.id, mode.id),
+      0,
+    );
+    const earnedStars = mode.experiments.reduce(
+      (sum, experiment) => sum + this.stars.getStars(experiment.id, mode.id),
+      0,
+    );
+    const totalStars = mode.experiments.length * MAX_STARS;
+
+    return `Progress: ${foundOutcomes}/${totalOutcomes} outcomes
+Stars: ${earnedStars}/${totalStars}`;
   }
 
   muteLabel() {

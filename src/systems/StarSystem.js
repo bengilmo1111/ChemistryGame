@@ -25,6 +25,30 @@ function progressKey(experimentId, modeId = 'henry') {
   return modeId ? `${modeId}:${experimentId}` : experimentId;
 }
 
+function isNamespacedKey(key) {
+  return typeof key === 'string' && key.includes(':');
+}
+
+function normalizeStars(value) {
+  const stars = Number(value);
+  return Number.isFinite(stars) ? Math.max(0, Math.min(MAX_STARS, stars)) : 0;
+}
+
+function migrateLegacyStars(stars) {
+  let migrated = false;
+  const next = { ...stars };
+
+  Object.entries(stars).forEach(([key, value]) => {
+    if (isNamespacedKey(key)) return;
+    const henryKey = progressKey(key, 'henry');
+    next[henryKey] = Math.max(normalizeStars(next[henryKey]), normalizeStars(value));
+    delete next[key];
+    migrated = true;
+  });
+
+  return { stars: next, migrated };
+}
+
 export function computeStars({ kind = 'failure', predictionMatched = false, discoveryCount = 0 } = {}) {
   if (kind !== 'success') return 0;
   let stars = 1;
@@ -36,7 +60,17 @@ export function computeStars({ kind = 'failure', predictionMatched = false, disc
 export default class StarSystem {
   constructor(storage = safeStorage()) {
     this.storage = storage;
-    this.stars = parseStars(readRaw(this.storage));
+    const { stars, migrated } = migrateLegacyStars(parseStars(readRaw(this.storage)));
+    this.stars = stars;
+    if (migrated) this.persist();
+  }
+
+  persist() {
+    try {
+      this.storage.setItem(STORAGE_KEY, JSON.stringify(this.stars));
+    } catch (_error) {
+      /* storage unavailable; stars remain in memory this session */
+    }
   }
 
   record(experimentId, stars, modeId = 'henry') {
@@ -45,18 +79,13 @@ export default class StarSystem {
     const clamped = Math.max(0, Math.min(MAX_STARS, Math.floor(stars) || 0));
     if (clamped > this.getStars(experimentId, modeId)) {
       this.stars = { ...this.stars, [key]: clamped };
-      try {
-        this.storage.setItem(STORAGE_KEY, JSON.stringify(this.stars));
-      } catch (_error) {
-        /* storage unavailable; stars remain in memory this session */
-      }
+      this.persist();
     }
     return this.getStars(experimentId, modeId);
   }
 
   getStars(experimentId, modeId = 'henry') {
-    const value = Number(this.stars[progressKey(experimentId, modeId)]);
-    return Number.isFinite(value) ? Math.max(0, Math.min(MAX_STARS, value)) : 0;
+    return normalizeStars(this.stars[progressKey(experimentId, modeId)]);
   }
 
   display(experimentId, modeId = 'henry') {
