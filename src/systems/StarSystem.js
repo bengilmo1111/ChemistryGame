@@ -92,4 +92,11 @@ export default class StarSystem {
     const earned = this.getStars(experimentId, modeId);
     return '★'.repeat(earned) + '☆'.repeat(MAX_STARS - earned);
   }
+
+  totalForMode(modeId = 'henry') {
+    const prefix = modeId ? `${modeId}:` : '';
+    return Object.entries(this.stars)
+      .filter(([key]) => !prefix || key.startsWith(prefix))
+      .reduce((sum, [, value]) => sum + normalizeStars(value), 0);
+  }
 }

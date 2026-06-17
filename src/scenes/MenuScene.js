@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { modes } from '../data/modes.js';
 import DiscoverySystem from '../systems/DiscoverySystem.js';
 import StarSystem, { MAX_STARS } from '../systems/StarSystem.js';
+import BadgeSystem from '../systems/BadgeSystem.js';
 import Button from '../ui/Button.js';
 
 export default class MenuScene extends Phaser.Scene {
@@ -30,6 +31,7 @@ export default class MenuScene extends Phaser.Scene {
     }).setOrigin(0.5);
     this.discoveries = new DiscoverySystem();
     this.stars = new StarSystem();
+    this.badges = new BadgeSystem();
 
     this.add.text(512, 232, 'Choose Your Experiment Style', {
       fontFamily: 'Trebuchet MS, sans-serif',
@@ -39,6 +41,7 @@ export default class MenuScene extends Phaser.Scene {
 
     this.createModeCard(modes.henry, 356, 400);
     this.createModeCard(modes.pauling, 668, 400);
+    this.createRewardShelf();
 
     this.add.text(512, 552, 'Safety note: real chemistry should always be supervised by a trusted adult or instructor.', {
       fontFamily: 'Trebuchet MS, sans-serif',
@@ -199,6 +202,66 @@ export default class MenuScene extends Phaser.Scene {
       this.tweens.add({ targets: portrait, angle: 2.5, duration: 520, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
       this.tweens.add({ targets: patternItems, scale: 1.16, duration: 640, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
     }
+  }
+
+
+  createRewardShelf() {
+    const earnedBadges = this.badges.getEarned();
+    const totalStars = Object.values(modes).reduce((sum, mode) => sum + this.stars.totalForMode(mode.id), 0);
+    const discoveries = Object.values(modes).flatMap((mode) => this.discoveries.getAllForMode(mode.id));
+    const discoveryCount = new Set(discoveries).size;
+    const stickers = [
+      { icon: '🦆', label: 'Duck Sticker', unlocked: discoveries.includes('duck-portal') },
+      { icon: '🌌', label: 'Galaxy Poster', unlocked: discoveries.includes('galaxy-goo') || discoveries.includes('basic-indicator-color') },
+      { icon: '💎', label: 'Crystal Trophy', unlocked: earnedBadges.some((badge) => badge.id === 'crystal-wrangler') || totalStars >= 9 },
+      { icon: '👾', label: 'Slime Splat', unlocked: discoveries.includes('slime-escape') || discoveryCount >= 6 },
+    ];
+    const visibleRewards = [
+      ...earnedBadges.slice(0, 4).map((badge) => ({ icon: badge.icon, label: badge.name, unlocked: true })),
+      ...stickers.filter((sticker) => sticker.unlocked),
+    ].slice(0, 6);
+
+    const shelf = this.add.container(910, 348);
+    const back = this.add.rectangle(0, 0, 188, 248, 0xfff7d6, 0.94).setStrokeStyle(5, 0xffd166);
+    const title = this.add.text(0, -104, 'Reward Shelf', {
+      fontFamily: 'Trebuchet MS, sans-serif',
+      fontSize: '18px',
+      color: '#4b2f10',
+      fontStyle: 'bold',
+    }).setOrigin(0.5);
+    const subtitle = this.add.text(0, -80, `${totalStars} ⭐  •  ${discoveryCount} finds`, {
+      fontFamily: 'Trebuchet MS, sans-serif',
+      fontSize: '12px',
+      color: '#273469',
+    }).setOrigin(0.5);
+    shelf.add([back, title, subtitle]);
+
+    if (!visibleRewards.length) {
+      shelf.add(this.add.text(0, 16, 'Earn stars and discoveries\nto fill this shelf!', {
+        fontFamily: 'Trebuchet MS, sans-serif',
+        fontSize: '13px',
+        color: '#7e2453',
+        align: 'center',
+        wordWrap: { width: 150 },
+      }).setOrigin(0.5));
+      return;
+    }
+
+    visibleRewards.forEach((reward, index) => {
+      const x = -54 + (index % 3) * 54;
+      const y = -34 + Math.floor(index / 3) * 70;
+      const plaque = this.add.rectangle(x, y, 46, 48, 0xffffff, 0.72).setStrokeStyle(2, 0x8a5a24, 0.45);
+      const icon = this.add.text(x, y - 4, reward.icon, { fontSize: '27px' }).setOrigin(0.5);
+      const label = this.add.text(x, y + 30, reward.label, {
+        fontFamily: 'Trebuchet MS, sans-serif',
+        fontSize: '9px',
+        color: '#273469',
+        align: 'center',
+        wordWrap: { width: 54 },
+      }).setOrigin(0.5);
+      shelf.add([plaque, icon, label]);
+      this.tweens.add({ targets: icon, y: icon.y - 4, duration: 900 + index * 80, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
+    });
   }
 
 

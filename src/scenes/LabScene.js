@@ -7,6 +7,7 @@ import LabInventory from '../systems/LabInventory.js';
 import PredictionSystem, { predictions } from '../systems/PredictionSystem.js';
 import ReactionEngine from '../systems/ReactionEngine.js';
 import DiscoverySystem from '../systems/DiscoverySystem.js';
+import StarSystem from '../systems/StarSystem.js';
 import Button from '../ui/Button.js';
 import LabNotebook from '../ui/LabNotebook.js';
 import Meter from '../ui/Meter.js';
@@ -113,6 +114,7 @@ export default class LabScene extends Phaser.Scene {
     this.sfx = this.registry.get('sfx');
     this.scoreSystem = this.registry.get('score');
     this.discoveries = new DiscoverySystem();
+    this.stars = new StarSystem();
     this.recipeBook = null;
     this.isMixing = false;
   }
@@ -126,6 +128,7 @@ export default class LabScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor(this.isSandbox ? this.modeColors.sandboxBackground : this.modeColors.labBackground);
     this.physics.world.setBounds(0, 0, 1024, 640);
     this.addLabBench();
+    this.createUnlockedBenchDecorations();
     this.dialogue = new DialogueSystem(this, 380, 80, 650, 56);
     const greet = this.isSandbox
       ? `${this.hero.shortName}, ${this.experiment.prompt}`
@@ -159,6 +162,75 @@ export default class LabScene extends Phaser.Scene {
       fontSize: '26px',
       color: this.isSandbox ? '#a8ffb0' : this.modeColors.accent,
     }).setOrigin(0.5);
+  }
+
+
+  createUnlockedBenchDecorations() {
+    const discovered = new Set(this.discoveries.getAllForMode(this.modeId));
+    const effectsByOutcome = new Map([
+      ...this.reactionOutcomes,
+      ...this.secretReactions,
+      ...this.failures,
+    ].map((outcome) => [outcome.id, outcome.effect]));
+    const discoveredEffects = new Set([...discovered].map((id) => effectsByOutcome.get(id)).filter(Boolean));
+    const totalStars = this.stars.totalForMode(this.modeId);
+    const decorations = [
+      {
+        unlocked: discovered.has('duck-portal') || discoveredEffects.has('duck'),
+        x: 238,
+        y: 104,
+        icon: '🦆',
+        title: 'Duck sticker',
+        line: 'Unlocked by a ducky discovery!',
+        style: 'sticker',
+      },
+      {
+        unlocked: discovered.has('galaxy-goo') || discovered.has('basic-indicator-color') || discoveredEffects.has('galaxy'),
+        x: 514,
+        y: 126,
+        icon: '🌌',
+        title: 'Galaxy poster',
+        line: 'A cosmic reminder of secret science.',
+        style: 'poster',
+      },
+      {
+        unlocked: discoveredEffects.has('crystal') || totalStars >= 9,
+        x: 726,
+        y: 520,
+        icon: '🏆',
+        title: 'Crystal trophy',
+        line: `Shines for ${totalStars} earned stars!`,
+        style: 'trophy',
+      },
+      {
+        unlocked: discovered.has('slime-escape') || discoveredEffects.has('slime'),
+        x: 548,
+        y: 526,
+        icon: '👾',
+        title: 'Slime splat',
+        line: 'A very official sticky observation.',
+        style: 'splat',
+      },
+    ].filter((decoration) => decoration.unlocked);
+
+    decorations.forEach((decoration, index) => {
+      const container = this.add.container(decoration.x, decoration.y).setDepth(decoration.style === 'poster' ? 2 : 5);
+      if (decoration.style === 'poster') {
+        container.add(this.add.rectangle(0, 0, 92, 62, 0x1b2453, 0.92).setStrokeStyle(4, 0xffd166));
+      } else if (decoration.style === 'trophy') {
+        container.add(this.add.ellipse(0, 18, 68, 20, 0xffd166, 0.28));
+      } else {
+        container.add(this.add.circle(0, 0, 30, 0xffffff, 0.16).setStrokeStyle(2, 0xfff176, 0.5));
+      }
+      const icon = this.add.text(0, 0, decoration.icon, { fontSize: decoration.style === 'poster' ? '42px' : '34px' }).setOrigin(0.5);
+      icon.setInteractive({ useHandCursor: true });
+      icon.on('pointerdown', () => {
+        this.sfx?.sparkle?.();
+        this.dialogue?.say(`${decoration.title}: ${decoration.line}`);
+      });
+      container.add(icon);
+      this.tweens.add({ targets: icon, angle: index % 2 === 0 ? 5 : -5, duration: 1300 + index * 120, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
+    });
   }
 
 
