@@ -2,7 +2,6 @@ import Phaser from 'phaser';
 import { modes } from '../data/modes.js';
 import DiscoverySystem from '../systems/DiscoverySystem.js';
 import StarSystem, { MAX_STARS } from '../systems/StarSystem.js';
-import BadgeSystem from '../systems/BadgeSystem.js';
 import Button from '../ui/Button.js';
 
 export default class MenuScene extends Phaser.Scene {
@@ -13,49 +12,32 @@ export default class MenuScene extends Phaser.Scene {
   create() {
     this.cameras.main.setBackgroundColor('#111b36');
     this.addDecorations();
-    const logo = this.add.image(512, 104, 'art-logo').setDisplaySize(520, 146);
-    this.tweens.add({ targets: logo, y: 110, angle: 1.4, duration: 1900, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
-    const heroArt = this.add.image(150, 426, 'art-junior-scientist').setDisplaySize(164, 210).setAngle(-4);
-    this.tweens.add({ targets: heroArt, y: 420, angle: 2, duration: 1500, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
-    this.add.text(150, 552, 'Choose your chemistry guide', {
+    const logo = this.add.image(512, 92, 'art-logo').setDisplaySize(500, 140);
+    this.tweens.add({ targets: logo, y: 98, angle: 1.4, duration: 1900, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
+    const heroArt = this.add.image(116, 472, 'art-junior-scientist').setDisplaySize(144, 184).setAngle(-4);
+    this.tweens.add({ targets: heroArt, y: 466, angle: 2, duration: 1500, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
+    this.add.text(512, 180, 'Pick a lab, then start mixing', {
       fontFamily: 'Trebuchet MS, sans-serif',
-      fontSize: '17px',
-      color: '#fff5a8',
-      align: 'center',
-      wordWrap: { width: 220 },
-    }).setOrigin(0.5);
-    this.add.text(512, 186, 'Predict → Mix → Observe → Explain', {
-      fontFamily: 'Trebuchet MS, sans-serif',
-      fontSize: '26px',
+      fontSize: '28px',
       color: '#9de8ff',
+      stroke: '#11152f',
+      strokeThickness: 4,
     }).setOrigin(0.5);
     this.discoveries = new DiscoverySystem();
     this.stars = new StarSystem();
-    this.badges = new BadgeSystem();
 
-    this.add.text(512, 232, 'Choose Your Experiment Style', {
+    this.add.text(512, 226, 'Choose Your Experiment Style', {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '30px',
       color: '#ffd166',
     }).setOrigin(0.5);
 
-    this.createModeCard(modes.henry, 356, 400);
-    this.createModeCard(modes.pauling, 668, 400);
-    this.createRewardShelf();
-
-    this.add.text(512, 552, 'Safety note: real chemistry should always be supervised by a trusted adult or instructor.', {
-      fontFamily: 'Trebuchet MS, sans-serif',
-      fontSize: '16px',
-      color: '#fff5a8',
-      align: 'center',
-      wordWrap: { width: 650 },
-    }).setOrigin(0.5);
-
-    new Button(this, 512, 596, 'Full Safety Promise', () => this.showSafety(), { width: 260, height: 42, fill: 0x9de8ff, stroke: 0x235b72, fontSize: '16px' });
+    this.createModeCard(modes.henry, 344, 418);
+    this.createModeCard(modes.pauling, 700, 418);
     this.muteButton = new Button(this, 940, 44, this.muteLabel(), () => this.toggleMute(), { width: 140, height: 40, fill: 0x273469, stroke: 0x9de8ff, fontSize: '14px', color: '#ffffff' });
     const score = this.registry.get('score');
     if (score && (score.best > 0 || score.longestStreak > 0)) {
-      this.add.text(512, 628, `Best score: ${score.best}   •   Longest streak: ${score.longestStreak}`, {
+      this.add.text(512, 604, `Best score: ${score.best} - Longest streak: ${score.longestStreak}`, {
         fontFamily: 'Trebuchet MS, sans-serif',
         fontSize: '15px',
         color: '#9de8ff',
@@ -65,8 +47,8 @@ export default class MenuScene extends Phaser.Scene {
 
   createModeCard(mode, x, y) {
     const isHenry = mode.id === 'henry';
-    const cardWidth = 292;
-    const cardHeight = 278;
+    const cardWidth = 328;
+    const cardHeight = 320;
     const palette = isHenry
       ? {
         fill: mode.colors.cardFill,
@@ -79,8 +61,7 @@ export default class MenuScene extends Phaser.Scene {
         buttonText: '#3a2600',
         portrait: 'art-mode-henry-adventure',
         heroIcon: 'Fizz Quest',
-        eyebrow: 'Wild but science-based',
-        subtitleText: 'Fictional reagents, real science ideas, maximum lab chaos.',
+        subtitleText: 'Big reactions and secret recipes.',
         action: 'Start Henry Chaos',
       }
       : {
@@ -94,8 +75,7 @@ export default class MenuScene extends Phaser.Scene {
         buttonText: '#102334',
         portrait: 'art-mode-pauling-adventure',
         heroIcon: 'Clue Lab',
-        eyebrow: 'Evidence-based process',
-        subtitleText: 'Realistic chemicals, observations, variables, and conclusions.',
+        subtitleText: 'Clues, patterns, and careful tests.',
         action: 'Study with Pauling',
       };
 
@@ -125,40 +105,32 @@ export default class MenuScene extends Phaser.Scene {
       patternItems.push(this.add.circle(116, -88, 18, 0xd9f4ff, 0.42).setStrokeStyle(3, palette.badgeStroke, 0.6));
     }
 
-    const portrait = this.add.image(-64, -76, palette.portrait).setDisplaySize(128, 118);
-    const iconBadge = this.add.rectangle(68, -106, 106, 34, palette.badgeFill, 0.94).setStrokeStyle(3, palette.badgeStroke);
-    const iconText = this.add.text(68, -106, palette.heroIcon, {
+    const portrait = this.add.image(-72, -82, palette.portrait).setDisplaySize(142, 128);
+    const iconBadge = this.add.rectangle(80, -112, 122, 36, palette.badgeFill, 0.94).setStrokeStyle(3, palette.badgeStroke);
+    const iconText = this.add.text(80, -112, palette.heroIcon, {
       fontFamily: 'Trebuchet MS, sans-serif',
-      fontSize: '18px',
+      fontSize: '19px',
       color: palette.title,
       fontStyle: 'bold',
       align: 'center',
     }).setOrigin(0.5);
-    const title = this.add.text(62, -66, mode.label, {
+    const title = this.add.text(78, -66, mode.label, {
       fontFamily: 'Trebuchet MS, sans-serif',
-      fontSize: isHenry ? '22px' : '23px',
+      fontSize: isHenry ? '24px' : '25px',
       color: palette.title,
       align: 'center',
-      wordWrap: { width: 132 },
+      wordWrap: { width: 154 },
     }).setOrigin(0.5);
-    const eyebrow = this.add.text(0, -2, palette.eyebrow, {
+    const subtitle = this.add.text(0, 22, palette.subtitleText, {
       fontFamily: 'Trebuchet MS, sans-serif',
-      fontSize: '17px',
+      fontSize: '19px',
       color: palette.subtitle,
       align: 'center',
-      fontStyle: isHenry ? 'bold italic' : 'bold',
-      wordWrap: { width: cardWidth - 34 },
-    }).setOrigin(0.5);
-    const subtitle = this.add.text(0, 32, palette.subtitleText, {
-      fontFamily: 'Trebuchet MS, sans-serif',
-      fontSize: '14px',
-      color: palette.subtitle,
-      align: 'center',
-      lineSpacing: 3,
+      fontStyle: 'bold',
+      lineSpacing: 4,
       wordWrap: { width: cardWidth - 38 },
     }).setOrigin(0.5);
-    const progressPanel = this.add.rectangle(0, 73, cardWidth - 50, 38, 0xffffff, 0.4).setStrokeStyle(2, palette.badgeStroke, 0.45);
-    const progress = this.add.text(0, 73, this.progressSummary(mode), {
+    const progress = this.add.text(0, 66, this.progressSummary(mode), {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '13px',
       color: palette.subtitle,
@@ -166,30 +138,30 @@ export default class MenuScene extends Phaser.Scene {
       lineSpacing: 2,
       wordWrap: { width: cardWidth - 58 },
     }).setOrigin(0.5);
-    const button = this.add.rectangle(0, 112, cardWidth - 42, 38, palette.buttonFill, 0.98).setStrokeStyle(4, palette.stroke);
+    const button = this.add.rectangle(0, 112, cardWidth - 42, 52, palette.buttonFill, 0.98).setStrokeStyle(4, palette.stroke);
     const buttonLabel = this.add.text(0, 112, palette.action, {
       fontFamily: 'Trebuchet MS, sans-serif',
-      fontSize: '16px',
+      fontSize: '20px',
       color: palette.buttonText,
       fontStyle: 'bold',
       align: 'center',
     }).setOrigin(0.5);
 
-    const sandboxButton = this.add.rectangle(0, 142, cardWidth - 72, 28, isHenry ? 0xa8ffb0 : 0xd9f4ff, 0.98).setStrokeStyle(3, palette.stroke);
-    const sandboxLabel = this.add.text(0, 142, mode.labels.sandbox, {
+    const sandboxButton = this.add.rectangle(0, 162, cardWidth - 72, 38, isHenry ? 0xa8ffb0 : 0xd9f4ff, 0.98).setStrokeStyle(3, palette.stroke);
+    const sandboxLabel = this.add.text(0, 162, mode.labels.sandbox, {
       fontFamily: 'Trebuchet MS, sans-serif',
-      fontSize: '13px',
+      fontSize: '15px',
       color: palette.buttonText,
       align: 'center',
     }).setOrigin(0.5);
 
-    container.add([back, glow, headerPanel, ...patternItems, portrait, iconBadge, iconText, title, eyebrow, subtitle, progressPanel, progress, button, buttonLabel, sandboxButton, sandboxLabel]);
+    container.add([back, glow, headerPanel, ...patternItems, portrait, iconBadge, iconText, title, subtitle, progress, button, buttonLabel, sandboxButton, sandboxLabel]);
     container.setSize(cardWidth, cardHeight).setInteractive({ useHandCursor: true });
     container.on('pointerdown', (pointer) => {
       const sfx = this.registry.get('sfx');
       if (sfx) { sfx.resume(); sfx.click(); }
       const localPoint = container.getLocalPoint(pointer.x, pointer.y);
-      if (localPoint.y >= 128) {
+      if (localPoint.y >= 140) {
         this.scene.start('LabScene', { modeId: mode.id, experimentId: 'sandbox' });
       } else {
         this.scene.start('LevelSelectScene', { modeId: mode.id });
@@ -204,65 +176,6 @@ export default class MenuScene extends Phaser.Scene {
     }
   }
 
-
-  createRewardShelf() {
-    const earnedBadges = this.badges.getEarned();
-    const totalStars = Object.values(modes).reduce((sum, mode) => sum + this.stars.totalForMode(mode.id), 0);
-    const discoveries = Object.values(modes).flatMap((mode) => this.discoveries.getAllForMode(mode.id));
-    const discoveryCount = new Set(discoveries).size;
-    const stickers = [
-      { icon: '🦆', label: 'Duck Sticker', unlocked: discoveries.includes('duck-portal') },
-      { icon: '🌌', label: 'Galaxy Poster', unlocked: discoveries.includes('galaxy-goo') || discoveries.includes('basic-indicator-color') },
-      { icon: '💎', label: 'Crystal Trophy', unlocked: earnedBadges.some((badge) => badge.id === 'crystal-wrangler') || totalStars >= 9 },
-      { icon: '👾', label: 'Slime Splat', unlocked: discoveries.includes('slime-escape') || discoveryCount >= 6 },
-    ];
-    const visibleRewards = [
-      ...earnedBadges.slice(0, 4).map((badge) => ({ icon: badge.icon, label: badge.name, unlocked: true })),
-      ...stickers.filter((sticker) => sticker.unlocked),
-    ].slice(0, 6);
-
-    const shelf = this.add.container(910, 348);
-    const back = this.add.rectangle(0, 0, 188, 248, 0xfff7d6, 0.94).setStrokeStyle(5, 0xffd166);
-    const title = this.add.text(0, -104, 'Reward Shelf', {
-      fontFamily: 'Trebuchet MS, sans-serif',
-      fontSize: '18px',
-      color: '#4b2f10',
-      fontStyle: 'bold',
-    }).setOrigin(0.5);
-    const subtitle = this.add.text(0, -80, `${totalStars} ⭐  •  ${discoveryCount} finds`, {
-      fontFamily: 'Trebuchet MS, sans-serif',
-      fontSize: '12px',
-      color: '#273469',
-    }).setOrigin(0.5);
-    shelf.add([back, title, subtitle]);
-
-    if (!visibleRewards.length) {
-      shelf.add(this.add.text(0, 16, 'Earn stars and discoveries\nto fill this shelf!', {
-        fontFamily: 'Trebuchet MS, sans-serif',
-        fontSize: '13px',
-        color: '#7e2453',
-        align: 'center',
-        wordWrap: { width: 150 },
-      }).setOrigin(0.5));
-      return;
-    }
-
-    visibleRewards.forEach((reward, index) => {
-      const x = -54 + (index % 3) * 54;
-      const y = -34 + Math.floor(index / 3) * 70;
-      const plaque = this.add.rectangle(x, y, 46, 48, 0xffffff, 0.72).setStrokeStyle(2, 0x8a5a24, 0.45);
-      const icon = this.add.text(x, y - 4, reward.icon, { fontSize: '27px' }).setOrigin(0.5);
-      const label = this.add.text(x, y + 30, reward.label, {
-        fontFamily: 'Trebuchet MS, sans-serif',
-        fontSize: '9px',
-        color: '#273469',
-        align: 'center',
-        wordWrap: { width: 54 },
-      }).setOrigin(0.5);
-      shelf.add([plaque, icon, label]);
-      this.tweens.add({ targets: icon, y: icon.y - 4, duration: 900 + index * 80, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
-    });
-  }
 
 
   progressSummary(mode) {
@@ -292,7 +205,7 @@ Stars: ${earnedStars}/${totalStars}`;
 
   muteLabel() {
     const sfx = this.registry.get('sfx');
-    return sfx && sfx.muted ? '🔇 Sound OFF' : '🔊 Sound ON';
+    return sfx && sfx.muted ? 'Sound OFF' : 'Sound ON';
   }
 
   toggleMute() {
@@ -306,7 +219,7 @@ Stars: ${earnedStars}/${totalStars}`;
     for (let i = 0; i < 24; i += 1) {
       const x = Phaser.Math.Between(30, 994);
       const y = Phaser.Math.Between(40, 600);
-      const star = this.add.text(x, y, Phaser.Math.RND.pick(['✦', '●', '◆', '○']), {
+      const star = this.add.text(x, y, Phaser.Math.RND.pick(['*', '+', '.', 'o']), {
         fontSize: `${Phaser.Math.Between(16, 34)}px`,
         color: Phaser.Math.RND.pick(['#9de8ff', '#fff5a8', '#ff8bd1', '#a8ffb0']),
       }).setAlpha(0.65);
@@ -314,18 +227,4 @@ Stars: ${earnedStars}/${totalStars}`;
     }
   }
 
-  showSafety() {
-    const panel = this.add.rectangle(512, 520, 760, 98, 0xffffff, 0.96).setStrokeStyle(4, 0x273469);
-    const note = this.add.text(512, 520, `${modes.henry.safetyText}\n${modes.pauling.safetyText}`, {
-      fontFamily: 'Trebuchet MS, sans-serif',
-      fontSize: '17px',
-      color: '#273469',
-      align: 'center',
-      wordWrap: { width: 700 },
-    }).setOrigin(0.5);
-    this.time.delayedCall(4200, () => {
-      panel.destroy();
-      note.destroy();
-    });
-  }
 }

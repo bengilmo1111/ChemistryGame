@@ -6,32 +6,12 @@ import BadgeSystem from '../systems/BadgeSystem.js';
 import DiscoverySystem from '../systems/DiscoverySystem.js';
 import { buildQuiz } from '../systems/QuizSystem.js';
 import StarSystem, { MAX_STARS, computeStars } from '../systems/StarSystem.js';
-import VariableCoach from '../systems/VariableCoach.js';
 import Button from '../ui/Button.js';
 import { confettiBurst } from '../ui/effects.js';
 
 const QUIZ_BONUS = 25;
 
-const EFFECT_EMOJI = {
-  foam: '🫧',
-  rainbow: '🌈',
-  crystal: '💎',
-  layers: '🥞',
-  pop: '🍾',
-  swirl: '🌀',
-  cork: '🚀',
-  soot: '☁️',
-  slime: '👾',
-  duck: '🦆',
-  lava: '🌋',
-  galaxy: '🌌',
-  disco: '🪩',
-  blob: '🟢',
-  dragon: '🐉',
-  snow: '☃️',
-  tornado: '🌪️',
-  burp: '💨',
-};
+const EFFECT_MARK = '*';
 
 export default class ResultsScene extends Phaser.Scene {
   constructor() {
@@ -50,7 +30,6 @@ export default class ResultsScene extends Phaser.Scene {
     this.selectedIngredientIds = data.selectedIngredientIds ?? [];
     this.actions = data.actions ?? {};
     this.discoveryCount = 0;
-    this.variableCoach = new VariableCoach();
   }
 
   create() {
@@ -70,7 +49,7 @@ export default class ResultsScene extends Phaser.Scene {
       align: 'center',
       wordWrap: { width: 150 },
     }).setOrigin(0.5);
-    this.add.text(96, 484, `💬 "${this.randomQuip(this.outcome.kind)}"`, {
+    this.add.text(96, 484, `"${this.randomQuip(this.outcome.kind)}"`, {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '13px',
       fontStyle: 'italic',
@@ -81,10 +60,12 @@ export default class ResultsScene extends Phaser.Scene {
     }).setOrigin(0.5);
     const title = this.add.text(512, 44, this.outcome.title, {
       fontFamily: 'Trebuchet MS, sans-serif',
-      fontSize: '42px',
+      fontSize: '36px',
       color: this.outcome.kind === 'success' ? '#a8ffb0' : '#ffd166',
       stroke: '#11152f',
       strokeThickness: 7,
+      align: 'center',
+      wordWrap: { width: 680 },
     }).setOrigin(0.5).setScale(0);
     this.tweens.add({ targets: title, scale: 1, duration: 380, ease: 'Back.Out' });
     if (this.outcome.kind === 'success') confettiBurst(this, 40);
@@ -92,7 +73,7 @@ export default class ResultsScene extends Phaser.Scene {
     const score = this.registry.get('score');
     this.scoreSystem = score ?? null;
     if (score) {
-      const banner = this.add.text(900, 44, `⭐ ${score.score}`, {
+      const banner = this.add.text(900, 44, `Score ${score.score}`, {
         fontFamily: 'Trebuchet MS, sans-serif',
         fontSize: '24px',
         color: '#fff176',
@@ -101,7 +82,7 @@ export default class ResultsScene extends Phaser.Scene {
       }).setOrigin(1, 0.5);
       this.scoreBanner = banner;
       if (score.streak >= 2) {
-        this.add.text(900, 76, `🔥 streak x${score.streak}`, {
+        this.add.text(900, 76, `streak x${score.streak}`, {
           fontFamily: 'Trebuchet MS, sans-serif',
           fontSize: '16px',
           color: '#ff8bd1',
@@ -133,7 +114,6 @@ export default class ResultsScene extends Phaser.Scene {
     }).setOrigin(0.5);
 
     this.createOutcomeIllustration();
-    this.createRecipeStrip();
     this.layoutRows().forEach((row) => {
       this.add.text(row.x ?? 612, row.y, row.text, {
         fontFamily: 'Trebuchet MS, sans-serif',
@@ -158,11 +138,10 @@ export default class ResultsScene extends Phaser.Scene {
     }).setOrigin(0.5);
     const art = effectAsset
       ? this.add.image(308, 258, effectAsset.key).setDisplaySize(178, 178)
-      : this.add.text(308, 258, EFFECT_EMOJI[this.outcome.effect] ?? '🧪', { fontSize: '92px' });
-    art.setOrigin(0.5).setScale(0);
-    this.tweens.add({ targets: art, scale: 1, duration: 420, delay: 200, ease: 'Back.Out' });
+      : this.add.text(308, 258, EFFECT_MARK, { fontSize: '92px' });
+    art.setOrigin(0.5);
     this.tweens.add({ targets: art, y: 270, angle: 5, duration: 1400, delay: 650, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
-    this.add.text(308, 382, `${EFFECT_EMOJI[this.outcome.effect] ?? '🧪'} ${this.outcome.effect?.toUpperCase() ?? 'MYSTERY'}`, {
+    this.add.text(308, 382, `${this.outcome.effect?.toUpperCase() ?? 'MYSTERY'}`, {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '15px',
       fontStyle: 'bold',
@@ -203,13 +182,13 @@ export default class ResultsScene extends Phaser.Scene {
   predictionFeedback() {
     if (!this.prediction) {
       return this.modeId === 'pauling'
-        ? 'No hypothesis recorded — choose one next trial to compare evidence clearly.'
-        : 'No prediction this time — take a guess next mix for bonus ⭐!';
+          ? 'No hypothesis recorded - choose one next trial to compare evidence clearly.'
+        : 'No prediction this time - take a guess next mix for bonus!';
     }
     if (this.predictionMatched) {
       return this.modeId === 'pauling'
-        ? `Evidence matched the hypothesis, ${this.hero.shortName}.${this.outcome.kind === 'success' ? ' +50 ⭐' : ''}`
-        : `Nailed it, ${this.hero.shortName} — your prediction matched!${this.outcome.kind === 'success' ? ' +50 ⭐' : ''}`;
+        ? `Evidence matched the hypothesis, ${this.hero.shortName}.${this.outcome.kind === 'success' ? ' +50' : ''}`
+        : `Nailed it, ${this.hero.shortName} - your prediction matched!${this.outcome.kind === 'success' ? ' +50' : ''}`;
     }
     return this.modeId === 'pauling'
       ? `The evidence did not match the hypothesis, ${this.hero.shortName}. Revise one variable and test again.`
@@ -217,14 +196,10 @@ export default class ResultsScene extends Phaser.Scene {
   }
 
   layoutRows() {
-    const predictionMessage = this.predictionFeedback();
     return [
-      { x: 612, y: 140, size: '18px', style: 'bold', color: '#4b2f10', text: `${this.hero.shortName}'s prediction: ${this.prediction?.icon ?? '❔'} ${this.prediction?.label ?? 'none'}` },
-      { x: 612, y: 170, size: '15px', color: this.predictionMatched ? '#2f7d38' : '#7e2453', text: predictionMessage },
-      { x: 612, y: 218, size: '17px', style: 'bold', color: '#273469', text: this.outcome.explanation },
-      { x: 612, y: 332, size: '13px', color: '#7e2453', text: `Science words:\n${formatVocabularyDefinitions(this.outcome.vocabulary)}` },
-      { x: 612, y: 414, size: '13px', color: '#2f7d38', text: `${this.modeId === 'pauling' ? '🔬 Next controlled trial' : '🔬 Next mad idea'}: ${this.variableCoach.nextStep(this.experiment, this.outcome, this.selectedIngredientIds, this.actions)}` },
-      { x: 612, y: 474, size: '11px', color: '#8a7a5a', text: this.outcome.safetyNote },
+      { x: 612, y: 146, size: '18px', style: 'bold', color: '#4b2f10', text: `${this.hero.shortName}'s prediction: ${this.prediction?.icon ?? '?'} ${this.prediction?.label ?? 'none'}` },
+      { x: 612, y: 244, size: '18px', style: 'bold', color: '#273469', text: this.outcome.explanation, lineSpacing: 5, wrap: 432 },
+      { x: 612, y: 390, size: '14px', color: '#7e2453', text: `Words:\n${formatVocabularyDefinitions(this.outcome.vocabulary)}`, lineSpacing: 4, wrap: 432 },
     ];
   }
 
@@ -232,7 +207,7 @@ export default class ResultsScene extends Phaser.Scene {
     const spacing = 44;
     for (let i = 0; i < MAX_STARS; i += 1) {
       const earned = i < this.starsEarned;
-      const star = this.add.text(96 + (i - 1) * spacing, 140, earned ? '⭐' : '☆', {
+      const star = this.add.text(96 + (i - 1) * spacing, 140, earned ? '*' : '-', {
         fontSize: '34px',
         color: '#ffd166',
       }).setOrigin(0.5).setScale(0);
@@ -244,10 +219,10 @@ export default class ResultsScene extends Phaser.Scene {
     const tip = this.outcome.kind !== 'success'
       ? 'Finish the goal to earn stars!'
       : this.starsEarned < 2
-        ? 'Match your prediction for ⭐⭐!'
+        ? 'Match your prediction for a bonus!'
         : this.starsEarned < MAX_STARS
-          ? 'Find 3 outcomes here for ⭐⭐⭐!'
-          : 'All stars earned — amazing!';
+          ? 'Find 3 outcomes here!'
+          : 'All stars earned - amazing!';
     this.add.text(96, 188, tip, {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '13px',
@@ -259,7 +234,7 @@ export default class ResultsScene extends Phaser.Scene {
 
   createQuizButton() {
     if (!this.outcome.vocabulary?.length) return;
-    this.quizButton = new Button(this, 110, 540, `🧠 Brain Bonus +${QUIZ_BONUS}`, () => this.openQuiz(), {
+    this.quizButton = new Button(this, 110, 540, `Brain Bonus +${QUIZ_BONUS}`, () => this.openQuiz(), {
       width: 180,
       height: 46,
       fill: 0xb388ff,
@@ -276,7 +251,7 @@ export default class ResultsScene extends Phaser.Scene {
     const panel = this.add.container(512, 320).setDepth(50);
     const backdrop = this.add.rectangle(0, 0, 1024, 640, 0x11152f, 0.6).setInteractive();
     const card = this.add.rectangle(0, 0, 620, 320, 0xfff7d6, 0.98).setStrokeStyle(6, 0x4b2bbf);
-    const question = this.add.text(0, -110, `🧠 Brain Bonus!\n${quiz.question}`, {
+    const question = this.add.text(0, -110, `Brain Bonus!\n${quiz.question}`, {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '19px',
       color: '#273469',
@@ -296,7 +271,7 @@ export default class ResultsScene extends Phaser.Scene {
           sfx?.jingle();
           if (this.scoreSystem) {
             this.scoreSystem.addBonus(QUIZ_BONUS);
-            this.scoreBanner?.setText(`⭐ ${this.scoreSystem.score}`);
+            this.scoreBanner?.setText(`Score ${this.scoreSystem.score}`);
           }
         } else {
           sfx?.wahWah();
@@ -323,13 +298,8 @@ export default class ResultsScene extends Phaser.Scene {
   showBadges() {
     const earned = new BadgeSystem().getEarned();
     this.add.rectangle(512, 522, 560, 42, 0x273469, 0.75).setStrokeStyle(3, 0xffd166);
-    this.add.text(512, 508, 'Badge Sticker Area', {
-      fontFamily: 'Trebuchet MS, sans-serif',
-      fontSize: '18px',
-      color: '#ffffff',
-    }).setOrigin(0.5);
-    const badgesText = earned.length ? earned.map((badge) => `${badge.icon} ${badge.name}`).join('   ') : 'Try an experiment to earn badges!';
-    this.add.text(512, 536, badgesText, {
+    const badgesText = earned.length ? earned.map((badge) => badge.name).join('   ') : 'Try an experiment to earn badges!';
+    this.add.text(512, 522, badgesText, {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '16px',
       color: '#fff5a8',

@@ -1,4 +1,9 @@
 import { chromium, devices } from 'playwright';
+import { mkdirSync } from 'node:fs';
+
+const SCREENSHOT_DIR = 'tests/screenshots/mobile';
+mkdirSync(SCREENSHOT_DIR, { recursive: true });
+const runId = Date.now();
 
 const browser = await chromium.launch();
 const context = await browser.newContext({
@@ -14,16 +19,16 @@ page.on('requestfailed', (req) => consoleMessages.push(`requestfailed: ${req.url
 
 const target = process.env.PROBE_URL ?? 'https://chemistry-game-six.vercel.app/';
 await page.goto(target, { waitUntil: 'load', timeout: 30000 });
-await page.screenshot({ path: '/tmp/mobile-01-load.png' });
+await page.screenshot({ path: `${SCREENSHOT_DIR}/${runId}-01-load.png` });
 
 await page.waitForTimeout(800);
-await page.screenshot({ path: '/tmp/mobile-02-after-load.png' });
+await page.screenshot({ path: `${SCREENSHOT_DIR}/${runId}-02-after-load.png` });
 
 await page.waitForTimeout(2000);
-await page.screenshot({ path: '/tmp/mobile-03-after-2s.png' });
+await page.screenshot({ path: `${SCREENSHOT_DIR}/${runId}-03-after-2s.png` });
 
 await page.waitForTimeout(3000);
-await page.screenshot({ path: '/tmp/mobile-04-after-5s.png' });
+await page.screenshot({ path: `${SCREENSHOT_DIR}/${runId}-04-after-5s.png` });
 
 // Check what's on screen
 const sceneInfo = await page.evaluate(() => {

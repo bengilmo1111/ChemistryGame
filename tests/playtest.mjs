@@ -15,7 +15,7 @@ const page = await context.newPage();
 page.on('console', (msg) => {
   const text = `${msg.type()}: ${msg.text()}`;
   consoleMessages.push(text);
-  if (msg.type() === 'error') errors.push(text);
+  if (msg.type() === 'error' && !text.includes('The AudioContext encountered an error from the audio device')) errors.push(text);
   if (msg.type() === 'warning') warnings.push(text);
 });
 page.on('pageerror', (err) => errors.push(`pageerror: ${err.message}`));
@@ -25,10 +25,10 @@ await page.goto('http://localhost:5173/', { waitUntil: 'networkidle' });
 await page.waitForSelector('canvas', { timeout: 15000 });
 const canvas = await page.$('canvas');
 await page.waitForTimeout(1500);
-await canvas.screenshot({ path: `${SCREENSHOT_DIR}/01-boot.png` });
+await page.screenshot({ path: `${SCREENSHOT_DIR}/01-boot.png` });
 
 await page.waitForTimeout(800);
-await canvas.screenshot({ path: `${SCREENSHOT_DIR}/02-menu.png` });
+await page.screenshot({ path: `${SCREENSHOT_DIR}/02-menu.png` });
 
 const box = await canvas.boundingBox();
 const sx = box.width / 1024;
@@ -54,18 +54,18 @@ async function dragGame(fromX, fromY, toX, toY, label) {
     await page.waitForTimeout(20);
   }
   await page.mouse.up();
-  if (label) console.log(`drag ${label} → flask`);
+  if (label) console.log(`drag ${label} -> flask`);
 }
 
-// MenuScene: click "Start Experiments" at (512, 398)
-await clickGame(512, 398, 'Start Experiments');
+// MenuScene: click Henry's main card button.
+await clickGame(344, 530, 'Start Henry experiments');
 await page.waitForTimeout(600);
-await canvas.screenshot({ path: `${SCREENSHOT_DIR}/03-level-select.png` });
+await page.screenshot({ path: `${SCREENSHOT_DIR}/03-level-select.png` });
 
-// LevelSelectScene: first card "Experiment!" button at y+82=318
-await clickGame(206, 318, 'Foamy Fountain experiment');
+// LevelSelectScene: first card "Experiment!" button at y+76=304
+await clickGame(206, 304, 'Foamy Fountain experiment');
 await page.waitForTimeout(800);
-await canvas.screenshot({ path: `${SCREENSHOT_DIR}/04-lab-initial.png` });
+await page.screenshot({ path: `${SCREENSHOT_DIR}/04-lab-initial.png` });
 
 // LabScene: predict "Foam climbs up" at (88,162)
 await clickGame(88, 162, 'predict Foam');
@@ -81,38 +81,38 @@ await page.waitForTimeout(400);
 await clickGame(622, 304, 'stir tool');
 await page.waitForTimeout(400);
 
-await canvas.screenshot({ path: `${SCREENSHOT_DIR}/05-lab-ready.png` });
+await page.screenshot({ path: `${SCREENSHOT_DIR}/05-lab-ready.png` });
 
 // Click Mix at (858, 570)
 await clickGame(858, 570, 'Mix!');
-await page.waitForTimeout(2700); // wait for outcome + delayed scene change
-await canvas.screenshot({ path: `${SCREENSHOT_DIR}/06-results.png` });
+await page.waitForTimeout(4500); // wait for outcome + delayed scene change
+await page.screenshot({ path: `${SCREENSHOT_DIR}/06-results.png` });
 
 // Replay back to lab to test the Reset Flask button
 await clickGame(384, 588, 'Replay');
 await page.waitForTimeout(800);
-await canvas.screenshot({ path: `${SCREENSHOT_DIR}/07-lab-replay.png` });
+await page.screenshot({ path: `${SCREENSHOT_DIR}/07-lab-replay.png` });
 
-// Drag-and-drop pour: fizz-powder bottle → flask
+// Drag-and-drop pour: fizz-powder bottle -> flask
 await dragGame(60, 304, 392, 386, 'fizz-powder');
 await page.waitForTimeout(400);
-await canvas.screenshot({ path: `${SCREENSHOT_DIR}/08-after-drag.png` });
+await page.screenshot({ path: `${SCREENSHOT_DIR}/08-after-drag.png` });
 
 // Reset Flask at (666, 570)
 await clickGame(666, 570, 'Reset Flask');
 await page.waitForTimeout(500);
-await canvas.screenshot({ path: `${SCREENSHOT_DIR}/09-after-reset.png` });
+await page.screenshot({ path: `${SCREENSHOT_DIR}/09-after-reset.png` });
 
 // Back to cards
 await clickGame(92, 44, 'Cards');
 await page.waitForTimeout(600);
-await canvas.screenshot({ path: `${SCREENSHOT_DIR}/10-cards-again.png` });
+await page.screenshot({ path: `${SCREENSHOT_DIR}/10-cards-again.png` });
 
-// Pressure-pop card index 4 → col 1, row 1 → x=512, y=466; button at y+82=548
-await clickGame(512, 548, 'Pressure Pop experiment');
+// Pressure-pop card index 4: col 1, row 1, button at y+76.
+await clickGame(512, 540, 'Pressure Pop experiment');
 await page.waitForTimeout(600);
 
-// Predict "Pressure pops" — index 4 row 1 col 0: (88, 162 + 44) = (88, 206)
+// Predict "Pressure pops" - index 4 row 1 col 0: (88, 162 + 44) = (88, 206)
 await clickGame(88, 206, 'predict Pressure');
 await page.waitForTimeout(200);
 
@@ -121,19 +121,19 @@ await clickGame(60, 304, 'tap Fizz Powder');
 await page.waitForTimeout(300);
 await clickGame(160, 304, 'tap Sour Drops');
 await page.waitForTimeout(300);
-// goo-gel (index 5 → col 2 row 1)
+// goo-gel (index 5 -> col 2 row 1)
 await clickGame(260, 396, 'tap Goo Gel');
 await page.waitForTimeout(300);
 
 // Seal tool: index 3, y = 304 + 3*38 = 418
 await clickGame(622, 418, 'seal tool');
 await page.waitForTimeout(300);
-await canvas.screenshot({ path: `${SCREENSHOT_DIR}/11-pressure-ready.png` });
+await page.screenshot({ path: `${SCREENSHOT_DIR}/11-pressure-ready.png` });
 
 // Mix!
 await clickGame(858, 570, 'Mix!');
-await page.waitForTimeout(2700);
-await canvas.screenshot({ path: `${SCREENSHOT_DIR}/12-pressure-result.png` });
+await page.waitForTimeout(4500);
+await page.screenshot({ path: `${SCREENSHOT_DIR}/12-pressure-result.png` });
 
 console.log('--- CONSOLE ---');
 consoleMessages.forEach((m) => console.log(m));
