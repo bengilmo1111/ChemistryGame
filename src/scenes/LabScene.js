@@ -114,6 +114,7 @@ export default class LabScene extends Phaser.Scene {
     this.scoreSystem = this.registry.get('score');
     this.discoveries = new DiscoverySystem();
     this.recipeBook = null;
+    this.isMixing = false;
   }
 
   secretsFound() {
@@ -719,6 +720,10 @@ export default class LabScene extends Phaser.Scene {
   }
 
   updateMixButton() {
+    if (this.isMixing) {
+      this.mixButton.setEnabled(false);
+      return;
+    }
     const ready = this.inventory.selected.length > 0;
     this.mixButton.setEnabled(ready);
     if (ready && !this.mixPulse) {
@@ -736,6 +741,7 @@ export default class LabScene extends Phaser.Scene {
   }
 
   resetFlask() {
+    if (this.isMixing) return;
     this.inventory.clear();
     this.actions = { stirred: false, heated: false, cooled: false, sealed: false, shaken: false };
     this.danger = new DangerMeter();
@@ -757,6 +763,45 @@ export default class LabScene extends Phaser.Scene {
   }
 
   mix() {
+    if (this.isMixing || this.inventory.selected.length === 0) return;
+    this.isMixing = true;
+    this.stopMixPulse();
+    this.mixButton.setEnabled(false);
+    this.resetButton.setEnabled(false);
+    this.playPreMixSequence(() => this.resolveMixOutcome());
+  }
+
+  playPreMixSequence(onComplete) {
+    this.dialogue.say('Stand back... science incoming!');
+    this.sfx?.whoosh?.();
+    this.cameras.main.shake(220, 0.006);
+    this.spawnBubbles(20, this.liquid.fillColor ?? 0x9de8ff);
+
+    this.tweens.killTweensOf(this.flask);
+    this.tweens.add({
+      targets: this.flask,
+      x: 384,
+      angle: -4,
+      duration: 90,
+      yoyo: true,
+      repeat: 4,
+      ease: 'Sine.InOut',
+      onComplete: () => this.flask.setPosition(392, 386).setAngle(0),
+    });
+
+    const originalColor = this.liquid.fillColor ?? 0x83d8ff;
+    const flashColors = [0xfff176, 0xff8bd1, 0x9de8ff, originalColor];
+    flashColors.forEach((color, index) => {
+      this.time.delayedCall(120 + index * 130, () => this.liquid.setFillStyle(color, 0.72));
+    });
+
+    this.time.delayedCall(780, () => {
+      this.spawnBubbles(12, 0xffffff);
+      onComplete?.();
+    });
+  }
+
+  resolveMixOutcome() {
     const outcome = this.isSandbox
       ? this.engine.resolveSandbox(this.inventory.selected, this.actions)
       : this.engine.resolve(this.experiment, this.inventory.selected, this.actions);
@@ -802,6 +847,8 @@ export default class LabScene extends Phaser.Scene {
   }
 
   sandboxAftermath(outcome) {
+    this.isMixing = false;
+    this.resetButton.setEnabled(true);
     this.dialogue.say(`${outcome.title} — ${outcome.explanation}`);
     this.tweens.killTweensOf(this.flask);
     this.flask.setAngle(0).setPosition(392, 386);
