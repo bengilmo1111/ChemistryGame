@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { getMode } from '../data/modes.js';
+import { findEffectArt } from '../data/artAssets.js';
 import { formatVocabularyDefinitions } from '../data/vocabulary.js';
 import BadgeSystem from '../systems/BadgeSystem.js';
 import DiscoverySystem from '../systems/DiscoverySystem.js';
@@ -86,9 +87,6 @@ export default class ResultsScene extends Phaser.Scene {
       strokeThickness: 7,
     }).setOrigin(0.5).setScale(0);
     this.tweens.add({ targets: title, scale: 1, duration: 380, ease: 'Back.Out' });
-    const emoji = this.add.text(962, 300, EFFECT_EMOJI[this.outcome.effect] ?? '🧪', { fontSize: '78px' }).setOrigin(0.5).setScale(0);
-    this.tweens.add({ targets: emoji, scale: 1, duration: 420, delay: 200, ease: 'Back.Out' });
-    this.tweens.add({ targets: emoji, y: 312, angle: 8, duration: 1400, delay: 650, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
     if (this.outcome.kind === 'success') confettiBurst(this, 40);
 
     const score = this.registry.get('score');
@@ -112,17 +110,7 @@ export default class ResultsScene extends Phaser.Scene {
       this.tweens.add({ targets: banner, scale: 1.15, duration: 220, yoyo: true, ease: 'Sine.InOut' });
     }
 
-    this.add.rectangle(550, 296, 700, 432, 0xfff7d6).setStrokeStyle(5, 0x8a5a24);
-    this.layoutRows().forEach((row) => {
-      this.add.text(row.x ?? 550, row.y, row.text, {
-        fontFamily: 'Trebuchet MS, sans-serif',
-        fontSize: row.size,
-        color: row.color,
-        align: 'center',
-        lineSpacing: row.lineSpacing ?? 2,
-        wordWrap: { width: row.wrap ?? 660 },
-      }).setOrigin(0.5);
-    });
+    this.createDiscoveryCard();
 
     this.showStars();
     this.showBadges();
@@ -130,6 +118,80 @@ export default class ResultsScene extends Phaser.Scene {
     new Button(this, 384, 588, 'Replay', () => this.scene.start('LabScene', { modeId: this.modeId, experimentId: this.experiment.id }), { width: 170, height: 44, fill: 0x9de8ff, stroke: 0x235b72, fontSize: '20px' });
     new Button(this, 600, 588, 'More Cards', () => this.scene.start('LevelSelectScene', { modeId: this.modeId }), { width: 200, height: 44, fill: 0xffd166, stroke: 0x8a5a24, fontSize: '20px' });
     new Button(this, 810, 588, 'Menu', () => this.scene.start('MenuScene'), { width: 130, height: 44, fill: 0xff8bd1, stroke: 0x7e2453, fontSize: '20px' });
+  }
+
+  createDiscoveryCard() {
+    this.add.rectangle(550, 296, 720, 438, 0x8a5a24, 0.55).setOrigin(0.5).setAngle(1);
+    this.add.rectangle(550, 296, 700, 432, 0xfff7d6).setStrokeStyle(5, 0x8a5a24);
+    this.add.rectangle(550, 96, 660, 38, 0x273469, 0.95).setStrokeStyle(2, 0xffd166);
+    this.add.text(550, 96, 'Discovery Card', {
+      fontFamily: 'Trebuchet MS, sans-serif',
+      fontSize: '22px',
+      fontStyle: 'bold',
+      color: '#fff5a8',
+      letterSpacing: 2,
+    }).setOrigin(0.5);
+
+    this.createOutcomeIllustration();
+    this.createRecipeStrip();
+    this.layoutRows().forEach((row) => {
+      this.add.text(row.x ?? 612, row.y, row.text, {
+        fontFamily: 'Trebuchet MS, sans-serif',
+        fontSize: row.size,
+        fontStyle: row.style ?? '',
+        color: row.color,
+        align: row.align ?? 'center',
+        lineSpacing: row.lineSpacing ?? 2,
+        wordWrap: { width: row.wrap ?? 452 },
+      }).setOrigin(row.originX ?? 0.5, 0.5);
+    });
+  }
+
+  createOutcomeIllustration() {
+    const effectAsset = findEffectArt(this.outcome.effect);
+    this.add.rectangle(308, 260, 230, 252, 0xffffff, 0.86).setStrokeStyle(4, 0xffd166);
+    this.add.text(308, 145, 'New Find!', {
+      fontFamily: 'Trebuchet MS, sans-serif',
+      fontSize: '17px',
+      fontStyle: 'bold',
+      color: '#7e2453',
+    }).setOrigin(0.5);
+    const art = effectAsset
+      ? this.add.image(308, 258, effectAsset.key).setDisplaySize(178, 178)
+      : this.add.text(308, 258, EFFECT_EMOJI[this.outcome.effect] ?? '🧪', { fontSize: '92px' });
+    art.setOrigin(0.5).setScale(0);
+    this.tweens.add({ targets: art, scale: 1, duration: 420, delay: 200, ease: 'Back.Out' });
+    this.tweens.add({ targets: art, y: 270, angle: 5, duration: 1400, delay: 650, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
+    this.add.text(308, 382, `${EFFECT_EMOJI[this.outcome.effect] ?? '🧪'} ${this.outcome.effect?.toUpperCase() ?? 'MYSTERY'}`, {
+      fontFamily: 'Trebuchet MS, sans-serif',
+      fontSize: '15px',
+      fontStyle: 'bold',
+      color: '#273469',
+    }).setOrigin(0.5);
+  }
+
+  createRecipeStrip() {
+    const { ingredientNames, actionNames } = this.recipeParts();
+    this.add.rectangle(612, 262, 430, 58, 0xffffff, 0.7).setStrokeStyle(3, 0x9de8ff);
+    this.add.text(612, 250, 'Recipe Strip', {
+      fontFamily: 'Trebuchet MS, sans-serif',
+      fontSize: '13px',
+      fontStyle: 'bold',
+      color: '#235b72',
+    }).setOrigin(0.5);
+    this.add.text(612, 276, `${ingredientNames || 'no ingredients'}  +  ${actionNames || 'no tools'}`, {
+      fontFamily: 'Trebuchet MS, sans-serif',
+      fontSize: '14px',
+      color: '#4b2f10',
+      align: 'center',
+      wordWrap: { width: 398 },
+    }).setOrigin(0.5);
+  }
+
+  recipeParts() {
+    const ingredientNames = this.selectedIngredientIds.map((id) => this.findReagent(id)?.name).filter(Boolean).join(' + ');
+    const actionNames = Object.entries(this.actions).filter(([, used]) => used).map(([name]) => ({ stirred: 'Stir', heated: 'Warm', cooled: 'Cool', sealed: 'Seal', shaken: 'Shake' }[name] ?? name)).join(', ');
+    return { ingredientNames, actionNames };
   }
 
 
@@ -155,17 +217,14 @@ export default class ResultsScene extends Phaser.Scene {
   }
 
   layoutRows() {
-    const ingredientNames = this.selectedIngredientIds.map((id) => this.findReagent(id)?.name).filter(Boolean).join(' + ');
-    const actionNames = Object.entries(this.actions).filter(([, used]) => used).map(([name]) => ({ stirred: 'Stir', heated: 'Warm', cooled: 'Cool', sealed: 'Seal', shaken: 'Shake' }[name] ?? name)).join(', ');
     const predictionMessage = this.predictionFeedback();
     return [
-      { y: 110, size: '20px', color: '#4b2f10', text: `${this.hero.shortName}'s prediction: ${this.prediction?.icon ?? '❔'} ${this.prediction?.label ?? 'none'}` },
-      { y: 140, size: '17px', color: this.predictionMatched ? '#2f7d38' : '#7e2453', text: predictionMessage },
-      { y: 196, size: '19px', color: '#273469', text: this.outcome.explanation },
-      { y: 272, size: '14px', color: '#4b2f10', text: `Recipe: ${ingredientNames || 'no ingredients'} + ${actionNames || 'no tools'} → ${this.outcome.title}` },
-      { y: 338, size: '13px', color: '#7e2453', text: `Science words:\n${formatVocabularyDefinitions(this.outcome.vocabulary)}` },
-      { y: 420, size: '14px', color: '#2f7d38', text: `${this.modeId === 'pauling' ? '🔬 Next controlled trial' : '🔬 Next mad idea'}: ${this.variableCoach.nextStep(this.experiment, this.outcome, this.selectedIngredientIds, this.actions)}` },
-      { y: 478, size: '11px', color: '#8a7a5a', text: this.outcome.safetyNote },
+      { x: 612, y: 140, size: '18px', style: 'bold', color: '#4b2f10', text: `${this.hero.shortName}'s prediction: ${this.prediction?.icon ?? '❔'} ${this.prediction?.label ?? 'none'}` },
+      { x: 612, y: 170, size: '15px', color: this.predictionMatched ? '#2f7d38' : '#7e2453', text: predictionMessage },
+      { x: 612, y: 218, size: '17px', style: 'bold', color: '#273469', text: this.outcome.explanation },
+      { x: 612, y: 332, size: '13px', color: '#7e2453', text: `Science words:\n${formatVocabularyDefinitions(this.outcome.vocabulary)}` },
+      { x: 612, y: 414, size: '13px', color: '#2f7d38', text: `${this.modeId === 'pauling' ? '🔬 Next controlled trial' : '🔬 Next mad idea'}: ${this.variableCoach.nextStep(this.experiment, this.outcome, this.selectedIngredientIds, this.actions)}` },
+      { x: 612, y: 474, size: '11px', color: '#8a7a5a', text: this.outcome.safetyNote },
     ];
   }
 
@@ -263,13 +322,14 @@ export default class ResultsScene extends Phaser.Scene {
 
   showBadges() {
     const earned = new BadgeSystem().getEarned();
-    this.add.text(512, 522, 'Badges Earned', {
+    this.add.rectangle(512, 522, 560, 42, 0x273469, 0.75).setStrokeStyle(3, 0xffd166);
+    this.add.text(512, 508, 'Badge Sticker Area', {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '18px',
       color: '#ffffff',
     }).setOrigin(0.5);
     const badgesText = earned.length ? earned.map((badge) => `${badge.icon} ${badge.name}`).join('   ') : 'Try an experiment to earn badges!';
-    this.add.text(512, 548, badgesText, {
+    this.add.text(512, 536, badgesText, {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '16px',
       color: '#fff5a8',
