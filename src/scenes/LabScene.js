@@ -463,10 +463,10 @@ export default class LabScene extends Phaser.Scene {
       const x = 60 + (index % 3) * 100;
       const y = 322 + Math.floor(index / 3) * 92;
       const bottle = this.add.container(x, y);
-      const bottleArt = this.add.image(0, -8, reagent.artKey).setDisplaySize(62, 74);
-      const label = this.add.text(0, 34, reagent.name, { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '12px', color: '#ffffff', align: 'center' }).setOrigin(0.5);
+      const bottleArt = this.add.image(0, -11, reagent.artKey).setDisplaySize(70, 82);
+      const label = this.add.text(0, 38, reagent.name, { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '11px', color: '#ffffff', align: 'center' }).setOrigin(0.5);
       bottle.add([bottleArt, label]);
-      bottle.setSize(80, 82).setInteractive({ draggable: true, useHandCursor: true });
+      bottle.setSize(86, 90).setInteractive({ draggable: true, useHandCursor: true });
       bottle.setData('reagentId', reagent.id);
       bottle.setData('home', { x, y });
       bottle.on('pointerover', () => this.tooltip.show(x + 95, y - 36, `${reagent.concept}: ${reagent.clue}`));
