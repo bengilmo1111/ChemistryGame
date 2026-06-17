@@ -1,25 +1,156 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="640" viewBox="0 0 1024 640" role="img" aria-labelledby="title desc">
-  <title id="title">Cartoon chemistry lab bench background</title>
-  <desc id="desc">A cozy fantasy classroom lab background with a wooden bench at the bottom.</desc>
+  <title id="title">Classroom-safe fantasy lab bench background</title>
+  <desc id="desc">A whimsical cartoon classroom lab with science posters, sticker decals, fantasy jars, notes, planets, stars, soft lights, and a clear central flask space over a wooden bench.</desc>
   <defs>
     <linearGradient id="wall" x1="0" x2="0" y1="0" y2="1">
-      <stop offset="0" stop-color="#1a1f4d"/>
-      <stop offset="1" stop-color="#2a316d"/>
+      <stop offset="0" stop-color="#22205a"/>
+      <stop offset="0.58" stop-color="#34327a"/>
+      <stop offset="1" stop-color="#4b3d86"/>
     </linearGradient>
+    <linearGradient id="bench" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#d99b50"/>
+      <stop offset="1" stop-color="#7a461f"/>
+    </linearGradient>
+    <radialGradient id="centerGlow" cx="50%" cy="58%" r="42%">
+      <stop offset="0" stop-color="#fff3b0" stop-opacity="0.18"/>
+      <stop offset="0.58" stop-color="#8cecff" stop-opacity="0.06"/>
+      <stop offset="1" stop-color="#8cecff" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="5" stdDeviation="3" flood-color="#151236" flood-opacity="0.35"/>
+    </filter>
+    <style>
+      .outline{stroke:#191735;stroke-width:6;stroke-linecap:round;stroke-linejoin:round}
+      .thin{stroke:#191735;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+      .tiny{stroke:#191735;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+      .label{font-family:'Trebuchet MS',Verdana,sans-serif;font-weight:800;fill:#252047;text-anchor:middle}
+      .small{font-size:18px}.mini{font-size:13px}.poster{font-size:20px}
+    </style>
   </defs>
+
   <rect width="1024" height="640" fill="url(#wall)"/>
-  <circle cx="160" cy="120" r="56" fill="#9de8ff" opacity="0.08"/>
-  <circle cx="880" cy="150" r="78" fill="#ff8bd1" opacity="0.08"/>
-  <circle cx="512" cy="270" r="180" fill="#9de8ff" opacity="0.04"/>
-  <g fill="#fff5a8" opacity="0.55">
-    <circle cx="60" cy="60" r="3"/>
-    <circle cx="120" cy="32" r="2"/>
-    <circle cx="980" cy="60" r="3"/>
-    <circle cx="940" cy="28" r="2"/>
-    <circle cx="44" cy="220" r="2"/>
-    <circle cx="990" cy="240" r="3"/>
+  <rect width="1024" height="640" fill="url(#centerGlow)"/>
+
+  <!-- Soft classroom lighting kept high and away from play panels. -->
+  <g opacity="0.9">
+    <path d="M426 0h172l72 214H354z" fill="#fff1a7" opacity="0.08"/>
+    <ellipse cx="512" cy="30" rx="118" ry="18" fill="#fff1a7" opacity="0.22"/>
+    <path d="M138 0h108l62 190H72z" fill="#8feaff" opacity="0.06"/>
+    <path d="M808 0h104l64 196H744z" fill="#ff91d0" opacity="0.06"/>
   </g>
-  <rect x="0" y="492" width="1024" height="148" fill="#6d421c"/>
-  <rect x="0" y="486" width="1024" height="20" fill="#c28b48"/>
-  <path d="M0 502h1024" stroke="#4b2f10" stroke-width="3" opacity="0.45"/>
+
+  <!-- Stars, planets, doodles, and sticker-like decals. -->
+  <g opacity="0.8">
+    <g fill="#fff3a6">
+      <path d="M55 62l6 14 15 2-11 10 3 15-13-8-13 8 3-15-11-10 15-2z"/>
+      <path d="M945 84l5 11 12 2-9 8 2 12-10-6-11 6 3-12-9-8 12-2z"/>
+      <path d="M626 92l4 9 10 1-7 7 2 10-9-5-9 5 2-10-7-7 10-1z"/>
+    </g>
+    <g fill="#b8f7ff">
+      <circle cx="92" cy="140" r="4"/><circle cx="184" cy="46" r="3"/><circle cx="298" cy="118" r="3"/>
+      <circle cx="707" cy="46" r="3"/><circle cx="884" cy="214" r="4"/><circle cx="972" cy="154" r="3"/>
+    </g>
+    <g class="tiny" fill="none">
+      <circle cx="852" cy="106" r="23" stroke="#ffa6dd"/>
+      <path d="M819 114c26 11 55 5 71-15" stroke="#ffe08a"/>
+      <path d="M74 282c18-24 52-24 70 0" stroke="#9df0ff"/>
+      <path d="M91 274c8-9 22-9 31 0" stroke="#9df0ff"/>
+      <path d="M694 182c18-10 37-10 55 0M709 165l9 35M736 165l-10 35" stroke="#fff3a6"/>
+    </g>
+  </g>
+
+  <!-- Left-side classroom posters, placed above/behind ingredient column with muted contrast. -->
+  <g filter="url(#softShadow)" opacity="0.88">
+    <rect class="outline" x="28" y="82" width="150" height="104" rx="18" fill="#75e5ff"/>
+    <rect x="42" y="99" width="122" height="72" rx="12" fill="#fff7bc" opacity="0.92"/>
+    <text class="label poster" x="103" y="126">ASK</text>
+    <text class="label poster" x="103" y="150">WHY?</text>
+    <path class="tiny" d="M57 159c22-22 48-22 70 0" fill="none" stroke="#ff6fb1"/>
+
+    <rect class="outline" x="196" y="38" width="146" height="116" rx="20" fill="#ff9bcb"/>
+    <text class="label small" x="269" y="72">MOON</text>
+    <text class="label small" x="269" y="95">MATH</text>
+    <circle class="thin" cx="248" cy="123" r="17" fill="#f9f1a5"/>
+    <path class="tiny" d="M229 124h41" stroke="#5844a8"/>
+    <path class="tiny" d="M286 116l18-12 9 14-18 12z" fill="#8df2ff"/>
+  </g>
+
+  <!-- Right-side notes and safe sign leave notebook/meter panels readable by staying high and soft. -->
+  <g filter="url(#softShadow)" opacity="0.88">
+    <rect class="outline" x="702" y="42" width="156" height="94" rx="18" fill="#b7ff91"/>
+    <text class="label small" x="780" y="75">SAFE</text>
+    <text class="label small" x="780" y="99">WONDER</text>
+    <path class="tiny" d="M732 111l18 14 38-42" fill="none" stroke="#347f58" stroke-width="7"/>
+
+    <rect class="outline" x="874" y="162" width="112" height="90" rx="16" fill="#ffe38a"/>
+    <text class="label mini" x="930" y="190">NOTE:</text>
+    <text class="label mini" x="930" y="211">TRY</text>
+    <text class="label mini" x="930" y="229">KINDNESS</text>
+    <path class="tiny" d="M897 180l-14-14M904 233l18 15" stroke="#ff7fbf"/>
+  </g>
+
+  <!-- Shelves with fictional fantasy jars; central flask zone is intentionally open. -->
+  <g filter="url(#softShadow)">
+    <path class="outline" d="M34 254h260" fill="none" stroke="#5b331a"/>
+    <path class="outline" d="M710 296h278" fill="none" stroke="#5b331a"/>
+    <g transform="translate(52 188)">
+      <rect class="thin" x="0" y="24" width="44" height="62" rx="12" fill="#9df0ff"/>
+      <rect class="tiny" x="8" y="8" width="28" height="20" rx="7" fill="#ffd36b"/>
+      <circle cx="22" cy="54" r="9" fill="#a96cff" opacity="0.65"/>
+      <text class="label mini" x="22" y="78">ZAP</text>
+    </g>
+    <g transform="translate(119 178)">
+      <rect class="thin" x="0" y="36" width="52" height="70" rx="14" fill="#ff8bd1"/>
+      <rect class="tiny" x="10" y="16" width="32" height="23" rx="7" fill="#f2f2ff"/>
+      <path d="M12 74c14-12 28 12 40 0v28H12z" fill="#ffe78d" opacity="0.75"/>
+      <text class="label mini" x="26" y="95">GIG</text>
+    </g>
+    <g transform="translate(202 196)">
+      <rect class="thin" x="0" y="14" width="50" height="62" rx="17" fill="#b7ff91"/>
+      <rect class="tiny" x="11" y="0" width="28" height="18" rx="6" fill="#ffcf75"/>
+      <path class="tiny" d="M15 43c7-8 14-8 21 0 7 8 14 8 21 0" fill="none" stroke="#4b9b78"/>
+    </g>
+    <g transform="translate(734 224)">
+      <rect class="thin" x="0" y="18" width="54" height="72" rx="15" fill="#ffd36b"/>
+      <rect class="tiny" x="12" y="0" width="30" height="22" rx="7" fill="#e7efff"/>
+      <circle cx="28" cy="54" r="15" fill="#6fd7ff" opacity="0.68"/>
+      <path class="tiny" d="M18 54h20M28 44v20" stroke="#fff8c4"/>
+    </g>
+    <g transform="translate(817 212)">
+      <rect class="thin" x="0" y="30" width="48" height="82" rx="15" fill="#b996ff"/>
+      <rect class="tiny" x="9" y="11" width="30" height="23" rx="7" fill="#ffefa3"/>
+      <path d="M10 72c9 10 20 10 29 0 7-8 14-8 19 0v34H10z" fill="#8df2ff" opacity="0.7"/>
+      <text class="label mini" x="24" y="98">ORB</text>
+    </g>
+    <g transform="translate(908 234)">
+      <rect class="thin" x="0" y="16" width="42" height="64" rx="13" fill="#ff9bcb"/>
+      <rect class="tiny" x="8" y="0" width="26" height="20" rx="6" fill="#b7ff91"/>
+      <path class="tiny" d="M13 52l8-13 8 13z" fill="#fff3a6"/>
+    </g>
+  </g>
+
+  <!-- Paper notes and doodle stickers. -->
+  <g opacity="0.9" filter="url(#softShadow)">
+    <rect class="thin" x="332" y="52" width="70" height="58" rx="10" fill="#fff0a8" transform="rotate(-7 367 81)"/>
+    <path class="tiny" d="M348 77h33M346 92h26" stroke="#5d5594"/>
+    <rect class="thin" x="604" y="126" width="62" height="50" rx="9" fill="#aef7ff" transform="rotate(8 635 151)"/>
+    <path class="tiny" d="M619 148c9-10 20-10 29 0" stroke="#ff6fb1" fill="none"/>
+    <path class="tiny" d="M458 146c17 20 50 20 67 0" stroke="#fff3a6" fill="none"/>
+    <circle class="tiny" cx="492" cy="138" r="8" fill="#ff91d0"/>
+    <path class="tiny" d="M566 84l18-18 18 18-18 18z" fill="#9df0ff"/>
+  </g>
+
+  <!-- Clear gameplay area: only a soft low-contrast glow behind x≈392,y≈386. -->
+  <ellipse cx="392" cy="386" rx="136" ry="104" fill="#ffffff" opacity="0.05"/>
+
+  <!-- Wooden bench foreground. -->
+  <rect x="0" y="492" width="1024" height="148" fill="url(#bench)"/>
+  <rect x="0" y="486" width="1024" height="22" rx="6" fill="#d9a75d"/>
+  <path d="M0 506h1024" stroke="#4b2f10" stroke-width="4" opacity="0.45"/>
+  <g opacity="0.25" stroke="#4b2f10" stroke-width="4" stroke-linecap="round">
+    <path d="M28 548c88-18 154 18 242-2s132-6 210 12"/>
+    <path d="M566 532c98 22 178-22 286 2 58 13 105 12 148-4"/>
+    <path d="M82 604c126 17 232-16 354 4"/>
+    <path d="M612 596c104-20 214 16 356-6"/>
+  </g>
 </svg>
