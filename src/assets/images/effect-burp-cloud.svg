@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 220" role="img" aria-label="silly green burp cloud with stars">
+  <path d="M58 136c-28-9-27-51 4-55 9-33 58-35 72-7 29-8 55 15 48 43 27 8 24 48-5 54H70c-18 0-29-14-12-35z" fill="#b4ff7a" stroke="#315b22" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M79 122c19-12 43-12 64 0" fill="none" stroke="#ffffff" stroke-width="10" stroke-linecap="round" opacity=".65"/>
+  <circle cx="83" cy="103" r="6" fill="#315b22"/><circle cx="137" cy="103" r="6" fill="#315b22"/><path d="M100 132c9 7 22 7 31 0" fill="none" stroke="#315b22" stroke-width="6" stroke-linecap="round"/>
+  <text x="74" y="166" font-family="Verdana,sans-serif" font-size="31" font-weight="900" fill="#315b22">BURP!</text>
+  <g fill="#fff176"><path d="M44 39l6 12 12 6-12 6-6 12-6-12-12-6 12-6z"/><path d="M176 35l5 10 10 5-10 5-5 10-5-10-10-5 10-5z"/></g>
+</svg>

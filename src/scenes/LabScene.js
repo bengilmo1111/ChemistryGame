@@ -976,6 +976,14 @@ export default class LabScene extends Phaser.Scene {
     return sprite;
   }
 
+  addOutcomeSprite(x, y, texture, { scale = 1, depth = 8, angle = 0 } = {}) {
+    return this.add.image(x, y, texture)
+      .setOrigin(0.5)
+      .setScale(scale)
+      .setAngle(angle)
+      .setDepth(depth);
+  }
+
   stirEffect() {
     const spoon = this.rememberEffect(this.add.text(392, 342, '🥄', { fontSize: '54px' }).setOrigin(0.5).setAngle(-38), 900);
     this.tweens.add({ targets: spoon, angle: 322, duration: 650, ease: 'Sine.InOut' });
@@ -1046,14 +1054,15 @@ export default class LabScene extends Phaser.Scene {
   }
 
   duckPortal() {
-    const portal = this.add.circle(392, 340, 18, 0xb388ff, 0.7).setStrokeStyle(6, 0x9de8ff);
-    const duck = this.add.text(392, 340, '🦆', { fontSize: '78px' }).setOrigin(0.5).setScale(0);
-    this.tweens.add({ targets: portal, radius: 110, angle: 720, duration: 900, yoyo: true, repeat: 1 });
-    this.tweens.add({ targets: duck, scale: 1.7, angle: 18, duration: 700, ease: 'Back.Out' });
+    const portal = this.add.circle(392, 340, 18, 0xb388ff, 0.28).setStrokeStyle(6, 0x9de8ff);
+    const duck = this.addOutcomeSprite(392, 340, 'art-effect-duck-portal', { scale: 0 });
+    this.tweens.add({ targets: portal, radius: 118, angle: 720, duration: 900, yoyo: true, repeat: 1, onComplete: () => portal.destroy() });
+    this.tweens.add({ targets: duck, scale: 1.45, angle: 18, duration: 700, ease: 'Back.Out' });
+    this.tweens.add({ targets: duck, alpha: 0, y: 292, duration: 520, delay: 1300, onComplete: () => duck.destroy() });
     for (let i = 0; i < 6; i += 1) {
       this.time.delayedCall(i * 120, () => {
-        const extra = this.add.text(392 + Phaser.Math.Between(-180, 180), 340 + Phaser.Math.Between(-100, 100), '🦆', { fontSize: '34px' }).setOrigin(0.5);
-        this.tweens.add({ targets: extra, alpha: 0, y: extra.y - 80, duration: 700, onComplete: () => extra.destroy() });
+        const extra = this.addOutcomeSprite(392 + Phaser.Math.Between(-180, 180), 340 + Phaser.Math.Between(-100, 100), 'art-effect-duck-portal', { scale: 0.34, angle: Phaser.Math.Between(-18, 18) });
+        this.tweens.add({ targets: extra, alpha: 0, y: extra.y - 80, scale: 0.18, duration: 700, onComplete: () => extra.destroy() });
       });
     }
   }
@@ -1090,6 +1099,9 @@ export default class LabScene extends Phaser.Scene {
 
   lavaLampGlow() {
     this.liquid.setFillStyle(0xff9e54, 0.8);
+    const lavaLamp = this.addOutcomeSprite(392, 358, 'art-effect-lava-blobs', { scale: 0.92 });
+    this.tweens.add({ targets: lavaLamp, y: 330, scale: 1.08, duration: 850, ease: 'Sine.InOut', yoyo: true, repeat: 1 });
+    this.tweens.add({ targets: lavaLamp, alpha: 0, duration: 450, delay: 1700, onComplete: () => lavaLamp.destroy() });
     for (let i = 0; i < 9; i += 1) {
       const blob = this.add.image(392 + Phaser.Math.Between(-38, 38), 440, 'slime')
         .setTint(Phaser.Math.RND.pick([0xff9e54, 0xffd166, 0xff4d6d]))
@@ -1121,6 +1133,9 @@ export default class LabScene extends Phaser.Scene {
   }
 
   discoStorm() {
+    const disco = this.addOutcomeSprite(392, 275, 'art-effect-disco-ball', { scale: 0 });
+    this.tweens.add({ targets: disco, scale: 1.2, angle: 360, duration: 720, ease: 'Back.Out' });
+    this.tweens.add({ targets: disco, y: 235, alpha: 0, angle: 720, duration: 650, delay: 1300, onComplete: () => disco.destroy() });
     const colors = [0xff4d6d, 0xfff176, 0x72d6ff, 0xb388ff, 0xa8ffb0, 0xff8bd1];
     colors.forEach((color, index) => {
       this.time.delayedCall(index * 160, () => {
@@ -1140,13 +1155,17 @@ export default class LabScene extends Phaser.Scene {
   }
 
   dragonSneeze() {
-    const dragon = this.add.text(392, 300, '🐉', { fontSize: '84px' }).setOrigin(0.5).setScale(0).setDepth(8);
-    this.tweens.add({ targets: dragon, scale: 1.4, duration: 420, ease: 'Back.Out' });
+    const dragon = this.addOutcomeSprite(392, 300, 'art-effect-dragon', { scale: 0 });
+    this.tweens.add({ targets: dragon, scale: 1.25, duration: 420, ease: 'Back.Out' });
     this.tweens.add({ targets: dragon, alpha: 0, y: 240, duration: 600, delay: 1100, onComplete: () => dragon.destroy() });
     for (let i = 0; i < 12; i += 1) {
       this.time.delayedCall(i * 70, () => {
-        const flame = this.add.text(392 + Phaser.Math.Between(-60, 60), 350, '🔥', { fontSize: `${Phaser.Math.Between(26, 44)}px` }).setOrigin(0.5).setDepth(8);
-        this.tweens.add({ targets: flame, y: flame.y - Phaser.Math.Between(60, 140), alpha: 0, duration: 700, onComplete: () => flame.destroy() });
+        const puff = this.add.image(392 + Phaser.Math.Between(-60, 60), 350, 'foam')
+          .setTint(Phaser.Math.RND.pick([0xfff176, 0xb4ff7a, 0xff8bd1]))
+          .setScale(Phaser.Math.FloatBetween(0.75, 1.25))
+          .setOrigin(0.5)
+          .setDepth(8);
+        this.tweens.add({ targets: puff, y: puff.y - Phaser.Math.Between(60, 140), alpha: 0, duration: 700, onComplete: () => puff.destroy() });
       });
     }
     this.liquid.setFillStyle(0xb4ff7a, 0.8);
@@ -1169,7 +1188,7 @@ export default class LabScene extends Phaser.Scene {
   }
 
   glitterTornado() {
-    const tornado = this.add.text(392, 370, '🌪️', { fontSize: '92px' }).setOrigin(0.5).setDepth(8).setScale(0);
+    const tornado = this.addOutcomeSprite(392, 370, 'art-effect-tornado', { scale: 0 });
     this.tweens.add({ targets: tornado, scale: 1.3, angle: 1080, y: 290, duration: 1600, ease: 'Sine.InOut', onComplete: () => tornado.destroy() });
     for (let i = 0; i < 30; i += 1) {
       this.time.delayedCall(i * 50, () => this.spawnFlying('crystal', 392, 380, Phaser.Math.RND.pick([0xfff176, 0xff8bd1, 0xd8fbff]), -300));
@@ -1177,8 +1196,8 @@ export default class LabScene extends Phaser.Scene {
   }
 
   burpBlast() {
-    const burp = this.add.text(392, 320, '💨', { fontSize: '82px' }).setOrigin(0.5).setScale(0).setDepth(8);
-    this.tweens.add({ targets: burp, scale: 1.8, y: 215, alpha: 0, duration: 1100, ease: 'Sine.Out', onComplete: () => burp.destroy() });
+    const burp = this.addOutcomeSprite(392, 320, 'art-effect-burp-cloud', { scale: 0 });
+    this.tweens.add({ targets: burp, scale: 1.35, y: 215, alpha: 0, duration: 1100, ease: 'Sine.Out', onComplete: () => burp.destroy() });
     this.tweens.add({ targets: this.flask, scaleX: 1.12, scaleY: 0.9, duration: 140, yoyo: true, repeat: 3, onComplete: () => this.flask.setScale(1) });
     this.spawnBubbles(24, 0xb4ff7a);
   }

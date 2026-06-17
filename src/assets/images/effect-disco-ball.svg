@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 220" role="img" aria-label="cartoon disco ball with colorful harmless lights">
+  <path d="M110 16v35" stroke="#5b3b7a" stroke-width="7" stroke-linecap="round"/><circle cx="110" cy="109" r="61" fill="#d8fbff" stroke="#5b3b7a" stroke-width="7"/>
+  <path d="M58 83h104M50 112h120M63 141h94M82 55c-12 35-12 73 0 108M110 49v121M138 55c12 35 12 73 0 108" stroke="#ffffff" stroke-width="5" opacity=".9"/>
+  <path d="M26 177l54-34M194 177l-54-34M25 66l52 22M195 66l-52 22" stroke-linecap="round" stroke-width="16" opacity=".75" stroke="#ff8bd1"/><path d="M25 66l52 22M195 66l-52 22" stroke-linecap="round" stroke-width="9" opacity=".8" stroke="#fff176"/>
+  <circle cx="89" cy="91" r="8" fill="#ff8bd1"/><circle cx="128" cy="122" r="8" fill="#67f2c4"/><circle cx="110" cy="146" r="7" fill="#b388ff"/>
+</svg>
