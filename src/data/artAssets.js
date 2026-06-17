@@ -4,6 +4,8 @@ export const interfaceArt = [
   { key: 'art-logo', fileName: 'logo.svg', path: new URL('../assets/images/logo.svg', import.meta.url).href, width: 640, height: 180 },
   { key: 'art-junior-scientist', fileName: 'junior-scientist.svg', path: new URL('../assets/images/junior-scientist.svg', import.meta.url).href, width: 220, height: 280 },
   { key: 'art-lab-bench', fileName: 'lab-bench.svg', path: new URL('../assets/images/lab-bench.svg', import.meta.url).href, width: 1024, height: 640 },
+  { key: 'art-mode-henry-adventure', fileName: 'mode-henry-adventure.svg', path: new URL('../assets/images/mode-henry-adventure.svg', import.meta.url).href, width: 260, height: 240 },
+  { key: 'art-mode-pauling-adventure', fileName: 'mode-pauling-adventure.svg', path: new URL('../assets/images/mode-pauling-adventure.svg', import.meta.url).href, width: 260, height: 240 },
 ];
 
 export const reagentArt = [

@@ -63,7 +63,7 @@ export default class MenuScene extends Phaser.Scene {
   createModeCard(mode, x, y) {
     const isHenry = mode.id === 'henry';
     const cardWidth = 292;
-    const cardHeight = 258;
+    const cardHeight = 278;
     const palette = isHenry
       ? {
         fill: mode.colors.cardFill,
@@ -74,7 +74,8 @@ export default class MenuScene extends Phaser.Scene {
         badgeStroke: 0xffd166,
         buttonFill: 0xffd166,
         buttonText: '#3a2600',
-        emoji: '🧪💥',
+        portrait: 'art-mode-henry-adventure',
+        heroIcon: 'Fizz Quest',
         eyebrow: 'Wild but science-based',
         subtitleText: 'Fictional reagents, real science ideas, maximum lab chaos.',
         action: 'Start Henry Chaos',
@@ -88,7 +89,8 @@ export default class MenuScene extends Phaser.Scene {
         badgeStroke: 0x235b72,
         buttonFill: 0x9de8ff,
         buttonText: '#102334',
-        emoji: '🔬📓',
+        portrait: 'art-mode-pauling-adventure',
+        heroIcon: 'Clue Lab',
         eyebrow: 'Evidence-based process',
         subtitleText: 'Realistic chemicals, observations, variables, and conclusions.',
         action: 'Study with Pauling',
@@ -96,66 +98,95 @@ export default class MenuScene extends Phaser.Scene {
 
     const container = this.add.container(x, y);
     const back = this.add.rectangle(0, 0, cardWidth, cardHeight, palette.fill, 0.97).setStrokeStyle(6, palette.stroke);
-    const topBand = this.add.rectangle(0, -96, cardWidth - 24, 44, palette.badgeFill, 0.94).setStrokeStyle(3, palette.badgeStroke);
-    const emoji = this.add.text(0, -96, palette.emoji, {
+    const glow = this.add.ellipse(0, -70, cardWidth - 34, 132, palette.badgeFill, 0.42);
+    const headerPanel = this.add.rectangle(0, -74, cardWidth - 24, 124, isHenry ? 0xfff5a8 : 0xffffff, 0.54)
+      .setStrokeStyle(3, palette.badgeStroke);
+
+    const patternItems = [];
+    if (isHenry) {
+      [
+        [-104, -114, 0xa8ffb0], [-76, -38, 0x9de8ff], [96, -114, 0xff8bd1], [112, -34, 0xffd166],
+      ].forEach(([px, py, color]) => patternItems.push(this.add.circle(px, py, 10, color, 0.72).setStrokeStyle(2, palette.stroke, 0.55)));
+      patternItems.push(this.add.arc(-118, -72, 18, 20, 330, false, 0x67f2c4, 0.65).setStrokeStyle(3, palette.stroke, 0.35));
+      patternItems.push(this.add.star(115, -76, 5, 8, 18, 0xffd166, 0.75).setStrokeStyle(2, palette.stroke, 0.45));
+    } else {
+      [-106, -106, -74, -38, 82, -104, 110, -50].forEach((value, index, arr) => {
+        if (index % 2 === 0) {
+          const px = value;
+          const py = arr[index + 1];
+          patternItems.push(this.add.rectangle(px, py, 44, 28, 0xffffff, 0.5).setStrokeStyle(2, palette.badgeStroke, 0.45).setAngle(index % 4 === 0 ? -6 : 5));
+          patternItems.push(this.add.line(px, py, -14, -4, 14, -4, palette.badgeStroke, 0.42).setLineWidth(3));
+          patternItems.push(this.add.line(px, py + 7, -12, -4, 10, -4, palette.badgeStroke, 0.32).setLineWidth(2));
+        }
+      });
+      patternItems.push(this.add.circle(116, -88, 18, 0xd9f4ff, 0.42).setStrokeStyle(3, palette.badgeStroke, 0.6));
+    }
+
+    const portrait = this.add.image(-64, -76, palette.portrait).setDisplaySize(128, 118);
+    const iconBadge = this.add.rectangle(68, -106, 106, 34, palette.badgeFill, 0.94).setStrokeStyle(3, palette.badgeStroke);
+    const iconText = this.add.text(68, -106, palette.heroIcon, {
       fontFamily: 'Trebuchet MS, sans-serif',
-      fontSize: isHenry ? '26px' : '24px',
+      fontSize: '18px',
       color: palette.title,
+      fontStyle: 'bold',
+      align: 'center',
     }).setOrigin(0.5);
-    const title = this.add.text(0, -54, mode.label, {
+    const title = this.add.text(62, -66, mode.label, {
       fontFamily: 'Trebuchet MS, sans-serif',
-      fontSize: isHenry ? '23px' : '24px',
+      fontSize: isHenry ? '22px' : '23px',
       color: palette.title,
       align: 'center',
-      wordWrap: { width: cardWidth - 34 },
+      wordWrap: { width: 132 },
     }).setOrigin(0.5);
-    const eyebrow = this.add.text(0, -12, palette.eyebrow, {
+    const eyebrow = this.add.text(0, -2, palette.eyebrow, {
       fontFamily: 'Trebuchet MS, sans-serif',
-      fontSize: '16px',
+      fontSize: '17px',
       color: palette.subtitle,
       align: 'center',
       fontStyle: isHenry ? 'bold italic' : 'bold',
-      wordWrap: { width: cardWidth - 36 },
+      wordWrap: { width: cardWidth - 34 },
     }).setOrigin(0.5);
-    const subtitle = this.add.text(0, 24, palette.subtitleText, {
+    const subtitle = this.add.text(0, 32, palette.subtitleText, {
       fontFamily: 'Trebuchet MS, sans-serif',
-      fontSize: '15px',
+      fontSize: '14px',
       color: palette.subtitle,
       align: 'center',
-      lineSpacing: 4,
-      wordWrap: { width: cardWidth - 40 },
+      lineSpacing: 3,
+      wordWrap: { width: cardWidth - 38 },
     }).setOrigin(0.5);
-    const progress = this.add.text(0, 58, this.progressSummary(mode), {
+    const progressPanel = this.add.rectangle(0, 73, cardWidth - 50, 38, 0xffffff, 0.4).setStrokeStyle(2, palette.badgeStroke, 0.45);
+    const progress = this.add.text(0, 73, this.progressSummary(mode), {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '13px',
       color: palette.subtitle,
       align: 'center',
       lineSpacing: 2,
-      wordWrap: { width: cardWidth - 44 },
+      wordWrap: { width: cardWidth - 58 },
     }).setOrigin(0.5);
-    const button = this.add.rectangle(0, 92, cardWidth - 46, 36, palette.buttonFill, 0.98).setStrokeStyle(4, palette.stroke);
-    const buttonLabel = this.add.text(0, 92, palette.action, {
+    const button = this.add.rectangle(0, 112, cardWidth - 42, 38, palette.buttonFill, 0.98).setStrokeStyle(4, palette.stroke);
+    const buttonLabel = this.add.text(0, 112, palette.action, {
       fontFamily: 'Trebuchet MS, sans-serif',
-      fontSize: '15px',
+      fontSize: '16px',
       color: palette.buttonText,
+      fontStyle: 'bold',
       align: 'center',
     }).setOrigin(0.5);
 
-    const sandboxButton = this.add.rectangle(0, 122, cardWidth - 70, 30, isHenry ? 0xa8ffb0 : 0xd9f4ff, 0.98).setStrokeStyle(3, palette.stroke);
-    const sandboxLabel = this.add.text(0, 122, mode.labels.sandbox, {
+    const sandboxButton = this.add.rectangle(0, 142, cardWidth - 72, 28, isHenry ? 0xa8ffb0 : 0xd9f4ff, 0.98).setStrokeStyle(3, palette.stroke);
+    const sandboxLabel = this.add.text(0, 142, mode.labels.sandbox, {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '13px',
       color: palette.buttonText,
       align: 'center',
     }).setOrigin(0.5);
 
-    container.add([back, topBand, emoji, title, eyebrow, subtitle, progress, button, buttonLabel, sandboxButton, sandboxLabel]);
+    container.add([back, glow, headerPanel, ...patternItems, portrait, iconBadge, iconText, title, eyebrow, subtitle, progressPanel, progress, button, buttonLabel, sandboxButton, sandboxLabel]);
     container.setSize(cardWidth, cardHeight).setInteractive({ useHandCursor: true });
     container.on('pointerdown', (pointer) => {
       const sfx = this.registry.get('sfx');
       if (sfx) { sfx.resume(); sfx.click(); }
       const localPoint = container.getLocalPoint(pointer.x, pointer.y);
-      if (localPoint.y >= 106) {
+      if (localPoint.y >= 128) {
         this.scene.start('LabScene', { modeId: mode.id, experimentId: 'sandbox' });
       } else {
         this.scene.start('LevelSelectScene', { modeId: mode.id });
@@ -165,7 +196,8 @@ export default class MenuScene extends Phaser.Scene {
     container.on('pointerout', () => this.tweens.add({ targets: container, scale: 1, duration: 120 }));
 
     if (isHenry) {
-      this.tweens.add({ targets: topBand, angle: 2.5, duration: 480, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
+      this.tweens.add({ targets: portrait, angle: 2.5, duration: 520, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
+      this.tweens.add({ targets: patternItems, scale: 1.16, duration: 640, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
     }
   }
 
