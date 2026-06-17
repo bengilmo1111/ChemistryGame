@@ -107,6 +107,7 @@ export default class LabScene extends Phaser.Scene {
     this.toolEffectSprites = [];
     this.predictionButtons = new Map();
     this.mixCount = 0;
+    this.labPanicTriggered = false;
     this.sfx = this.registry.get('sfx');
     this.scoreSystem = this.registry.get('score');
     this.discoveries = new DiscoverySystem();
@@ -467,9 +468,11 @@ export default class LabScene extends Phaser.Scene {
     this.playPour(reagent);
     this.liquid.setFillStyle(reagent.color, 0.62);
     this.updateLiquidLevel();
+    const previousDanger = this.danger.value;
     this.danger.add(12);
     this.meter.setValue(this.danger.value, this.danger.label());
     this.setFaceMood();
+    this.checkDangerThreshold(previousDanger, 'ingredient');
     this.spawnBubbles(8, reagent.color);
     this.dialogue.say(`${reagent.name} added. Observe: ${reagent.clue}`);
     this.updateNotebook();
@@ -488,9 +491,11 @@ export default class LabScene extends Phaser.Scene {
   useTool(key) {
     const detail = ACTION_DETAILS[key];
     this.actions[key] = true;
+    const previousDanger = this.danger.value;
     this.danger.add(key === 'sealed' || key === 'heated' ? 18 : 8);
     this.meter.setValue(this.danger.value, this.danger.label());
     this.setFaceMood();
+    this.checkDangerThreshold(previousDanger, 'tool');
     this.cameras.main.shake(90, key === 'shaken' ? 0.01 : 0.004);
     this.toolButtons.get(key)?.back.setFillStyle(0xa8ffb0);
     this.toolButtons.get(key)?.text.setColor('#173f20');
@@ -498,6 +503,95 @@ export default class LabScene extends Phaser.Scene {
     this.playToolSound(key);
     this.dialogue.say(`${detail.label} used. ${detail.note}`);
     this.updateNotebook();
+  }
+
+  checkDangerThreshold(previousDanger, source) {
+    if (this.labPanicTriggered) return;
+    if (this.danger.value >= 100 && source === 'tool') {
+      this.triggerLabPanic();
+      return;
+    }
+
+    const crossedMedium = previousDanger < 35 && this.danger.value >= 35;
+    const crossedHigh = previousDanger < 70 && this.danger.value >= 70;
+    if (!crossedMedium && !crossedHigh) return;
+    this.playDangerWarning(crossedHigh ? 'high' : 'medium');
+  }
+
+  playDangerWarning(tier) {
+    const warnings = tier === 'high'
+      ? [
+        () => {
+          this.cameras.main.shake(260, 0.012);
+          this.dialogue.say(`${this.hero.shortName}: The flask is doing the wobbly warning wiggle! Mix soon or reset safely.`);
+        },
+        () => {
+          this.spawnBubbles(24, 0xffd166);
+          this.showSplash('burp');
+          this.dialogue.say('Henry says: “Those bubbles look extra excited. Time to make a careful choice!”');
+        },
+        () => {
+          this.flashScreen(0xffd166, 0.28, 220);
+          this.showSplash('tornado');
+          this.dialogue.say('Warning: cartoon chaos is rising. Scientists pause before adding more variables.');
+        },
+      ]
+      : [
+        () => {
+          this.cameras.main.shake(160, 0.006);
+          this.dialogue.say('The danger meter wobbles. Still harmless, but the flask wants careful observations!');
+        },
+        () => {
+          this.spawnBubbles(16, 0xfff176);
+          this.dialogue.say('Henry quips: “Tiny bubbles, big feelings!”');
+        },
+        () => {
+          this.flashScreen(0xfff176, 0.18, 180);
+          this.dialogue.say('A friendly warning light blinks: try mixing before adding too many more changes.');
+        },
+      ];
+    Phaser.Math.RND.pick(warnings)();
+  }
+
+  makeLabPanicOutcome() {
+    const panicFailure = this.failures.find((failure) => failure.id === 'lab-panic-tornado')
+      ?? this.failures.find((failure) => failure.effect === 'tornado')
+      ?? this.failures[0];
+    const vocabulary = [...new Set([...(panicFailure?.vocabulary ?? []), ...(this.experiment.vocabulary ?? [])])];
+    return {
+      ...panicFailure,
+      id: panicFailure?.id ?? 'lab-panic',
+      title: panicFailure?.title ?? 'Lab Panic!',
+      effect: panicFailure?.effect ?? 'tornado',
+      explanation: panicFailure?.explanation ?? 'The danger meter reached maximum cartoon wobble before mixing, so Henry called a silly lab pause. Science takeaway: changing too many variables at once makes results hard to understand.',
+      kind: 'failure',
+      badge: 'chaos-noticer',
+      missingActions: [],
+      vocabulary,
+      safetyNote: this.safetyText ?? 'This was a cartoon failure, not a real recipe. Safe scientists test ideas carefully.',
+    };
+  }
+
+  triggerLabPanic() {
+    this.labPanicTriggered = true;
+    this.mixButton.setEnabled(false);
+    this.toolButtons.forEach((button) => button.setEnabled?.(false));
+    const outcome = this.makeLabPanicOutcome();
+    this.dialogue.say('MAX DANGER! Henry hits the big pretend panic button before anyone adds more tools.');
+    this.time.delayedCall(150, () => this.playOutcome(outcome));
+    new BadgeSystem().award(outcome.badge);
+    this.time.delayedCall(2600, () => {
+      this.tweens.killAll();
+      this.scene.start('ResultsScene', {
+        experimentId: this.experiment.id,
+        modeId: this.modeId,
+        outcome,
+        prediction: this.predictions.currentPrediction,
+        predictionMatched: false,
+        selectedIngredientIds: this.inventory.selected,
+        actions: this.actions,
+      });
+    });
   }
 
   playToolSound(key) {

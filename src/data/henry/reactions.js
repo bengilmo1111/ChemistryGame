@@ -192,4 +192,18 @@ export const funnyFailures = [
     explanation: 'Pretend gas built up and escaped all at once — BURP! Henry gave the flask a tiny etiquette lesson. Science takeaway: gas expands to fill space and escapes when it has an opening.',
     vocabulary: ['gas', 'bubbles'],
   },
+  {
+    id: 'lab-panic-tornado',
+    title: 'Lab Panic Tornado!',
+    effect: 'tornado',
+    explanation: 'The danger meter hit maximum wobble before mixing, so Henry pressed the pretend panic button and a sparkly cartoon tornado tidied the flask into a timeout. Science takeaway: changing too many variables at once makes evidence hard to compare.',
+    vocabulary: ['particles', 'reaction speed'],
+  },
+  {
+    id: 'dragon-alarm-burp',
+    title: 'Dragon Alarm Burp!',
+    effect: 'dragon',
+    explanation: 'Too many tool changes woke the tiny imaginary safety dragon, who sneezed a goofy green puff and reminded Henry to pause. Science takeaway: careful procedures help scientists test one change at a time.',
+    vocabulary: ['gas', 'particles'],
+  },
 ];
