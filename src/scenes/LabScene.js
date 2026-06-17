@@ -33,6 +33,8 @@ const SANDBOX_EXPERIMENT = {
   vocabulary: ['particles', 'bubbles', 'gas'],
 };
 
+const HERO_QUIP_CHANCE = 0.3;
+
 const SPLASH_WORDS = {
   foam: { word: 'WHOOOSH!', color: '#ffffff' },
   rainbow: { word: 'KAPOW!', color: '#ff8bd1' },
@@ -472,13 +474,42 @@ export default class LabScene extends Phaser.Scene {
     this.danger.add(12);
     this.meter.setValue(this.danger.value, this.danger.label());
     this.setFaceMood();
-    this.checkDangerThreshold(previousDanger, 'ingredient');
+    const dangerQuipQueued = this.checkDangerThreshold(previousDanger, 'ingredient');
     this.spawnBubbles(8, reagent.color);
     this.dialogue.say(`${reagent.name} added. Observe: ${reagent.clue}`);
+    if (!dangerQuipQueued) this.sayHeroQuip(this.isNearSuccess() ? 'nearSuccess' : 'ingredient');
     this.updateNotebook();
     this.updateMixButton();
   }
 
+
+  isNearSuccess() {
+    if (this.isSandbox) return false;
+    const selected = new Set(this.inventory.selected);
+    const hasAllIngredients = this.experiment.required.every((id) => selected.has(id));
+    const hasAnyIngredient = this.experiment.required.some((id) => selected.has(id));
+    const usedActions = this.experiment.requiredActions.filter((action) => this.actions[action]);
+    const hasAllActions = usedActions.length === this.experiment.requiredActions.length;
+    const missingSomething = !hasAllIngredients || !hasAllActions;
+
+    return missingSomething && ((hasAllIngredients && this.experiment.requiredActions.length > 0) || (hasAnyIngredient && hasAllActions));
+  }
+
+  sayHeroQuip(type, { chance = HERO_QUIP_CHANCE, delay = 950 } = {}) {
+    const pools = {
+      ingredient: this.hero.ingredientQuips,
+      tool: this.hero.toolQuips,
+      danger: this.hero.dangerQuips,
+      nearSuccess: this.hero.nearSuccessQuips,
+    };
+    const pool = pools[type];
+    if (!pool?.length || Math.random() > chance) return false;
+
+    this.time.delayedCall(delay, () => {
+      this.dialogue.say(`${this.hero.shortName}: ${Phaser.Math.RND.pick(pool)}`);
+    });
+    return true;
+  }
 
   playPour(reagent) {
     const stream = this.add.rectangle(392, 270, 12, 0, reagent.color, 0.78).setOrigin(0.5, 0);
@@ -495,27 +526,30 @@ export default class LabScene extends Phaser.Scene {
     this.danger.add(key === 'sealed' || key === 'heated' ? 18 : 8);
     this.meter.setValue(this.danger.value, this.danger.label());
     this.setFaceMood();
-    this.checkDangerThreshold(previousDanger, 'tool');
+    const dangerQuipQueued = this.checkDangerThreshold(previousDanger, 'tool');
     this.cameras.main.shake(90, key === 'shaken' ? 0.01 : 0.004);
     this.toolButtons.get(key)?.back.setFillStyle(0xa8ffb0);
     this.toolButtons.get(key)?.text.setColor('#173f20');
     this.playToolEffect(key);
     this.playToolSound(key);
     this.dialogue.say(`${detail.label} used. ${detail.note}`);
+    if (!dangerQuipQueued) this.sayHeroQuip(this.isNearSuccess() ? 'nearSuccess' : 'tool');
     this.updateNotebook();
   }
 
   checkDangerThreshold(previousDanger, source) {
-    if (this.labPanicTriggered) return;
+    if (this.labPanicTriggered) return false;
     if (this.danger.value >= 100 && source === 'tool') {
       this.triggerLabPanic();
-      return;
+      return true;
     }
 
     const crossedMedium = previousDanger < 35 && this.danger.value >= 35;
     const crossedHigh = previousDanger < 70 && this.danger.value >= 70;
-    if (!crossedMedium && !crossedHigh) return;
+    if (!crossedMedium && !crossedHigh) return false;
     this.playDangerWarning(crossedHigh ? 'high' : 'medium');
+    if (!crossedHigh) return false;
+    return this.sayHeroQuip('danger', { chance: 0.35, delay: 1200 });
   }
 
   playDangerWarning(tier) {
