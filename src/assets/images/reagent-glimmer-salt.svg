@@ -1,18 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 190" role="img" aria-labelledby="title desc">
-  <title id="title">Glimmer Salt reagent bottle</title>
-  <desc id="desc">A cartoon bottle of fictional crystals reagent for Mad Flask Lab.</desc>
-  <defs>
-    <linearGradient id="glass" x1="0" x2="1" y1="0" y2="1">
-      <stop offset="0" stop-color="#ffffff" stop-opacity="0.85"/>
-      <stop offset="1" stop-color="#d8fbff" stop-opacity="0.45"/>
-    </linearGradient>
-  </defs>
-  <ellipse cx="80" cy="177" rx="52" ry="9" fill="#10142f" opacity="0.22"/>
-  <path d="M61 14h38v38c24 9 42 34 42 65 0 39-27 60-61 60s-61-21-61-60c0-31 18-56 42-65V14Z" fill="url(#glass)" stroke="#273469" stroke-width="8" stroke-linejoin="round"/>
-  <rect x="56" y="6" width="48" height="25" rx="8" fill="#fff7d6" stroke="#273469" stroke-width="7"/>
-  <path d="M31 108c22 14 72 16 98 0v35c-10 20-29 28-49 28s-39-8-49-28v-35Z" fill="#ffffff" stroke="#273469" stroke-width="5"/>
-  <circle cx="57" cy="89" r="8" fill="#ffffff" opacity="0.9"/>
-  <circle cx="101" cy="79" r="6" fill="#ffffff" opacity="0.8"/>
-  <text x="80" y="132" font-family="Trebuchet MS, Arial Rounded MT Bold, sans-serif" font-size="44" font-weight="900" text-anchor="middle" dominant-baseline="middle" fill="#273469">✧</text>
-  <text x="80" y="162" font-family="Trebuchet MS, sans-serif" font-size="15" font-weight="800" text-anchor="middle" fill="#273469">Glimmer Salt</text>
+  <title id="title">Glimmer Salt crystal jar</title>
+  <desc id="desc">A friendly fictional crystal jar filled with glimmer salt sparkles.</desc>
+  <defs><linearGradient id="jar" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#cce8ff"/></linearGradient></defs>
+  <ellipse cx="80" cy="177" rx="50" ry="9" fill="#10142f" opacity=".22"/>
+  <path d="M43 48h74l10 111c-14 19-80 19-94 0L43 48Z" fill="url(#jar)" stroke="#273469" stroke-width="8" stroke-linejoin="round"/>
+  <rect x="49" y="22" width="62" height="30" rx="10" fill="#fff7d6" stroke="#273469" stroke-width="7"/>
+  <path d="M43 115c19 12 55 12 74 0v39c-18 13-56 13-74 0v-39Z" fill="#f7fbff" stroke="#273469" stroke-width="5"/>
+  <path d="M57 143l12-31 12 31H57Zm27 6l17-42 18 42H84Zm-48 0l14-35 14 35H36Z" fill="#8ee7ff" stroke="#273469" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M27 76l6-10 6 10 10 6-10 6-6 10-6-10-10-6 10-6Zm103-20l5-8 5 8 8 5-8 5-5 8-5-8-8-5 8-5Z" fill="#fff2a8" stroke="#273469" stroke-width="4" stroke-linejoin="round"/>
+  <text x="80" y="163" font-family="Trebuchet MS, sans-serif" font-size="12" font-weight="900" text-anchor="middle" fill="#273469">Salt</text>
 </svg>
