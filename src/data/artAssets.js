@@ -15,7 +15,16 @@ export const reagentArt = [
   { key: 'art-reagent-goo-gel', reagentId: 'goo-gel', fileName: 'reagent-goo-gel.svg', path: new URL('../assets/images/reagent-goo-gel.svg', import.meta.url).href, ...reagentSize },
 ];
 
-export const artAssets = [...interfaceArt, ...reagentArt];
+export const effectArt = [
+  { key: 'art-effect-duck-portal', effectId: 'duck', fileName: 'effect-duck-portal.svg', path: new URL('../assets/images/effect-duck-portal.svg', import.meta.url).href, width: 220, height: 220 },
+  { key: 'art-effect-dragon', effectId: 'dragon', fileName: 'effect-dragon.svg', path: new URL('../assets/images/effect-dragon.svg', import.meta.url).href, width: 220, height: 220 },
+  { key: 'art-effect-tornado', effectId: 'tornado', fileName: 'effect-tornado.svg', path: new URL('../assets/images/effect-tornado.svg', import.meta.url).href, width: 220, height: 220 },
+  { key: 'art-effect-burp-cloud', effectId: 'burp', fileName: 'effect-burp-cloud.svg', path: new URL('../assets/images/effect-burp-cloud.svg', import.meta.url).href, width: 220, height: 220 },
+  { key: 'art-effect-disco-ball', effectId: 'disco', fileName: 'effect-disco-ball.svg', path: new URL('../assets/images/effect-disco-ball.svg', import.meta.url).href, width: 220, height: 220 },
+  { key: 'art-effect-lava-blobs', effectId: 'lava', fileName: 'effect-lava-blobs.svg', path: new URL('../assets/images/effect-lava-blobs.svg', import.meta.url).href, width: 220, height: 220 },
+];
+
+export const artAssets = [...interfaceArt, ...reagentArt, ...effectArt];
 
 export function findReagentArt(reagentId) {
   return reagentArt.find((asset) => asset.reagentId === reagentId);
