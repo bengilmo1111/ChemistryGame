@@ -137,6 +137,7 @@ export default class LabScene extends Phaser.Scene {
     this.createLabCard();
     this.createFlask();
     this.createObservationClues();
+    this.createBenchToys();
     this.createReagents();
     this.createToolButtons();
     this.createScoreHud();
@@ -157,6 +158,63 @@ export default class LabScene extends Phaser.Scene {
       fontSize: '26px',
       color: this.isSandbox ? '#a8ffb0' : this.modeColors.accent,
     }).setOrigin(0.5);
+  }
+
+
+  createBenchToys() {
+    const toys = [
+      {
+        x: 510,
+        y: 520,
+        emoji: '🦆',
+        label: 'bench duck',
+        sound: 'pop',
+        line: 'Bench duck says: “Quackademics are important!”',
+        tween: { angle: 18, y: 508, scale: 1.28, duration: 130, yoyo: true, repeat: 2, ease: 'Sine.InOut' },
+      },
+      {
+        x: 724,
+        y: 214,
+        emoji: '🚀',
+        label: 'cork rocket',
+        sound: 'rocket',
+        line: 'Tiny cork rocket requests clearance for launch-ish!',
+        tween: { y: 168, angle: 28, scale: 1.22, duration: 260, yoyo: true, ease: 'Back.Out' },
+      },
+      {
+        x: 712,
+        y: 466,
+        emoji: '🫧',
+        label: 'bubble popper',
+        sound: 'bubble',
+        line: 'Bubble popper reports: “Bloop bloop. Very official.”',
+        tween: { scale: 1.42, angle: -12, duration: 150, yoyo: true, repeat: 1, ease: 'Sine.InOut' },
+      },
+    ];
+
+    toys.forEach((toy) => {
+      const spot = this.add.circle(toy.x, toy.y, 28, 0xffffff, 0.12)
+        .setStrokeStyle(2, 0xfff176, 0.42)
+        .setDepth(3);
+      const sprite = this.add.text(toy.x, toy.y, toy.emoji, {
+        fontFamily: 'Trebuchet MS, sans-serif',
+        fontSize: '34px',
+      }).setOrigin(0.5).setDepth(4).setInteractive({ useHandCursor: true });
+      sprite.setData('benchToy', toy.label);
+      sprite.on('pointerdown', () => this.playBenchToy(toy, sprite, spot));
+    });
+  }
+
+  playBenchToy(toy, sprite, spot) {
+    this.sfx?.resume();
+    this.sfx?.[toy.sound]?.();
+    this.dialogue.say(toy.line);
+    this.tweens.killTweensOf(sprite);
+    this.tweens.killTweensOf(spot);
+    sprite.setPosition(toy.x, toy.y).setScale(1).setAngle(0).setAlpha(1);
+    spot.setScale(1).setAlpha(0.7);
+    this.tweens.add({ targets: sprite, ...toy.tween, onComplete: () => sprite.setPosition(toy.x, toy.y).setScale(1).setAngle(0) });
+    this.tweens.add({ targets: spot, scale: 1.45, alpha: 0, duration: 360, ease: 'Sine.Out', onComplete: () => spot.setScale(1).setAlpha(0.7) });
   }
 
   createPredictionButtons() {
