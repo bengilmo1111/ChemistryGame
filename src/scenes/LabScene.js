@@ -219,18 +219,21 @@ export default class LabScene extends Phaser.Scene {
   }
 
   createPredictionButtons() {
-    this.add.text(42, 124, this.modeLabels.predictionLabel, { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '18px', color: '#ffffff' });
+    this.add.text(42, 118, `✨ ${this.modeLabels.predictionLabel}`, { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '19px', color: '#ffffff', stroke: '#273469', strokeThickness: 4 });
+    const chipColors = [0xff8bd1, 0x9de8ff, 0xffd166, 0xa8ffb0, 0xb388ff, 0xff9e54, 0xd8fbff, 0xfff176];
     predictions.forEach((prediction, index) => {
       const x = 88 + (index % 4) * 104;
-      const y = 162 + Math.floor(index / 4) * 44;
-      const button = new Button(this, x, y, `${prediction.icon} ${prediction.label}`, () => {
+      const y = 166 + Math.floor(index / 4) * 58;
+      const button = new Button(this, x, y, `${prediction.icon}
+${prediction.label}`, () => {
         this.predictions.choose(prediction.id);
         this.highlightPrediction(prediction.id);
         this.dialogue.say(`${this.hero.shortName}'s prediction: ${prediction.label}. Drag or tap ingredients into the flask.`);
         this.updateNotebook();
         this.updateMixButton();
-      }, { width: 98, height: 38, fill: 0x9de8ff, stroke: 0x235b72, fontSize: '11px' });
+      }, { width: 94, height: 50, fill: chipColors[index % chipColors.length], stroke: 0xffffff, strokeWidth: 5, fontSize: '13px', color: '#273469', radius: 18, lineSpacing: -2, angle: index % 2 === 0 ? -2 : 2, shadow: 0x11152f, shadowAlpha: 0.26 });
       button.container.setDepth(4);
+      button.normalFill = chipColors[index % chipColors.length];
       this.predictionButtons.set(prediction.id, button);
     });
   }
@@ -238,9 +241,10 @@ export default class LabScene extends Phaser.Scene {
   highlightPrediction(predictionId) {
     this.predictionButtons.forEach((button, id) => {
       const selected = id === predictionId;
-      button.back.setFillStyle(selected ? 0xa8ffb0 : 0x9de8ff);
-      button.text.setColor(selected ? '#173f20' : '#3a2600');
-      button.container.setScale(selected ? 1.04 : 1);
+      button.back.setFillStyle(selected ? 0xfff176 : button.normalFill);
+      button.text.setColor(selected ? '#173f20' : '#273469');
+      button.back.setStrokeStyle(selected ? 6 : 5, selected ? 0xa8ffb0 : 0xffffff);
+      button.container.setScale(selected ? 1.08 : 1);
     });
   }
 
@@ -441,16 +445,18 @@ export default class LabScene extends Phaser.Scene {
   }
 
   createObservationClues() {
-    this.add.rectangle(392, 584, 320, 76, 0x15183a, 0.78).setStrokeStyle(3, 0x9de8ff);
-    this.add.text(392, 556, this.isSandbox ? this.modeLabels.sandboxObservationHeading : this.modeLabels.observationHeading, {
+    this.add.rectangle(392, 588, 332, 78, 0x8a5a24, 0.42).setAngle(1.5);
+    this.add.rectangle(392, 584, 320, 76, 0xfff176, 0.96).setStrokeStyle(4, 0x8a5a24).setAngle(-1.5);
+    this.add.rectangle(392, 548, 92, 18, 0xd8fbff, 0.92).setStrokeStyle(2, 0x273469);
+    this.add.text(392, 556, `📋 ${this.isSandbox ? this.modeLabels.sandboxObservationHeading : this.modeLabels.observationHeading}`, {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '16px',
-      color: '#fff5a8',
+      color: '#4b2f10',
     }).setOrigin(0.5);
     this.add.text(392, 590, this.experiment.hints.map((hint) => `• ${hint}`).join('\n'), {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '13px',
-      color: '#ffffff',
+      color: '#273469',
       align: 'center',
       lineSpacing: 2,
       wordWrap: { width: 296 },
@@ -497,12 +503,14 @@ export default class LabScene extends Phaser.Scene {
   }
 
   createToolButtons() {
-    this.add.text(564, 248, this.modeLabels.labTools, { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '22px', color: '#ffffff' });
-    const tools = Object.entries(ACTION_DETAILS).map(([key, detail]) => [key, `${detail.icon} ${detail.label}`]);
-    this.add.text(622, 274, this.modeLabels.toolHint, { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '13px', color: '#fff5a8' }).setOrigin(0.5);
+    this.add.text(564, 244, `🧰 ${this.modeLabels.labTools}`, { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '22px', color: '#ffffff', stroke: '#273469', strokeThickness: 4 });
+    const toolColors = [0xb388ff, 0xff9e54, 0x9de8ff, 0xff8bd1, 0xa8ffb0];
+    const tools = Object.entries(ACTION_DETAILS).map(([key, detail]) => [key, `${detail.icon}  ${detail.label}`]);
+    this.add.text(622, 274, this.modeLabels.toolHint, { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '13px', color: '#fff5a8', stroke: '#11152f', strokeThickness: 3 }).setOrigin(0.5);
     this.toolButtons = new Map();
     tools.forEach(([key, label], index) => {
-      const button = new Button(this, 622, 304 + index * 38, label, () => this.useTool(key), { width: 130, height: 32, fill: 0xb388ff, stroke: 0x4b2bbf, fontSize: '15px', color: '#ffffff' });
+      const button = new Button(this, 622, 306 + index * 42, label, () => this.useTool(key), { width: 142, height: 36, fill: toolColors[index % toolColors.length], stroke: 0xffffff, strokeWidth: 4, fontSize: '16px', color: '#273469', radius: 12, shadow: 0x11152f, shadowAlpha: 0.35 });
+      button.normalFill = toolColors[index % toolColors.length];
       this.toolButtons.set(key, button);
     });
   }
@@ -587,8 +595,10 @@ export default class LabScene extends Phaser.Scene {
     this.setFaceMood();
     const dangerQuipQueued = this.checkDangerThreshold(previousDanger, 'tool');
     this.cameras.main.shake(90, key === 'shaken' ? 0.01 : 0.004);
-    this.toolButtons.get(key)?.back.setFillStyle(0xa8ffb0);
-    this.toolButtons.get(key)?.text.setColor('#173f20');
+    const usedButton = this.toolButtons.get(key);
+    usedButton?.back.setFillStyle(0xfff176);
+    usedButton?.back.setStrokeStyle(5, 0xa8ffb0);
+    usedButton?.text.setColor('#173f20');
     this.playToolEffect(key);
     this.playToolSound(key);
     this.dialogue.say(`${detail.label} used. ${detail.note}`);
@@ -754,8 +764,9 @@ export default class LabScene extends Phaser.Scene {
     this.predictions = new PredictionSystem();
     this.highlightPrediction(null);
     this.toolButtons.forEach((button) => {
-      button.back.setFillStyle(0xb388ff);
-      button.text.setColor('#ffffff');
+      button.back.setFillStyle(button.normalFill ?? 0xb388ff);
+      button.text.setColor('#273469');
+      button.back.setStrokeStyle(4, 0xffffff);
     });
     this.dialogue.say(`Flask reset, ${this.hero.shortName}. Make a prediction, choose ingredients, try tools, and observe again.`);
     this.updateNotebook();
