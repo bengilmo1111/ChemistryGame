@@ -18,6 +18,32 @@ export const hero = {
     'Even my eyebrows are impressed.',
     'Science rules. The flask agrees.',
   ],
+  ingredientQuips: [
+    'A brave little splash joins the science party!',
+    'Into the flask you go — goggles are watching.',
+    'Henry notes: excellent plop velocity.',
+    'Tiny ingredient, enormous possibility!',
+    'The flask just whispered, “interesting choice!”',
+  ],
+  toolQuips: [
+    'A tool! My favorite kind of dramatic punctuation.',
+    'Procedure step complete — with extra flair.',
+    'Henry approves this careful chaos.',
+    'The lab bench gives that move two rubber-gloved thumbs up.',
+    'Aha! Changing one thing can change everything.',
+  ],
+  dangerQuips: [
+    'Eyebrows status: cautiously elevated.',
+    'The chaos meter is doing jumping jacks.',
+    'That wobble has a wobble. Fascinating!',
+    'Henry suggests a dramatic pause and a careful choice.',
+  ],
+  nearSuccessQuips: [
+    'The clues are lining up like tiny lab ducks.',
+    'Henry senses a recipe trying to reveal itself.',
+    'That looks suspiciously close to a discovery.',
+    'The flask is practically begging for the right tool.',
+  ],
   failureQuips: [
     'Note to self: that was NOT the plan.',
     'The flask says sorry about the mess.',
@@ -33,6 +59,14 @@ export function greeting(index = 0) {
 }
 
 export function randomQuip(kind = 'success') {
-  const pool = kind === 'success' ? hero.successQuips : hero.failureQuips;
+  const pools = {
+    success: hero.successQuips,
+    failure: hero.failureQuips,
+    ingredient: hero.ingredientQuips,
+    tool: hero.toolQuips,
+    danger: hero.dangerQuips,
+    nearSuccess: hero.nearSuccessQuips,
+  };
+  const pool = pools[kind] ?? hero.failureQuips;
   return pool[Math.floor(Math.random() * pool.length)];
 }

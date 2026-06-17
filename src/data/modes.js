@@ -24,6 +24,30 @@ const paulingHero = {
     'Excellent — now connect the macroscopic result to particles.',
     'That result belongs in the lab notebook.',
   ],
+  ingredientQuips: [
+    'Record the material, then watch for evidence.',
+    'A useful trial begins with a known reagent.',
+    'Note the appearance before the next variable changes.',
+    'Good — one observation at a time.',
+  ],
+  toolQuips: [
+    'That procedure step changes the conditions.',
+    'Observe whether the evidence changes after this variable.',
+    'A controlled tool step can clarify the model.',
+    'Now compare the result with the hypothesis.',
+  ],
+  dangerQuips: [
+    'The meter suggests pausing before adding more variables.',
+    'Careful technique keeps observations interpretable.',
+    'Too many changes can obscure the evidence.',
+    'Consider running the trial before changing another condition.',
+  ],
+  nearSuccessQuips: [
+    'The evidence is approaching a recognizable pattern.',
+    'One more controlled step may complete the model.',
+    'The observations are becoming more diagnostic.',
+    'This looks close to a clear conclusion.',
+  ],
   failureQuips: [
     'Interesting — the evidence asks for a revised procedure.',
     'A negative result still teaches chemistry.',
