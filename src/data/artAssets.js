@@ -1,4 +1,6 @@
 const reagentSize = { width: 160, height: 190 };
+const heroPortraitSize = { width: 128, height: 128 };
+const heroPortraitStates = ['happy', 'thinking', 'surprised', 'worried', 'celebrating'];
 
 export const interfaceArt = [
   { key: 'art-logo', fileName: 'logo.svg', path: new URL('../assets/images/logo.svg', import.meta.url).href, width: 640, height: 180 },
@@ -7,6 +9,15 @@ export const interfaceArt = [
   { key: 'art-mode-henry-adventure', fileName: 'mode-henry-adventure.svg', path: new URL('../assets/images/mode-henry-adventure.svg', import.meta.url).href, width: 260, height: 240 },
   { key: 'art-mode-pauling-adventure', fileName: 'mode-pauling-adventure.svg', path: new URL('../assets/images/mode-pauling-adventure.svg', import.meta.url).href, width: 260, height: 240 },
 ];
+
+export const heroPortraitArt = ['henry', 'pauling'].flatMap((heroId) => heroPortraitStates.map((state) => ({
+  key: `art-hero-${heroId}-${state}`,
+  heroId,
+  state,
+  fileName: `hero-${heroId}-${state}.svg`,
+  path: new URL(`../assets/images/hero-${heroId}-${state}.svg`, import.meta.url).href,
+  ...heroPortraitSize,
+})));
 
 export const reagentArt = [
   { key: 'art-reagent-fizz-powder', reagentId: 'fizz-powder', fileName: 'reagent-fizz-powder.svg', path: new URL('../assets/images/reagent-fizz-powder.svg', import.meta.url).href, ...reagentSize },
@@ -17,6 +28,7 @@ export const reagentArt = [
   { key: 'art-reagent-goo-gel', reagentId: 'goo-gel', fileName: 'reagent-goo-gel.svg', path: new URL('../assets/images/reagent-goo-gel.svg', import.meta.url).href, ...reagentSize },
 ];
 
+export const artAssets = [...interfaceArt, ...heroPortraitArt, ...reagentArt];
 export const effectArt = [
   { key: 'art-effect-foam-fountain', effectId: 'foam', fileName: 'effect-foam-fountain.svg', path: new URL('../assets/images/effect-foam-fountain.svg', import.meta.url).href, width: 220, height: 220 },
   { key: 'art-effect-rainbow-arc', effectId: 'rainbow', fileName: 'effect-rainbow-arc.svg', path: new URL('../assets/images/effect-rainbow-arc.svg', import.meta.url).href, width: 220, height: 220 },
