@@ -127,6 +127,7 @@ export default class LabScene extends Phaser.Scene {
     this.physics.world.setBounds(0, 0, 1024, 640);
     this.addLabBench();
     this.dialogue = new DialogueSystem(this, 380, 80, 650, 56);
+    this.createHeroPortrait();
     const greet = this.isSandbox
       ? `${this.hero.shortName}, ${this.experiment.prompt}`
       : `${this.hero.shortName}, ${this.experiment.prompt}`;
@@ -150,6 +151,35 @@ export default class LabScene extends Phaser.Scene {
       new Button(this, 666, 512, '📖 Recipe Book', () => this.toggleRecipeBook(), { width: 170, height: 42, fill: 0xfff7d6, stroke: 0x8a5a24, fontSize: '16px', color: '#4b2f10' });
     }
     this.updateNotebook();
+  }
+
+
+  createHeroPortrait() {
+    const portraitKey = `art-hero-${this.modeId}-happy`;
+    this.heroPortraitFrame = this.add.circle(724, 80, 42, 0xffffff, 0.96)
+      .setStrokeStyle(4, 0x273469)
+      .setDepth(6);
+    this.heroPortrait = this.add.image(724, 80, portraitKey)
+      .setDisplaySize(72, 72)
+      .setDepth(7);
+    this.heroPortraitState = 'happy';
+  }
+
+  setHeroPortraitState(state) {
+    if (!this.heroPortrait || this.heroPortraitState === state) return;
+    const key = `art-hero-${this.modeId}-${state}`;
+    if (!this.textures.exists(key)) return;
+    this.heroPortraitState = state;
+    this.heroPortrait.setTexture(key);
+    this.tweens.killTweensOf(this.heroPortrait);
+    this.heroPortrait.setScale(1);
+    this.tweens.add({
+      targets: this.heroPortrait,
+      scale: { from: 0.9, to: 1 },
+      angle: { from: -4, to: 0 },
+      duration: 180,
+      ease: 'Back.Out',
+    });
   }
 
   addLabBench() {
@@ -226,6 +256,7 @@ export default class LabScene extends Phaser.Scene {
       const button = new Button(this, x, y, `${prediction.icon} ${prediction.label}`, () => {
         this.predictions.choose(prediction.id);
         this.highlightPrediction(prediction.id);
+        this.setHeroPortraitState('thinking');
         this.dialogue.say(`${this.hero.shortName}'s prediction: ${prediction.label}. Drag or tap ingredients into the flask.`);
         this.updateNotebook();
         this.updateMixButton();
@@ -518,9 +549,11 @@ export default class LabScene extends Phaser.Scene {
     const reagent = this.findReagent(reagentId);
     const added = this.inventory.add(reagentId);
     if (!added) {
+      this.setHeroPortraitState('worried');
       this.dialogue.say(`${reagent.name} is already in the flask. Try a different ingredient or mix your prediction!`);
       return;
     }
+    this.setHeroPortraitState(this.isNearSuccess() ? 'happy' : 'surprised');
     if (sourceObject) {
       this.tweens.add({ targets: sourceObject, scale: 1.12, duration: 90, yoyo: true, ease: 'Sine.InOut' });
     }
@@ -580,6 +613,7 @@ export default class LabScene extends Phaser.Scene {
 
   useTool(key) {
     const detail = ACTION_DETAILS[key];
+    this.setHeroPortraitState(this.isNearSuccess() ? 'happy' : 'thinking');
     this.actions[key] = true;
     const previousDanger = this.danger.value;
     this.danger.add(key === 'sealed' || key === 'heated' ? 18 : 8);
@@ -612,6 +646,7 @@ export default class LabScene extends Phaser.Scene {
   }
 
   playDangerWarning(tier) {
+    this.setHeroPortraitState(tier === 'high' ? 'worried' : 'surprised');
     const warnings = tier === 'high'
       ? [
         () => {
@@ -900,6 +935,7 @@ export default class LabScene extends Phaser.Scene {
   playOutcome(outcome) {
     this.stopMixPulse();
     this.mixButton.setEnabled(false);
+    this.setHeroPortraitState(outcome.kind === 'success' ? 'celebrating' : 'worried');
     this.dialogue.say(outcome.title);
     this.eyes?.forEach(({ pupil }) => {
       this.tweens.add({ targets: pupil, scale: 1.6, duration: 180, yoyo: true, repeat: 2 });
