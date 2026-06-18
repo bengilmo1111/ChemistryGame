@@ -7,6 +7,7 @@ import LabInventory from '../systems/LabInventory.js';
 import PredictionSystem, { predictions } from '../systems/PredictionSystem.js';
 import ReactionEngine from '../systems/ReactionEngine.js';
 import DiscoverySystem from '../systems/DiscoverySystem.js';
+import StarSystem from '../systems/StarSystem.js';
 import Button from '../ui/Button.js';
 import LabNotebook from '../ui/LabNotebook.js';
 import Meter from '../ui/Meter.js';
@@ -113,6 +114,7 @@ export default class LabScene extends Phaser.Scene {
     this.sfx = this.registry.get('sfx');
     this.scoreSystem = this.registry.get('score');
     this.discoveries = new DiscoverySystem();
+    this.stars = new StarSystem();
     this.recipeBook = null;
     this.isMixing = false;
   }
@@ -126,6 +128,7 @@ export default class LabScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor(this.isSandbox ? this.modeColors.sandboxBackground : this.modeColors.labBackground);
     this.physics.world.setBounds(0, 0, 1024, 640);
     this.addLabBench();
+    this.createUnlockedBenchDecorations();
     this.dialogue = new DialogueSystem(this, 380, 80, 650, 56);
     this.createHeroPortrait();
     const greet = this.isSandbox
@@ -192,6 +195,75 @@ export default class LabScene extends Phaser.Scene {
   }
 
 
+  createUnlockedBenchDecorations() {
+    const discovered = new Set(this.discoveries.getAllForMode(this.modeId));
+    const effectsByOutcome = new Map([
+      ...this.reactionOutcomes,
+      ...this.secretReactions,
+      ...this.failures,
+    ].map((outcome) => [outcome.id, outcome.effect]));
+    const discoveredEffects = new Set([...discovered].map((id) => effectsByOutcome.get(id)).filter(Boolean));
+    const totalStars = this.stars.totalForMode(this.modeId);
+    const decorations = [
+      {
+        unlocked: discovered.has('duck-portal') || discoveredEffects.has('duck'),
+        x: 238,
+        y: 104,
+        icon: '🦆',
+        title: 'Duck sticker',
+        line: 'Unlocked by a ducky discovery!',
+        style: 'sticker',
+      },
+      {
+        unlocked: discovered.has('galaxy-goo') || discovered.has('basic-indicator-color') || discoveredEffects.has('galaxy'),
+        x: 514,
+        y: 126,
+        icon: '🌌',
+        title: 'Galaxy poster',
+        line: 'A cosmic reminder of secret science.',
+        style: 'poster',
+      },
+      {
+        unlocked: discoveredEffects.has('crystal') || totalStars >= 9,
+        x: 726,
+        y: 520,
+        icon: '🏆',
+        title: 'Crystal trophy',
+        line: `Shines for ${totalStars} earned stars!`,
+        style: 'trophy',
+      },
+      {
+        unlocked: discovered.has('slime-escape') || discoveredEffects.has('slime'),
+        x: 548,
+        y: 526,
+        icon: '👾',
+        title: 'Slime splat',
+        line: 'A very official sticky observation.',
+        style: 'splat',
+      },
+    ].filter((decoration) => decoration.unlocked);
+
+    decorations.forEach((decoration, index) => {
+      const container = this.add.container(decoration.x, decoration.y).setDepth(decoration.style === 'poster' ? 2 : 5);
+      if (decoration.style === 'poster') {
+        container.add(this.add.rectangle(0, 0, 92, 62, 0x1b2453, 0.92).setStrokeStyle(4, 0xffd166));
+      } else if (decoration.style === 'trophy') {
+        container.add(this.add.ellipse(0, 18, 68, 20, 0xffd166, 0.28));
+      } else {
+        container.add(this.add.circle(0, 0, 30, 0xffffff, 0.16).setStrokeStyle(2, 0xfff176, 0.5));
+      }
+      const icon = this.add.text(0, 0, decoration.icon, { fontSize: decoration.style === 'poster' ? '42px' : '34px' }).setOrigin(0.5);
+      icon.setInteractive({ useHandCursor: true });
+      icon.on('pointerdown', () => {
+        this.sfx?.sparkle?.();
+        this.dialogue?.say(`${decoration.title}: ${decoration.line}`);
+      });
+      container.add(icon);
+      this.tweens.add({ targets: icon, angle: index % 2 === 0 ? 5 : -5, duration: 1300 + index * 120, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
+    });
+  }
+
+
   createBenchToys() {
     const toys = [
       {
@@ -249,19 +321,22 @@ export default class LabScene extends Phaser.Scene {
   }
 
   createPredictionButtons() {
-    this.add.text(42, 124, this.modeLabels.predictionLabel, { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '18px', color: '#ffffff' });
+    this.add.text(42, 118, `✨ ${this.modeLabels.predictionLabel}`, { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '19px', color: '#ffffff', stroke: '#273469', strokeThickness: 4 });
+    const chipColors = [0xff8bd1, 0x9de8ff, 0xffd166, 0xa8ffb0, 0xb388ff, 0xff9e54, 0xd8fbff, 0xfff176];
     predictions.forEach((prediction, index) => {
       const x = 88 + (index % 4) * 104;
-      const y = 162 + Math.floor(index / 4) * 44;
-      const button = new Button(this, x, y, `${prediction.icon} ${prediction.label}`, () => {
+      const y = 166 + Math.floor(index / 4) * 58;
+      const button = new Button(this, x, y, `${prediction.icon}
+${prediction.label}`, () => {
         this.predictions.choose(prediction.id);
         this.highlightPrediction(prediction.id);
         this.setHeroPortraitState('thinking');
         this.dialogue.say(`${this.hero.shortName}'s prediction: ${prediction.label}. Drag or tap ingredients into the flask.`);
         this.updateNotebook();
         this.updateMixButton();
-      }, { width: 98, height: 38, fill: 0x9de8ff, stroke: 0x235b72, fontSize: '11px' });
+      }, { width: 94, height: 50, fill: chipColors[index % chipColors.length], stroke: 0xffffff, strokeWidth: 5, fontSize: '13px', color: '#273469', radius: 18, lineSpacing: -2, angle: index % 2 === 0 ? -2 : 2, shadow: 0x11152f, shadowAlpha: 0.26 });
       button.container.setDepth(4);
+      button.normalFill = chipColors[index % chipColors.length];
       this.predictionButtons.set(prediction.id, button);
     });
   }
@@ -269,9 +344,10 @@ export default class LabScene extends Phaser.Scene {
   highlightPrediction(predictionId) {
     this.predictionButtons.forEach((button, id) => {
       const selected = id === predictionId;
-      button.back.setFillStyle(selected ? 0xa8ffb0 : 0x9de8ff);
-      button.text.setColor(selected ? '#173f20' : '#3a2600');
-      button.container.setScale(selected ? 1.04 : 1);
+      button.back.setFillStyle(selected ? 0xfff176 : button.normalFill);
+      button.text.setColor(selected ? '#173f20' : '#273469');
+      button.back.setStrokeStyle(selected ? 6 : 5, selected ? 0xa8ffb0 : 0xffffff);
+      button.container.setScale(selected ? 1.08 : 1);
     });
   }
 
@@ -472,16 +548,18 @@ export default class LabScene extends Phaser.Scene {
   }
 
   createObservationClues() {
-    this.add.rectangle(392, 584, 320, 76, 0x15183a, 0.78).setStrokeStyle(3, 0x9de8ff);
-    this.add.text(392, 556, this.isSandbox ? this.modeLabels.sandboxObservationHeading : this.modeLabels.observationHeading, {
+    this.add.rectangle(392, 588, 332, 78, 0x8a5a24, 0.42).setAngle(1.5);
+    this.add.rectangle(392, 584, 320, 76, 0xfff176, 0.96).setStrokeStyle(4, 0x8a5a24).setAngle(-1.5);
+    this.add.rectangle(392, 548, 92, 18, 0xd8fbff, 0.92).setStrokeStyle(2, 0x273469);
+    this.add.text(392, 556, `📋 ${this.isSandbox ? this.modeLabels.sandboxObservationHeading : this.modeLabels.observationHeading}`, {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '16px',
-      color: '#fff5a8',
+      color: '#4b2f10',
     }).setOrigin(0.5);
     this.add.text(392, 590, this.experiment.hints.map((hint) => `• ${hint}`).join('\n'), {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '13px',
-      color: '#ffffff',
+      color: '#273469',
       align: 'center',
       lineSpacing: 2,
       wordWrap: { width: 296 },
@@ -528,12 +606,14 @@ export default class LabScene extends Phaser.Scene {
   }
 
   createToolButtons() {
-    this.add.text(564, 248, this.modeLabels.labTools, { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '22px', color: '#ffffff' });
-    const tools = Object.entries(ACTION_DETAILS).map(([key, detail]) => [key, `${detail.icon} ${detail.label}`]);
-    this.add.text(622, 274, this.modeLabels.toolHint, { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '13px', color: '#fff5a8' }).setOrigin(0.5);
+    this.add.text(564, 244, `🧰 ${this.modeLabels.labTools}`, { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '22px', color: '#ffffff', stroke: '#273469', strokeThickness: 4 });
+    const toolColors = [0xb388ff, 0xff9e54, 0x9de8ff, 0xff8bd1, 0xa8ffb0];
+    const tools = Object.entries(ACTION_DETAILS).map(([key, detail]) => [key, `${detail.icon}  ${detail.label}`]);
+    this.add.text(622, 274, this.modeLabels.toolHint, { fontFamily: 'Trebuchet MS, sans-serif', fontSize: '13px', color: '#fff5a8', stroke: '#11152f', strokeThickness: 3 }).setOrigin(0.5);
     this.toolButtons = new Map();
     tools.forEach(([key, label], index) => {
-      const button = new Button(this, 622, 304 + index * 38, label, () => this.useTool(key), { width: 130, height: 32, fill: 0xb388ff, stroke: 0x4b2bbf, fontSize: '15px', color: '#ffffff' });
+      const button = new Button(this, 622, 306 + index * 42, label, () => this.useTool(key), { width: 142, height: 36, fill: toolColors[index % toolColors.length], stroke: 0xffffff, strokeWidth: 4, fontSize: '16px', color: '#273469', radius: 12, shadow: 0x11152f, shadowAlpha: 0.35 });
+      button.normalFill = toolColors[index % toolColors.length];
       this.toolButtons.set(key, button);
     });
   }
@@ -621,8 +701,10 @@ export default class LabScene extends Phaser.Scene {
     this.setFaceMood();
     const dangerQuipQueued = this.checkDangerThreshold(previousDanger, 'tool');
     this.cameras.main.shake(90, key === 'shaken' ? 0.01 : 0.004);
-    this.toolButtons.get(key)?.back.setFillStyle(0xa8ffb0);
-    this.toolButtons.get(key)?.text.setColor('#173f20');
+    const usedButton = this.toolButtons.get(key);
+    usedButton?.back.setFillStyle(0xfff176);
+    usedButton?.back.setStrokeStyle(5, 0xa8ffb0);
+    usedButton?.text.setColor('#173f20');
     this.playToolEffect(key);
     this.playToolSound(key);
     this.dialogue.say(`${detail.label} used. ${detail.note}`);
@@ -789,8 +871,9 @@ export default class LabScene extends Phaser.Scene {
     this.predictions = new PredictionSystem();
     this.highlightPrediction(null);
     this.toolButtons.forEach((button) => {
-      button.back.setFillStyle(0xb388ff);
-      button.text.setColor('#ffffff');
+      button.back.setFillStyle(button.normalFill ?? 0xb388ff);
+      button.text.setColor('#273469');
+      button.back.setStrokeStyle(4, 0xffffff);
     });
     this.dialogue.say(`Flask reset, ${this.hero.shortName}. Make a prediction, choose ingredients, try tools, and observe again.`);
     this.updateNotebook();
@@ -1012,6 +1095,14 @@ export default class LabScene extends Phaser.Scene {
     return sprite;
   }
 
+  addOutcomeSprite(x, y, texture, { scale = 1, depth = 8, angle = 0 } = {}) {
+    return this.add.image(x, y, texture)
+      .setOrigin(0.5)
+      .setScale(scale)
+      .setAngle(angle)
+      .setDepth(depth);
+  }
+
   stirEffect() {
     const spoon = this.rememberEffect(this.add.text(392, 342, '🥄', { fontSize: '54px' }).setOrigin(0.5).setAngle(-38), 900);
     this.tweens.add({ targets: spoon, angle: 322, duration: 650, ease: 'Sine.InOut' });
@@ -1082,14 +1173,15 @@ export default class LabScene extends Phaser.Scene {
   }
 
   duckPortal() {
-    const portal = this.add.circle(392, 340, 18, 0xb388ff, 0.7).setStrokeStyle(6, 0x9de8ff);
-    const duck = this.add.text(392, 340, '🦆', { fontSize: '78px' }).setOrigin(0.5).setScale(0);
-    this.tweens.add({ targets: portal, radius: 110, angle: 720, duration: 900, yoyo: true, repeat: 1 });
-    this.tweens.add({ targets: duck, scale: 1.7, angle: 18, duration: 700, ease: 'Back.Out' });
+    const portal = this.add.circle(392, 340, 18, 0xb388ff, 0.28).setStrokeStyle(6, 0x9de8ff);
+    const duck = this.addOutcomeSprite(392, 340, 'art-effect-duck-portal', { scale: 0 });
+    this.tweens.add({ targets: portal, radius: 118, angle: 720, duration: 900, yoyo: true, repeat: 1, onComplete: () => portal.destroy() });
+    this.tweens.add({ targets: duck, scale: 1.45, angle: 18, duration: 700, ease: 'Back.Out' });
+    this.tweens.add({ targets: duck, alpha: 0, y: 292, duration: 520, delay: 1300, onComplete: () => duck.destroy() });
     for (let i = 0; i < 6; i += 1) {
       this.time.delayedCall(i * 120, () => {
-        const extra = this.add.text(392 + Phaser.Math.Between(-180, 180), 340 + Phaser.Math.Between(-100, 100), '🦆', { fontSize: '34px' }).setOrigin(0.5);
-        this.tweens.add({ targets: extra, alpha: 0, y: extra.y - 80, duration: 700, onComplete: () => extra.destroy() });
+        const extra = this.addOutcomeSprite(392 + Phaser.Math.Between(-180, 180), 340 + Phaser.Math.Between(-100, 100), 'art-effect-duck-portal', { scale: 0.34, angle: Phaser.Math.Between(-18, 18) });
+        this.tweens.add({ targets: extra, alpha: 0, y: extra.y - 80, scale: 0.18, duration: 700, onComplete: () => extra.destroy() });
       });
     }
   }
@@ -1126,6 +1218,9 @@ export default class LabScene extends Phaser.Scene {
 
   lavaLampGlow() {
     this.liquid.setFillStyle(0xff9e54, 0.8);
+    const lavaLamp = this.addOutcomeSprite(392, 358, 'art-effect-lava-blobs', { scale: 0.92 });
+    this.tweens.add({ targets: lavaLamp, y: 330, scale: 1.08, duration: 850, ease: 'Sine.InOut', yoyo: true, repeat: 1 });
+    this.tweens.add({ targets: lavaLamp, alpha: 0, duration: 450, delay: 1700, onComplete: () => lavaLamp.destroy() });
     for (let i = 0; i < 9; i += 1) {
       const blob = this.add.image(392 + Phaser.Math.Between(-38, 38), 440, 'slime')
         .setTint(Phaser.Math.RND.pick([0xff9e54, 0xffd166, 0xff4d6d]))
@@ -1157,6 +1252,9 @@ export default class LabScene extends Phaser.Scene {
   }
 
   discoStorm() {
+    const disco = this.addOutcomeSprite(392, 275, 'art-effect-disco-ball', { scale: 0 });
+    this.tweens.add({ targets: disco, scale: 1.2, angle: 360, duration: 720, ease: 'Back.Out' });
+    this.tweens.add({ targets: disco, y: 235, alpha: 0, angle: 720, duration: 650, delay: 1300, onComplete: () => disco.destroy() });
     const colors = [0xff4d6d, 0xfff176, 0x72d6ff, 0xb388ff, 0xa8ffb0, 0xff8bd1];
     colors.forEach((color, index) => {
       this.time.delayedCall(index * 160, () => {
@@ -1176,13 +1274,17 @@ export default class LabScene extends Phaser.Scene {
   }
 
   dragonSneeze() {
-    const dragon = this.add.text(392, 300, '🐉', { fontSize: '84px' }).setOrigin(0.5).setScale(0).setDepth(8);
-    this.tweens.add({ targets: dragon, scale: 1.4, duration: 420, ease: 'Back.Out' });
+    const dragon = this.addOutcomeSprite(392, 300, 'art-effect-dragon', { scale: 0 });
+    this.tweens.add({ targets: dragon, scale: 1.25, duration: 420, ease: 'Back.Out' });
     this.tweens.add({ targets: dragon, alpha: 0, y: 240, duration: 600, delay: 1100, onComplete: () => dragon.destroy() });
     for (let i = 0; i < 12; i += 1) {
       this.time.delayedCall(i * 70, () => {
-        const flame = this.add.text(392 + Phaser.Math.Between(-60, 60), 350, '🔥', { fontSize: `${Phaser.Math.Between(26, 44)}px` }).setOrigin(0.5).setDepth(8);
-        this.tweens.add({ targets: flame, y: flame.y - Phaser.Math.Between(60, 140), alpha: 0, duration: 700, onComplete: () => flame.destroy() });
+        const puff = this.add.image(392 + Phaser.Math.Between(-60, 60), 350, 'foam')
+          .setTint(Phaser.Math.RND.pick([0xfff176, 0xb4ff7a, 0xff8bd1]))
+          .setScale(Phaser.Math.FloatBetween(0.75, 1.25))
+          .setOrigin(0.5)
+          .setDepth(8);
+        this.tweens.add({ targets: puff, y: puff.y - Phaser.Math.Between(60, 140), alpha: 0, duration: 700, onComplete: () => puff.destroy() });
       });
     }
     this.liquid.setFillStyle(0xb4ff7a, 0.8);
@@ -1205,7 +1307,7 @@ export default class LabScene extends Phaser.Scene {
   }
 
   glitterTornado() {
-    const tornado = this.add.text(392, 370, '🌪️', { fontSize: '92px' }).setOrigin(0.5).setDepth(8).setScale(0);
+    const tornado = this.addOutcomeSprite(392, 370, 'art-effect-tornado', { scale: 0 });
     this.tweens.add({ targets: tornado, scale: 1.3, angle: 1080, y: 290, duration: 1600, ease: 'Sine.InOut', onComplete: () => tornado.destroy() });
     for (let i = 0; i < 30; i += 1) {
       this.time.delayedCall(i * 50, () => this.spawnFlying('crystal', 392, 380, Phaser.Math.RND.pick([0xfff176, 0xff8bd1, 0xd8fbff]), -300));
@@ -1213,8 +1315,8 @@ export default class LabScene extends Phaser.Scene {
   }
 
   burpBlast() {
-    const burp = this.add.text(392, 320, '💨', { fontSize: '82px' }).setOrigin(0.5).setScale(0).setDepth(8);
-    this.tweens.add({ targets: burp, scale: 1.8, y: 215, alpha: 0, duration: 1100, ease: 'Sine.Out', onComplete: () => burp.destroy() });
+    const burp = this.addOutcomeSprite(392, 320, 'art-effect-burp-cloud', { scale: 0 });
+    this.tweens.add({ targets: burp, scale: 1.35, y: 215, alpha: 0, duration: 1100, ease: 'Sine.Out', onComplete: () => burp.destroy() });
     this.tweens.add({ targets: this.flask, scaleX: 1.12, scaleY: 0.9, duration: 140, yoyo: true, repeat: 3, onComplete: () => this.flask.setScale(1) });
     this.spawnBubbles(24, 0xb4ff7a);
   }

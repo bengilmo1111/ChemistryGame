@@ -85,4 +85,12 @@ export default class DiscoverySystem {
   countForExperiment(experimentId, modeId = 'henry') {
     return this.getForExperiment(experimentId, modeId).length;
   }
+
+  getAllForMode(modeId = 'henry') {
+    const prefix = modeId ? `${modeId}:` : '';
+    const outcomes = Object.entries(this.discoveries)
+      .filter(([key]) => !prefix || key.startsWith(prefix))
+      .flatMap(([, values]) => (Array.isArray(values) ? values : []));
+    return unique(outcomes);
+  }
 }

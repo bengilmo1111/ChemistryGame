@@ -1,6 +1,5 @@
 import Phaser from 'phaser';
 import { getMode } from '../data/modes.js';
-import { defineVocabulary } from '../data/vocabulary.js';
 import DiscoverySystem from '../systems/DiscoverySystem.js';
 import StarSystem from '../systems/StarSystem.js';
 import Button from '../ui/Button.js';
@@ -24,7 +23,7 @@ export default class LevelSelectScene extends Phaser.Scene {
     this.stars = new StarSystem();
     this.add.text(512, 54, this.mode.labels.levelTitle, {
       fontFamily: 'Trebuchet MS, sans-serif',
-      fontSize: '44px',
+      fontSize: '38px',
       color: '#ffffff',
       stroke: '#11152f',
       strokeThickness: 6,
@@ -33,13 +32,13 @@ export default class LevelSelectScene extends Phaser.Scene {
     this.experiments.forEach((experiment, index) => {
       const column = index % 3;
       const row = Math.floor(index / 3);
-      this.createCard(experiment, 206 + column * 306, 236 + row * 230);
+      this.createCard(experiment, 206 + column * 306, 228 + row * 236);
     });
     new Button(this, 96, 586, 'Back', () => this.scene.start('MenuScene'), { width: 140, fill: 0xff8bd1, stroke: 0x7e2453 });
   }
 
   createCard(experiment, x, y) {
-    this.add.rectangle(x, y, 280, 216, this.mode.colors.cardFill).setStrokeStyle(5, this.mode.colors.cardStroke);
+    this.add.rectangle(x, y, 286, 212, this.mode.colors.cardFill).setStrokeStyle(5, this.mode.colors.cardStroke);
     this.add.text(x, y - 108, this.stars.display(experiment.id, this.modeId), {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '22px',
@@ -47,47 +46,36 @@ export default class LevelSelectScene extends Phaser.Scene {
       stroke: '#11152f',
       strokeThickness: 5,
     }).setOrigin(0.5);
-    this.add.text(x, y - 86, experiment.title, {
+    this.add.text(x, y - 76, experiment.title, {
       fontFamily: 'Trebuchet MS, sans-serif',
       fontSize: '20px',
       color: '#4b2f10',
       align: 'center',
       wordWrap: { width: 254 },
     }).setOrigin(0.5);
-    this.add.text(x, y - 52, experiment.goal, {
+    this.add.text(x, y - 28, experiment.goal, {
       fontFamily: 'Trebuchet MS, sans-serif',
-      fontSize: '13px',
+      fontSize: '15px',
       color: '#4b2f10',
       align: 'center',
-      lineSpacing: 2,
-      wordWrap: { width: 252 },
-    }).setOrigin(0.5);
-    const wordPreview = defineVocabulary(experiment.vocabulary)
-      .map(({ word, definition }) => `${word}: ${definition}`)
-      .join('\n');
-    this.add.text(x, y + 4, wordPreview, {
-      fontFamily: 'Trebuchet MS, sans-serif',
-      fontSize: '11px',
-      color: '#273469',
-      align: 'center',
-      lineSpacing: 2,
+      lineSpacing: 4,
       wordWrap: { width: 252 },
     }).setOrigin(0.5);
     const totalDiscoveries = this.reactionOutcomes.filter((outcome) => outcome.experimentId === experiment.id).length + this.failures.length;
     const foundDiscoveries = this.discoveries.countForExperiment(experiment.id, this.modeId);
-    this.add.text(x, y + 56, `Discovered: ${foundDiscoveries}/${totalDiscoveries} outcomes`, {
+    this.add.text(x, y + 32, `${foundDiscoveries}/${totalDiscoveries} discoveries`, {
       fontFamily: 'Trebuchet MS, sans-serif',
-      fontSize: '12px',
+      fontSize: '15px',
       color: foundDiscoveries ? '#2f7d38' : '#7e2453',
       align: 'center',
       wordWrap: { width: 254 },
     }).setOrigin(0.5);
-    new Button(this, x, y + 82, 'Experiment!', () => this.scene.start('LabScene', { modeId: this.modeId, experimentId: experiment.id }), {
-      width: 170,
-      height: 38,
+    new Button(this, x, y + 76, 'Experiment!', () => this.scene.start('LabScene', { modeId: this.modeId, experimentId: experiment.id }), {
+      width: 190,
+      height: 48,
       fill: 0xa8ffb0,
       stroke: 0x2f7d38,
-      fontSize: '17px',
+      fontSize: '20px',
     });
   }
 }

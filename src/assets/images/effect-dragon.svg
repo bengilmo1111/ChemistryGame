@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 220" role="img" aria-label="friendly cartoon dragon sneezing sparkles">
+  <path d="M43 141c10-62 79-99 131-55 31 26 21 81-19 95-48 17-120 5-112-40z" fill="#67f2c4" stroke="#184d45" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M79 68l-1-31 25 20M129 62l15-29 13 31" fill="#b4ff7a" stroke="#184d45" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="86" cy="101" r="8" fill="#17313a"/><circle cx="139" cy="98" r="8" fill="#17313a"/>
+  <path d="M100 127c15 10 36 8 47-5" fill="none" stroke="#184d45" stroke-width="6" stroke-linecap="round"/>
+  <path d="M165 122c20-7 34 3 42 20-19-6-32-2-42 15 2-13 1-23 0-35z" fill="#ff8bd1" stroke="#184d45" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M173 114c9-18 21-25 36-25-9 11-9 22 3 35-17-6-27-5-39-10z" fill="#fff176" stroke="#184d45" stroke-width="5"/>
+  <path d="M61 132c-16 9-23 25-17 46 10-16 24-24 45-20" fill="none" stroke="#184d45" stroke-width="9" stroke-linecap="round"/>
+</svg>

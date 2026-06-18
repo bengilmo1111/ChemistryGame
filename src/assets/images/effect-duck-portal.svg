@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 220" role="img" aria-label="cartoon duck popping from a sparkly portal">
+  <defs><radialGradient id="portal" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#fff176"/><stop offset=".45" stop-color="#9de8ff"/><stop offset="1" stop-color="#7b61ff"/></radialGradient></defs>
+  <circle cx="110" cy="116" r="88" fill="url(#portal)" opacity=".35"/><circle cx="110" cy="116" r="72" fill="none" stroke="#b388ff" stroke-width="18" stroke-dasharray="28 16" stroke-linecap="round"/>
+  <path d="M59 126c16-34 70-46 105-20 28 21 16 60-20 68-45 11-102-8-85-48z" fill="#ffd84d" stroke="#5b3b13" stroke-width="6" stroke-linejoin="round"/>
+  <circle cx="132" cy="83" r="35" fill="#ffe36e" stroke="#5b3b13" stroke-width="6"/><path d="M160 86l33 13-34 18c-8-8-8-22 1-31z" fill="#ff9e54" stroke="#5b3b13" stroke-width="6" stroke-linejoin="round"/>
+  <circle cx="142" cy="76" r="5" fill="#233"/><path d="M88 127c15 20 40 22 58 7" fill="none" stroke="#fff6b0" stroke-width="10" stroke-linecap="round"/>
+  <g fill="#fff"><path d="M43 56l8 16 16 8-16 8-8 16-8-16-16-8 16-8z"/><path d="M177 35l5 10 10 5-10 5-5 10-5-10-10-5 10-5z"/></g>
+</svg>
