@@ -28,7 +28,6 @@ export const reagentArt = [
   { key: 'art-reagent-goo-gel', reagentId: 'goo-gel', fileName: 'reagent-goo-gel.svg', path: new URL('../assets/images/reagent-goo-gel.svg', import.meta.url).href, ...reagentSize },
 ];
 
-export const artAssets = [...interfaceArt, ...heroPortraitArt, ...reagentArt];
 export const effectArt = [
   { key: 'art-effect-foam-fountain', effectId: 'foam', fileName: 'effect-foam-fountain.svg', path: new URL('../assets/images/effect-foam-fountain.svg', import.meta.url).href, width: 220, height: 220 },
   { key: 'art-effect-rainbow-arc', effectId: 'rainbow', fileName: 'effect-rainbow-arc.svg', path: new URL('../assets/images/effect-rainbow-arc.svg', import.meta.url).href, width: 220, height: 220 },
@@ -50,7 +49,7 @@ export const effectArt = [
   { key: 'art-effect-snow-flurry', effectId: 'snow', fileName: 'effect-snow-flurry.svg', path: new URL('../assets/images/effect-snow-flurry.svg', import.meta.url).href, width: 220, height: 220 },
 ];
 
-export const artAssets = [...interfaceArt, ...reagentArt, ...effectArt];
+export const artAssets = [...interfaceArt, ...heroPortraitArt, ...reagentArt, ...effectArt];
 
 export function findReagentArt(reagentId) {
   return reagentArt.find((asset) => asset.reagentId === reagentId);
